@@ -1,0 +1,46 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import LegalNoticeBar from '../components/LegalNoticeBar.astro';
+import ProductGrid from '../components/ProductGrid.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getCatalog } from '../lib/catalog';
+
+const catalog = await getCatalog();
+const chollosCol = catalog.collectionsBySlug['chollos'];
+let products = chollosCol
+  ? catalog.products.filter((p) => p.coleccionSlugs.includes('chollos'))
+  : catalog.products.filter((p) => p.destacado);
+---
+
+<SiteLayout pathname="/chollos" title="Chollos kawaii" description="Ofertas y hallazgos kawaii a buen precio.">
+  <PageHero
+    theme="yellow"
+    title='Chollos muy <span class="text-rk-pink">kawaii</span>'
+    subtitle="Selección de propuestas con precio orientativo especial. El precio final lo marca la tienda de destino."
+  >
+    <div slot="media" class="flex justify-center">
+      <div
+        class="flex h-40 w-40 items-center justify-center rounded-full border-4 border-dashed border-rk-pink/30 bg-rk-pink text-center text-sm font-bold text-white"
+      >
+        HASTA -40%<br /><span class="text-xs font-normal">EN NUESTRA SELECCIÓN</span>
+      </div>
+    </div>
+  </PageHero>
+
+  <div class="py-6">
+    <LegalNoticeBar />
+  </div>
+
+  <section class="mx-auto max-w-6xl px-4 pb-16">
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-2">
+      <h2 class="text-2xl font-bold">Pequeños precios, grandes hallazgos</h2>
+      <p class="text-sm text-gray-500">{products.length} chollos disponibles</p>
+    </div>
+    <ProductGrid>
+      {products.map((p) => (
+        <ProductCard product={p} variant="deal" showDealBadge={false} />
+      ))}
+    </ProductGrid>
+  </section>
+</SiteLayout>

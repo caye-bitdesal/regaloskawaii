@@ -1,0 +1,46 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import HowItWorksSection from '../components/HowItWorksSection.astro';
+---
+
+<SiteLayout pathname="/sobre-nosotros" title="Sobre nosotros" description="Conoce Regalos Kawaii.">
+  <PageHero
+    theme="dark"
+    eyebrow="Nuestra pequeña historia"
+    title='Compartimos cosas que nos hacen <span class="text-rk-pink">sonreír</span>'
+    subtitle="Somos una guía independiente: no vendemos ni gestionamos pedidos. Solo te ayudamos a encontrar detalles originales."
+  />
+
+  <section class="bg-black px-4 py-16 text-white">
+    <div class="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:items-center">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="aspect-square rounded-full bg-pink-200/20" />
+        <div class="mt-8 aspect-square rounded-full bg-violet-200/20" />
+        <div class="-mt-4 aspect-square rounded-full bg-amber-200/20" />
+        <div class="rounded-2xl bg-rk-yellow-accent/90 p-3 text-sm font-bold text-rk-footer">
+          Hallazgos con encanto
+        </div>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold">Buscamos lo bonito para que tú no tengas que hacerlo</h2>
+        <p class="mt-4 text-white/75">
+          Exploramos internet para encontrar propuestas kawaii con personalidad. Cuando algo te gusta, te
+          conectamos con la tienda oficial o marketplace correspondiente.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <span class="rounded-full bg-white/10 px-4 py-2 text-sm">Selección cuidada</span>
+          <span class="rounded-full bg-white/10 px-4 py-2 text-sm">Enlaces directos</span>
+        </div>
+        <a
+          href="/chollos"
+          class="mt-8 inline-flex rounded-full bg-rk-pink px-6 py-3 font-semibold text-white hover:bg-rk-pink-dark"
+        >
+          Descubrir los chollos →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <HowItWorksSection />
+</SiteLayout>
