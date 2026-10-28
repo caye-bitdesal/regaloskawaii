@@ -1,0 +1,58 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ProductDetailPanel from '../../components/ProductDetailPanel.astro';
+import RelatedProducts from '../../components/RelatedProducts.astro';
+import { getCatalog } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const catalog = await getCatalog();
+  return catalog.products.map((p) => ({
+    params: { slug: p.slug },
+    props: { productSlug: p.slug },
+  }));
+}
+
+const { productSlug } = Astro.props;
+const catalog = await getCatalog();
+const product = catalog.productsBySlug[productSlug as string];
+if (!product) throw new Error(`Producto no encontrado: ${productSlug}`);
+
+const primaryCol = product.coleccionSlugs[0];
+const related = catalog.products
+  .filter((p) => p.slug !== product.slug && primaryCol && p.coleccionSlugs.includes(primaryCol))
+  .slice(0, 3);
+
+const seoTitle = product.seo?.title ?? product.title;
+const seoDesc = product.seo?.description ?? product.resumen;
+---
+
+<SiteLayout
+  headerVariant="minimal"
+  title={seoTitle}
+  description={seoDesc ?? product.resumen}
+>
+  <article class="mx-auto max-w-6xl px-4 py-10">
+    <div class="grid gap-10 lg:grid-cols-2">
+      <div>
+        {
+          product.imagenUrl ? (
+            <img
+              src={product.imagenUrl}
+              alt={product.imagenAlt ?? product.title}
+              class="w-full rounded-3xl object-cover shadow-md"
+              width="800"
+              height="800"
+            />
+          ) : (
+            <div class="flex aspect-square items-center justify-center rounded-3xl bg-gray-100">Sin imagen</div>
+          )
+        }
+        <span class="mt-3 inline-block rounded-full bg-white px-3 py-1 text-xs shadow-sm">
+          Selección kawaii
+        </span>
+      </div>
+      <ProductDetailPanel product={product} />
+    </div>
+    <RelatedProducts products={related} />
+  </article>
+</SiteLayout>
