@@ -1,4 +1,4 @@
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -163,6 +163,9 @@ export async function buildCatalog(): Promise<Catalog> {
 }
 
 function writeCatalogIndex(catalog: Catalog): void {
+  // En dev, escribir en public/ dispara el file watcher de Vite → recarga infinita.
+  if (import.meta.env.DEV) return;
+
   const index: CatalogSearchEntry[] = catalog.products.map((p) => ({
     slug: p.slug,
     title: p.title,
@@ -170,8 +173,15 @@ function writeCatalogIndex(catalog: Catalog): void {
     coleccionSlugs: p.coleccionSlugs,
     precioRef: p.precioRef,
   }));
+  const filePath = path.join(PUBLIC_DIR, 'catalog-index.json');
+  const payload = JSON.stringify(index);
   mkdirSync(PUBLIC_DIR, { recursive: true });
-  writeFileSync(path.join(PUBLIC_DIR, 'catalog-index.json'), JSON.stringify(index), 'utf-8');
+  try {
+    if (readFileSync(filePath, 'utf-8') === payload) return;
+  } catch {
+    /* archivo nuevo */
+  }
+  writeFileSync(filePath, payload, 'utf-8');
 }
 
 let cached: Catalog | null = null;
