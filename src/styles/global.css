@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-rk-pink: #f06292;
+  --color-rk-pink-dark: #e91e8c;
+  --color-rk-footer: #2d2430;
+  --color-rk-mint: #e8f5f0;
+  --color-rk-yellow: #fff8e1;
+  --color-rk-yellow-accent: #ffd54f;
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+html {
+  font-family: var(--font-sans);
+  color: var(--color-rk-footer);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #fafafa;
+}
