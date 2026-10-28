@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [__BASE_BRANCH__]
+  pull_request:
+    branches: [__BASE_BRANCH__]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build server
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Compile server
+        run: ./gradlew :server:compileKotlin --no-daemon
+
+      - name: Cleanup Gradle Cache
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
+
+  server-tests:
+    name: Server tests
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - name: Run server tests
+        run: ./gradlew :server:test --no-daemon
+
+      - name: Cleanup Gradle Cache
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties

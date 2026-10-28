@@ -1,0 +1,392 @@
+{
+  "feature_name": "Regalos Kawaii — Web catálogo",
+  "feature_slug": "regaloskawaii-web",
+  "parent_package": "regaloskawaii (repo root, Astro)",
+  "scaffold": "SiteLayout",
+  "summary": "Sitio estático **Astro** en la raíz del repo: catálogo kawaii con enlaces de afiliado a tiendas externas, hub de categorías (colecciones EmDash), página de chollos, sobre nosotros, fichas de producto y búsqueda en cliente sobre todo el catálogo.",
+  "overview": "Regalos Kawaii es un **curador**, no una tienda. Los datos vienen de **EmDash** (`regaloskawaii-admin`) solo en **build time** (`EMDASH_URL`, `EMDASH_TOKEN`). El HTML estático no expone el token.\n\nReferencias de contrato: `regaloskawaii-admin/docs/api/API-completa-para-IA.md` y muestras JSON en `docs/api/samples/`.\n\n**Rutas de marketing (mockups):**\n- `/` — Home / catálogo con hero, chips de colección y grid de productos.\n- `/categorias` — Hub de colecciones (grid de tarjetas).\n- `/chollos` — Listado promocional (mismo `ProductCard` con variante descuento cuando haya datos).\n- `/sobre-nosotros` — Storytelling + bloque «Cómo funciona».\n- `/producto/[slug]` — Detalle; header minimal «← Volver al catálogo».\n\n**Rutas de contenido (API):**\n- `/coleccion/[slug]` — Productos de una colección (enlace desde tarjetas de categoría y chips).\n- `/[slug]` — Páginas CMS (p. ej. `aviso-afiliados`, obligatoria en el pie).\n\n**Nav del mockup** (Catálogo · Categorías · Chollos · Sobre nosotros): labels fijos en diseño; resaltar ítem activo (pill amarilla en Chollos). La API expone `GET /_emdash/api/menus/primary` pero el seed actual no coincide con el mockup — no sustituir el nav visual por el menú CMS hasta que editorial lo alinee.\n\n**Stack:** Astro `output: \"static\"`, CSS (Tailwind recomendado para radios/pastels del mockup), islas ligeras para búsqueda, filtros y favoritos.\n\n**Imágenes:** `${EMDASH_URL}/_emdash/api/media/file/${storageKey}` (público, sin token).\n\n**No publicar:** `notas`, `para_grabar`. Booleanos `0`/`1` → `Boolean()`. Precios como **orientativos** (`precio_ref`). Enlaces `rel=\"sponsored nofollow noopener\"` `target=\"_blank\"`.",
+  "images": [
+    { "kind": "mockup", "caption": "Home / catálogo", "path": "images/mockup-home.png" },
+    { "kind": "mockup", "caption": "Categorías (hub)", "path": "images/mockup-categorias.png" },
+    { "kind": "mockup", "caption": "Chollos", "path": "images/mockup-chollos.png" },
+    { "kind": "mockup", "caption": "Sobre nosotros", "path": "images/mockup-sobre-nosotros.png" },
+    { "kind": "mockup", "caption": "Detalle de producto", "path": "images/mockup-detalle-producto.png" }
+  ],
+  "components": [
+    {
+      "name": "SiteLayout",
+      "location": "src/layouts/SiteLayout.astro",
+      "decision": "create",
+      "usage": "Shell global: slot main + footer; elige header completo o minimal.",
+      "notes": "Prop `headerVariant`: `full` | `minimal`. Footer siempre."
+    },
+    {
+      "name": "SiteHeader",
+      "location": "src/components/SiteHeader.astro",
+      "decision": "create",
+      "usage": "Logo, nav mockup, campo búsqueda (todas las páginas con variant full).",
+      "notes": "Sticky top. Nav links: /, /categorias, /chollos, /sobre-nosotros. Active state por pathname."
+    },
+    {
+      "name": "ProductDetailHeader",
+      "location": "src/components/ProductDetailHeader.astro",
+      "decision": "create",
+      "usage": "Solo detalle producto: enlace «← Volver al catálogo» a /.",
+      "notes": "Sin nav ni búsqueda (mockup)."
+    },
+    {
+      "name": "SiteFooter",
+      "location": "src/components/SiteFooter.astro",
+      "decision": "create",
+      "usage": "Pie oscuro: logo, tagline, disclaimer, enlace a /aviso-afiliados.",
+      "notes": "Textos legales cortos en layout; contenido largo desde CMS page."
+    },
+    {
+      "name": "PageHero",
+      "location": "src/components/PageHero.astro",
+      "decision": "create",
+      "usage": "Hero configurable por página (home, categorías, chollos, about).",
+      "notes": "Props: eyebrow, title HTML, subtitle, cta, media, theme (light/dark/mint/yellow)."
+    },
+    {
+      "name": "CategoryCard",
+      "location": "src/components/CategoryCard.astro",
+      "decision": "create",
+      "usage": "Tarjeta grande en /categorias; enlace a /coleccion/{slug}.",
+      "notes": "Muestra título, descripción corta, conteo productos (desde mapa build), abreviatura decorativa opcional."
+    },
+    {
+      "name": "ProductCard",
+      "location": "src/components/ProductCard.astro",
+      "decision": "create",
+      "usage": "Grid en home, colección, chollos, related.",
+      "notes": "Variantes: default | deal. Badge desde colección destacada o flags CMS futuros."
+    },
+    {
+      "name": "FilterChips",
+      "location": "src/components/FilterChips.client.ts",
+      "decision": "create",
+      "usage": "Fila de chips en home y páginas de listado.",
+      "notes": "Isla cliente; filtra grid sin recargar."
+    },
+    {
+      "name": "ProductGrid",
+      "location": "src/components/ProductGrid.astro",
+      "decision": "create",
+      "usage": "Contenedor responsive 1→2→4 columnas + slot/lista de ProductCard.",
+      "notes": "Id DOM para filtro cliente."
+    },
+    {
+      "name": "FavoriteButton",
+      "location": "src/components/FavoriteButton.client.ts",
+      "decision": "create",
+      "usage": "Corazón en ProductCard; persiste en localStorage.",
+      "notes": "Key `regaloskawaii:favorites` (array de slugs)."
+    },
+    {
+      "name": "SiteSearch",
+      "location": "src/components/SiteSearch.client.ts",
+      "decision": "create",
+      "usage": "Input header; busca en catálogo completo inyectado.",
+      "notes": "Normaliza acentos; match title, resumen, colecciones, personaje/marca si están en payload."
+    },
+    {
+      "name": "ExternalShopLink",
+      "location": "src/components/ExternalShopLink.astro",
+      "decision": "create",
+      "usage": "CTA «Ver en {tienda}» / «Visitar producto en …».",
+      "notes": "URL desde plantilla_url + id_externo + tag_web."
+    },
+    {
+      "name": "LegalNoticeBar",
+      "location": "src/components/LegalNoticeBar.astro",
+      "decision": "create",
+      "usage": "Banner amarillo bajo hero en /chollos.",
+      "notes": "Copy fijo orientativo + enlace afiliados."
+    },
+    {
+      "name": "HowItWorksSection",
+      "location": "src/components/HowItWorksSection.astro",
+      "decision": "create",
+      "usage": "Tres pasos 01–03 en /sobre-nosotros.",
+      "notes": "Contenido estático alineado al mockup."
+    },
+    {
+      "name": "ProductDetailPanel",
+      "location": "src/components/ProductDetailPanel.astro",
+      "decision": "create",
+      "usage": "Columna info en detalle: etiqueta colección, título, precio orientativo, bullets, CTA.",
+      "notes": "Render Portable Text en descripcion."
+    },
+    {
+      "name": "RelatedProducts",
+      "location": "src/components/RelatedProducts.astro",
+      "decision": "create",
+      "usage": "«Más cositas bonitas» — otros productos de la misma colección principal.",
+      "notes": "Excluir producto actual; máx 3–4."
+    },
+    {
+      "name": "PortableText",
+      "location": "src/components/PortableText.astro",
+      "decision": "create",
+      "usage": "Bloques CMS en detalle producto y páginas.",
+      "notes": "astro-portabletext o @portabletext/to-html."
+    }
+  ],
+  "structure": "## Layout global\n\n```\nSiteLayout\n├── SiteHeader (sticky, variant=full)     ← todas excepto detalle producto\n├── ProductDetailHeader (variant=minimal) ← solo /producto/[slug]\n├── <main> … contenido página …\n└── SiteFooter\n```\n\nScroll: **una sola columna** por página (main scrollable; header sticky).\n\n## Datos en build (`src/lib/emdash/`)\n\n1. Paginar `productos?status=published&limit=100`.\n2. `colecciones?status=published` → ordenar por `data.orden` ascendente.\n3. `tiendas?status=published` → mapa id → tienda activa.\n4. Por cada colección: `colecciones/{id}/references/productos_colecciones/parents` → mapa colección → product ids.\n5. Enriquecer cada producto del **listado** con: slugs de colecciones, tienda (si una sola tienda global, asignar Amazon ES a todos; si varias, `productos/{id}/references/productos_tienda/children` por producto).\n6. Opcional v1: personajes/marcas vía `…/terms/personaje|marca` solo en detalle o en build completo si búsqueda lo requiere.\n7. `pages?status=published` para rutas legales.\n\nExportar tipos TS desde el contrato API. **No usar** endpoint detalle producto para generar paths (regla API: listado published es fuente de verdad).\n\n## Catálogo en cliente\n\nEn páginas con `SiteHeader`, incluir `<script type=\"application/json\" id=\"catalog-index\">` con array mínimo de todos los productos publicados (slug, title, resumen, coleccionSlugs[], precio_ref). `SiteSearch` lee esto y navega a `/producto/{slug}` o filtra in-page según UX acordada (v1: dropdown resultados → navegar a ficha).",
+  "sections": [
+    {
+      "title": "SiteHeader + SiteSearch",
+      "description": "Barra blanca: logo K + «Regalos Kawaii», nav centrada/derecha, input redondeado «Buscar cositas…» con icono lupa.",
+      "behavior": "Sticky. Búsqueda en **todas** las páginas con header full. SiteSearch filtra sobre **todo** el catálogo cargado en JSON embebido, no solo productos visibles en el grid. Enter o click resultado → `/producto/[slug]`.",
+      "components": ["SiteHeader", "SiteSearch"]
+    },
+    {
+      "title": "Home `/`",
+      "description": "PageHero (polaroid + CTA «Ver descubrimientos»), sección «Encuentra tu próximo favorito», FilterChips (Todos + una chip por colección publicada), ProductGrid con todos los productos (orden: destacado desc, luego title).",
+      "behavior": "Chips filtran grid en cliente. Card → `/producto/{slug}`. FavoriteButton toggle localStorage. ExternalShopLink en card abre tienda externa.",
+      "components": ["PageHero", "FilterChips", "ProductGrid", "ProductCard", "FavoriteButton", "ExternalShopLink"]
+    },
+    {
+      "title": "Categorías `/categorias`",
+      "description": "PageHero rosa «Explora por categorías», grid 2×3 CategoryCard (datos de colecciones API), bloque CTA «Empieza por nuestros favoritos» → `/coleccion/lo-mas-viral` o `/chollos`.",
+      "behavior": "CategoryCard href `/coleccion/{slug}`. Contador «X ideas seleccionadas» = número de productos en mapa colección.",
+      "components": ["PageHero", "CategoryCard"]
+    },
+    {
+      "title": "Colección `/coleccion/[slug]`",
+      "description": "Misma plantilla de listado que home pero productos prefiltrados a la colección; hero opcional con título/descripcion de la colección.",
+      "behavior": "getStaticPaths desde colecciones publicadas. Chips opcionales para saltar a otras colecciones.",
+      "components": ["PageHero", "FilterChips", "ProductGrid", "ProductCard"]
+    },
+    {
+      "title": "Chollos `/chollos`",
+      "description": "PageHero amarillo, badge decorativo «HASTA -40%…», LegalNoticeBar, ProductGrid en variante deal.",
+      "behavior": "**CMS hoy no tiene campo descuento/chollo.** v1: mostrar productos de colección slug `chollos` si existe; si no, fallback `destacado === 1`. Ocultar badge `-X%` y precio tachado hasta que el modelo de producto incluya `precio_anterior` o similar. Copy legal visible.",
+      "components": ["PageHero", "LegalNoticeBar", "ProductGrid", "ProductCard"]
+    },
+    {
+      "title": "Sobre nosotros `/sobre-nosotros`",
+      "description": "Hero oscuro con collage (assets estáticos en `public/`), texto valor, pills, CTA a /chollos, HowItWorksSection mint.",
+      "behavior": "Contenido estático en Astro (no hay page CMS en seed). CTA «Descubrir los chollos» → /chollos.",
+      "components": ["PageHero", "HowItWorksSection"]
+    },
+    {
+      "title": "Detalle `/producto/[slug]`",
+      "description": "ProductDetailHeader, layout 2 cols: imagen (+ galería si `galeria`), ProductDetailPanel, RelatedProducts.",
+      "behavior": "getStaticPaths desde listado productos. Primera colección → etiqueta rosa. Bullets fijos (diseño) + resumen/descripcion CMS. CTA ExternalShopLink primario. No mostrar notas. SEO desde producto.seo.",
+      "components": ["ProductDetailHeader", "ProductDetailPanel", "PortableText", "ExternalShopLink", "RelatedProducts", "ProductCard"]
+    },
+    {
+      "title": "Páginas CMS `/[slug]`",
+      "description": "Plantilla simple para pages (aviso-afiliados).",
+      "behavior": "getStaticPaths desde pages API. PortableText body. Enlazada desde footer.",
+      "components": ["PortableText", "SiteLayout"]
+    },
+    {
+      "title": "SiteFooter",
+      "description": "Fondo `#2D2430` aprox., logo, tagline, disclaimer derecha, link «Enlaces de afiliado».",
+      "behavior": "En todas las páginas.",
+      "components": ["SiteFooter"]
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "Listado productos",
+      "method": "GET",
+      "path": "/_emdash/api/content/productos?status=published&limit=100",
+      "notes": "Build; paginar con cursor. Fuente para paths y datos de ficha."
+    },
+    {
+      "name": "Listado colecciones",
+      "method": "GET",
+      "path": "/_emdash/api/content/colecciones?status=published",
+      "notes": "Build; categorías, chips, /coleccion/[slug]."
+    },
+    {
+      "name": "Productos de colección",
+      "method": "GET",
+      "path": "/_emdash/api/content/colecciones/{id}/references/productos_colecciones/parents",
+      "notes": "Build; una llamada por colección."
+    },
+    {
+      "name": "Listado tiendas",
+      "method": "GET",
+      "path": "/_emdash/api/content/tiendas?status=published",
+      "notes": "Build; plantillas de afiliado."
+    },
+    {
+      "name": "Tienda de producto",
+      "method": "GET",
+      "path": "/_emdash/api/content/productos/{id}/references/productos_tienda/children",
+      "notes": "Build si hay múltiples tiendas."
+    },
+    {
+      "name": "Colecciones de producto",
+      "method": "GET",
+      "path": "/_emdash/api/content/productos/{id}/references/productos_colecciones/children",
+      "notes": "Alternativa a mapa por colección; preferir mapa inverso eficiente."
+    },
+    {
+      "name": "Términos personaje/marca",
+      "method": "GET",
+      "path": "/_emdash/api/content/productos/{id}/terms/{personaje|marca}",
+      "notes": "Opcional build para búsqueda/filtros futuros."
+    },
+    {
+      "name": "Listado páginas",
+      "method": "GET",
+      "path": "/_emdash/api/content/pages?status=published",
+      "notes": "Build; aviso-afiliados obligatorio."
+    },
+    {
+      "name": "Menú principal",
+      "method": "GET",
+      "path": "/_emdash/api/menus/primary",
+      "notes": "Reservado; nav visual sigue mockup hasta alinear CMS."
+    },
+    {
+      "name": "Taxonomías / términos",
+      "method": "GET",
+      "path": "/_emdash/api/taxonomies, /_emdash/api/taxonomies/personaje/terms",
+      "notes": "Futuro: páginas por personaje."
+    }
+  ],
+  "persistence": "**Build time:** datos EmDash en memoria al generar HTML estático.\n\n**Runtime (navegador):**\n- Favoritos: `localStorage` key `regaloskawaii:favorites` (JSON array de slugs).\n- Búsqueda/filtros: estado en cliente; índice de catálogo embebido en cada página con header (o un bundle compartido `/catalog-index.json` generado en build).\n\nSin cookies ni backend propio en v1.",
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Bootstrap Astro en repo root",
+      "spec": "Inicializar proyecto Astro con `output: 'static'`, TypeScript, Tailwind (opcional pero recomendado), estructura `src/pages`, `src/layouts`, `src/components`, `src/lib`. Variables de entorno documentadas: `EMDASH_URL`, `EMDASH_TOKEN`. Añadir `.env.example`. README con comando build.",
+      "acceptance_criteria": [
+        "`npm run build` genera `dist/` sin errores",
+        "Página placeholder en `/` usando SiteLayout vacío"
+      ],
+      "dependencies": [],
+      "components": ["SiteLayout"]
+    },
+    {
+      "id": "T2",
+      "title": "Cliente EmDash y tipos",
+      "spec": "Implementar `src/lib/emdash/client.ts` (fetch autenticado, parse `{ success, data }`, paginación cursor) y `src/lib/emdash/types.ts` según API-completa-para-IA.md. Helpers: `mediaUrl(storageKey)`, `affiliateUrl(producto, tienda)`, `booleanFrom01`. Filtrar campos internos al mapear DTO público.",
+      "acceptance_criteria": [
+        "Tests manuales o script que liste productos contra local admin con token",
+        "Nunca loguear token"
+      ],
+      "dependencies": ["T1"],
+      "components": []
+    },
+    {
+      "id": "T3",
+      "title": "Pipeline build: catálogo unificado",
+      "spec": "Crear `src/lib/catalog/buildCatalog.ts` que ejecute el flujo eficiente (productos + colecciones + tiendas + parents por colección) y devuelva `Catalog` tipado: productos enriquecidos, colecciones ordenadas, maps slug→ids. Escribir además `public/catalog-index.json` para búsqueda global.",
+      "acceptance_criteria": [
+        "Cada producto publicado tiene slug, coleccionSlugs[], tienda y affiliateUrl",
+        "Colección `menos-de-10` lista productos coherentes con sample 08"
+      ],
+      "dependencies": ["T2"],
+      "components": []
+    },
+    {
+      "id": "T4",
+      "title": "Design tokens y SiteLayout / footer",
+      "spec": "Tokens CSS/Tailwind: pink primary, pastels, footer dark, radius 16–24px, tipografía sans redondeada. Implementar SiteLayout + SiteFooter con enlace `/aviso-afiliados`. Tagline del mockup.",
+      "acceptance_criteria": [
+        "Footer visible en `/`",
+        "Link afiliados resuelve cuando exista page CMS"
+      ],
+      "dependencies": ["T1"],
+      "components": ["SiteLayout", "SiteFooter"]
+    },
+    {
+      "id": "T5",
+      "title": "SiteHeader sticky + nav mockup",
+      "spec": "SiteHeader con logo, links / /categorias /chollos /sobre-nosotros, estado activo (pill amarilla en Chollos cuando pathname `/chollos`). Prop sticky. Integrar en SiteLayout variant full.",
+      "acceptance_criteria": [
+        "Nav coincide con mockup",
+        "Header permanece visible al scroll"
+      ],
+      "dependencies": ["T4"],
+      "components": ["SiteHeader"]
+    },
+    {
+      "id": "T6",
+      "title": "SiteSearch + índice global",
+      "spec": "SiteSearch.client.ts lee `catalog-index.json` o JSON embebido; búsqueda insensible a acentos en title/resumen; muestra lista de resultados; navega a producto. Presente en SiteHeader en todas las páginas con header full.",
+      "acceptance_criteria": [
+        "Buscar «kuromi» encuentra producto aunque no esté en el grid visible",
+        "Funciona en /categorias y /chollos"
+      ],
+      "dependencies": ["T3", "T5"],
+      "components": ["SiteSearch", "SiteHeader"]
+    },
+    {
+      "id": "T7",
+      "title": "ProductCard, grid, favoritos, enlace tienda",
+      "spec": "ProductCard + ProductGrid responsive. FavoriteButton localStorage. ExternalShopLink con rel sponsored. Badges: usar primera colección como label; VIRAL/FAVORITO desde slug colección o destacado.",
+      "acceptance_criteria": [
+        "Card clicable a detalle",
+        "Enlace externo abre tienda correcta",
+        "Favorito persiste tras reload"
+      ],
+      "dependencies": ["T3", "T4"],
+      "components": ["ProductCard", "ProductGrid", "FavoriteButton", "ExternalShopLink"]
+    },
+    {
+      "id": "T8",
+      "title": "Home `/`",
+      "spec": "PageHero home según mockup. FilterChips + grid todos los productos. Inyectar catalog index para búsqueda.",
+      "acceptance_criteria": [
+        "Chips filtran grid",
+        "Layout visual alineado con mockup-home.png"
+      ],
+      "dependencies": ["T6", "T7"],
+      "components": ["PageHero", "FilterChips", "ProductGrid", "ProductCard"]
+    },
+    {
+      "id": "T9",
+      "title": "Categorías y colección",
+      "spec": "Página `/categorias` con CategoryCard por colección. Dynamic route `/coleccion/[slug].astro` con getStaticPaths; listado filtrado + hero colección.",
+      "acceptance_criteria": [
+        "6 colecciones seed visibles en hub",
+        "/coleccion/lo-mas-viral muestra solo productos de esa colección"
+      ],
+      "dependencies": ["T3", "T7"],
+      "components": ["CategoryCard", "PageHero", "ProductGrid"]
+    },
+    {
+      "id": "T10",
+      "title": "Chollos y sobre nosotros",
+      "spec": "/chollos con hero amarillo, LegalNoticeBar, grid variante deal (badges descuento solo si hay datos). /sobre-nosotros estático con HowItWorksSection y assets collage.",
+      "acceptance_criteria": [
+        "Aviso legal visible en chollos",
+        "Fallback lista no vacía con seed (destacados o colección chollos)"
+      ],
+      "dependencies": ["T7"],
+      "components": ["PageHero", "LegalNoticeBar", "HowItWorksSection"]
+    },
+    {
+      "id": "T11",
+      "title": "Detalle producto",
+      "spec": "/producto/[slug].astro con ProductDetailHeader, imagen, ProductDetailPanel (Portable Text), RelatedProducts. getStaticPaths desde catalog.",
+      "acceptance_criteria": [
+        "Sin nav completa; solo volver",
+        "CTA afiliado correcto",
+        "Related excluye producto actual"
+      ],
+      "dependencies": ["T3", "T7"],
+      "components": ["ProductDetailHeader", "ProductDetailPanel", "PortableText", "RelatedProducts"]
+    },
+    {
+      "id": "T12",
+      "title": "Páginas CMS y SEO",
+      "spec": "Ruta `/[slug].astro` para pages (excluir colisiones con rutas fijas). Render PortableText. Meta tags por producto/colección/page desde seo + defaults en astro.config.",
+      "acceptance_criteria": [
+        "/aviso-afiliados renderiza content CMS",
+        "Producto tiene title/description en `<head>`"
+      ],
+      "dependencies": ["T2", "T4"],
+      "components": ["PortableText", "SiteLayout"]
+    }
+  ]
+}

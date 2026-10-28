@@ -1,0 +1,119 @@
+{
+  "feature_name": "Habit Dashboard",
+  "feature_slug": "habit-dashboard",
+  "parent_package": "com.example.app.feature.habits",
+  "scaffold": "HabitDashboardScaffold",
+  "summary": "A dashboard that shows the user's daily habits split into a **today** summary at the top and a scrollable habit list below.",
+  "overview": "The Habit Dashboard is the home screen of the habits area. It gives a quick glance at today's progress and lets the user tap a habit to mark it done or open its detail screen.\n\nGoals:\n- Show today's completion ratio at a glance.\n- List all active habits with their streaks.\n- Allow quick toggle of completion for today.",
+  "images": [
+    { "kind": "ios", "caption": "iOS reference screen", "path": "images/ios-home.png" },
+    { "kind": "mockup", "caption": "Android mockup", "path": "images/mockup.png" }
+  ],
+  "components": [
+    {
+      "name": "HabitRow",
+      "location": "app/src/main/java/.../ui/components/HabitRow.kt",
+      "decision": "reuse",
+      "usage": "Each item in the habit list.",
+      "notes": "Already has icon, title, streak, and trailing checkbox."
+    },
+    {
+      "name": "ProgressRing",
+      "location": "app/src/main/java/.../ui/components/ProgressRing.kt",
+      "decision": "modify",
+      "usage": "Top summary completion indicator.",
+      "notes": "Add a center label slot to show the percentage."
+    },
+    {
+      "name": "HabitDashboardEmptyState",
+      "location": "app/src/main/java/.../feature/habits/HabitDashboardEmptyState.kt",
+      "decision": "create",
+      "usage": "Shown in the habit list when there are no habits.",
+      "notes": "New component: illustration + 'Add your first habit' CTA."
+    }
+  ],
+  "structure": "The screen is a `Column` split into two sections divided by a horizontal divider:\n\n1. **Top summary** — fixed height, shows today's progress ring and a short label.\n2. **Habit list** — `weight(1f)`, a scrollable `LazyColumn` of habit rows.",
+  "sections": [
+    {
+      "title": "Top summary",
+      "description": "A `Row` with a circular progress indicator on the left and a `Column` of two `Text`s on the right (percentage and motivational label).",
+      "behavior": "Updates reactively as habits are toggled. No tap action.",
+      "components": ["ProgressRing"]
+    },
+    {
+      "title": "Habit list",
+      "description": "A `LazyColumn` of `HabitRow` items. Each row reuses the existing `HabitRow` component: leading icon, title, streak count, trailing checkbox.",
+      "behavior": "Tapping the checkbox toggles today's completion. Tapping the row navigates to habit detail. Shows an empty state when there are no habits.",
+      "components": ["HabitRow", "HabitDashboardEmptyState"]
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "Get habits",
+      "method": "GET",
+      "path": "/api/habits",
+      "notes": "Called on screen load; drives the list and the summary."
+    },
+    {
+      "name": "Toggle habit completion",
+      "method": "POST",
+      "path": "/api/habits/{id}/toggle",
+      "notes": "Called when the user toggles the checkbox; optimistic UI update."
+    }
+  ],
+  "persistence": "Habits are cached in **Room** so the screen renders offline. The network result updates the cache; the UI observes the Room table via a `Flow`.",
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Create package and navigation entry",
+      "spec": "Create the package `com.example.app.feature.habits` and a `HabitDashboardScreen` composable wired into Navigation 3. Render an empty `Scaffold` named `HabitDashboardScaffold`.",
+      "acceptance_criteria": [
+        "Navigating to the habits route shows an empty scaffold",
+        "No crashes on entry/exit"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "T2",
+      "title": "Static macro layout",
+      "spec": "Implement the two-section `Column`: fixed-height top summary placeholder and a `weight(1f)` list placeholder, divided by a `HorizontalDivider`.",
+      "acceptance_criteria": [
+        "Two sections render with the divider between them",
+        "Layout matches the mockup proportions"
+      ],
+      "dependencies": ["T1"],
+      "components": ["ProgressRing"]
+    },
+    {
+      "id": "T3",
+      "title": "Habit list UI with HabitRow",
+      "spec": "Render a `LazyColumn` of `HabitRow` items from static sample data, including the empty state.",
+      "acceptance_criteria": [
+        "Rows show icon, title, streak, and checkbox",
+        "Empty state shows when the list is empty"
+      ],
+      "dependencies": ["T2"],
+      "components": ["HabitRow", "HabitDashboardEmptyState"]
+    },
+    {
+      "id": "T4",
+      "title": "Data layer and endpoints",
+      "spec": "Add the `Habit` model, a Room entity/DAO, and a repository that fetches `GET /api/habits` and exposes a `Flow` from Room.",
+      "acceptance_criteria": [
+        "Repository returns cached habits via Flow",
+        "Network refresh updates the cache"
+      ],
+      "dependencies": ["T1"]
+    },
+    {
+      "id": "T5",
+      "title": "ViewModel, summary, and toggle",
+      "spec": "Add a ViewModel exposing UI state; wire the list and the top summary ratio. Implement optimistic toggle via `POST /api/habits/{id}/toggle`.",
+      "acceptance_criteria": [
+        "Summary ratio reflects completed/total",
+        "Toggling updates UI immediately and persists"
+      ],
+      "dependencies": ["T3", "T4"]
+    }
+  ]
+}
