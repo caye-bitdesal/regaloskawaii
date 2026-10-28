@@ -1,0 +1,24 @@
+---
+import type { PortableTextBlock } from '../lib/emdash/types';
+
+interface Props {
+  blocks?: PortableTextBlock[];
+}
+
+const { blocks = [] } = Astro.props;
+
+function blockText(block: PortableTextBlock): string {
+  return (block.children ?? []).map((c) => c.text).join('');
+}
+---
+
+<div class="prose prose-pink max-w-none space-y-3 text-gray-700">
+  {
+    blocks.map((block) => {
+      const text = blockText(block);
+      if (!text) return null;
+      if (block.style === 'h2') return <h2 class="text-xl font-bold">{text}</h2>;
+      return <p>{text}</p>;
+    })
+  }
+</div>

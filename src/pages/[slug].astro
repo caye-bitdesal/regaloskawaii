@@ -1,0 +1,36 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import PortableText from '../components/PortableText.astro';
+import { getCatalog } from '../lib/catalog';
+
+export async function getStaticPaths() {
+  const reserved = new Set([
+    'categorias',
+    'chollos',
+    'sobre-nosotros',
+    'producto',
+    'coleccion',
+  ]);
+  const catalog = await getCatalog();
+  return catalog.pages
+    .filter((p) => !reserved.has(p.slug))
+    .map((p) => ({
+      params: { slug: p.slug },
+      props: { pageSlug: p.slug },
+    }));
+}
+
+const { pageSlug } = Astro.props;
+const catalog = await getCatalog();
+const page = catalog.pagesBySlug[pageSlug as string];
+if (!page) throw new Error(`Página no encontrada: ${pageSlug}`);
+---
+
+<SiteLayout pathname={`/${page.slug}`} title={page.title} description={page.title}>
+  <div class="mx-auto max-w-3xl px-4 py-12">
+    <h1 class="text-3xl font-bold">{page.title}</h1>
+    <div class="mt-8">
+      <PortableText blocks={page.content} />
+    </div>
+  </div>
+</SiteLayout>
