@@ -1,0 +1,51 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import FilterChips from '../../components/FilterChips.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getCatalog } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const catalog = await getCatalog();
+  return catalog.collections.map((col) => ({
+    params: { slug: col.slug },
+    props: { collectionSlug: col.slug },
+  }));
+}
+
+const { collectionSlug } = Astro.props;
+const catalog = await getCatalog();
+const collection = catalog.collectionsBySlug[collectionSlug as string];
+if (!collection) throw new Error(`Colección no encontrada: ${collectionSlug}`);
+
+const products = catalog.products.filter((p) => p.coleccionSlugs.includes(collection.slug));
+const chips = [
+  { id: 'all', label: 'Todos' },
+  ...catalog.collections.map((c) => ({ id: c.slug, label: c.title })),
+];
+---
+
+<SiteLayout
+  pathname={`/coleccion/${collection.slug}`}
+  title={collection.title}
+  description={collection.descripcion}
+>
+  <PageHero theme="light" title={collection.title} subtitle={collection.descripcion} />
+
+  <section class="mx-auto max-w-6xl px-4 pb-16">
+    <FilterChips chips={chips} />
+    <div class="mt-8">
+      <ProductGrid>
+        {products.map((p) => (
+          <ProductCard product={p} />
+        ))}
+      </ProductGrid>
+      {
+        products.length === 0 && (
+          <p class="py-12 text-center text-gray-500">Aún no hay productos en esta colección.</p>
+        )
+      }
+    </div>
+  </section>
+</SiteLayout>

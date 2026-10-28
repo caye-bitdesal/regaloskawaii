@@ -1,0 +1,42 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import { getCatalog } from '../lib/catalog';
+
+const catalog = await getCatalog();
+---
+
+<SiteLayout pathname="/categorias" title="Categorías" description="Explora regalos kawaii por categorías.">
+  <PageHero
+    theme="pink"
+    eyebrow="✨ Hay algo bonito para cada persona"
+    title='Explora por <span class="underline decoration-rk-pink decoration-wavy">categorías</span>'
+    subtitle="Hemos organizado nuestros hallazgos para que encuentres la idea de regalo perfecta."
+  />
+
+  <section class="mx-auto max-w-6xl px-4 pb-12">
+    <h2 class="mb-6 text-xl font-bold">Un universo para cada gusto</h2>
+    <div class="grid gap-4 md:grid-cols-2">
+      {catalog.collections.map((col, i) => (
+        <CategoryCard collection={col} index={i} />
+      ))}
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 pb-16">
+    <div class="flex flex-col items-start justify-between gap-4 rounded-3xl bg-white p-8 shadow-sm md:flex-row md:items-center">
+      <div>
+        <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">¿No sabes qué elegir?</p>
+        <h2 class="mt-2 text-2xl font-bold">Empieza por nuestros favoritos</h2>
+        <p class="mt-2 max-w-md text-gray-600">Los más virales y mejor valorados de la comunidad kawaii.</p>
+      </div>
+      <a
+        href="/coleccion/lo-mas-viral"
+        class="rounded-full bg-rk-pink px-6 py-3 font-semibold text-white hover:bg-rk-pink-dark"
+      >
+        Ver lo más viral →
+      </a>
+    </div>
+  </section>
+</SiteLayout>

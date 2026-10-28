@@ -1,0 +1,47 @@
+---
+import type { CatalogCollection } from '../lib/emdash/types';
+import { collectionAbbrev } from '../lib/emdash/helpers';
+
+interface Props {
+  collection: CatalogCollection;
+  index: number;
+}
+
+const { collection, index } = Astro.props;
+const abbrev = collectionAbbrev(collection.title);
+const pastels = [
+  'bg-pink-100',
+  'bg-emerald-100',
+  'bg-violet-100',
+  'bg-amber-100',
+  'bg-sky-100',
+  'bg-orange-100',
+];
+const bg = pastels[index % pastels.length];
+const count = collection.productIds.length;
+---
+
+<a
+  href={`/coleccion/${collection.slug}`}
+  class:list={[
+    'flex items-center gap-4 rounded-3xl p-5 transition hover:shadow-md md:p-6',
+    bg,
+  ]}
+>
+  <span
+    class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-sm font-bold text-rk-footer shadow-sm"
+  >
+    {abbrev}
+  </span>
+  <div class="min-w-0 flex-1">
+    <h2 class="text-lg font-bold text-rk-footer">{collection.title}</h2>
+    <p class="mt-1 line-clamp-2 text-sm text-gray-600">{collection.descripcion}</p>
+    <p class="mt-2 text-xs font-medium text-gray-500">{count} ideas seleccionadas</p>
+  </div>
+  <span
+    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-rk-pink shadow-sm"
+    aria-hidden="true"
+  >
+    →
+  </span>
+</a>
