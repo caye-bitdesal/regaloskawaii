@@ -1,0 +1,99 @@
+---
+import type { CatalogProduct } from '../lib/emdash/types';
+import { formatPriceEur } from '../lib/emdash/helpers';
+import ExternalShopLink from './ExternalShopLink.astro';
+
+interface Props {
+  product: CatalogProduct;
+  variant?: 'default' | 'deal';
+  showDealBadge?: boolean;
+}
+
+const { product, variant = 'default', showDealBadge = false } = Astro.props;
+
+const label = product.coleccionTitles[0]?.toUpperCase() ?? 'KAWAII';
+const price = formatPriceEur(product.precioRef);
+const badge =
+  product.coleccionSlugs.includes('lo-mas-viral')
+    ? 'VIRAL'
+    : product.destacado
+      ? 'FAVORITO'
+      : undefined;
+---
+
+<article
+  class="product-card group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md"
+  data-product-slug={product.slug}
+  data-colecciones={product.coleccionSlugs.join(',')}
+  data-title={product.title}
+>
+  <a href={`/producto/${product.slug}`} class="relative block aspect-square overflow-hidden bg-gray-100">
+    {
+      product.imagenUrl ? (
+        <img
+          src={product.imagenUrl}
+          alt={product.imagenAlt ?? product.title}
+          class="h-full w-full object-cover transition group-hover:scale-105"
+          loading="lazy"
+          width="400"
+          height="400"
+        />
+      ) : (
+        <div class="flex h-full items-center justify-center text-gray-400">Sin imagen</div>
+      )
+    }
+    {
+      badge && (
+        <span class="absolute top-3 left-3 rounded-md bg-rk-yellow-accent px-2 py-0.5 text-xs font-bold text-rk-footer">
+          {badge}
+        </span>
+      )
+    }
+    {
+      showDealBadge && variant === 'deal' && (
+        <span class="absolute top-3 left-3 rounded-md bg-rk-pink px-2 py-0.5 text-xs font-bold text-white">
+          OFERTA
+        </span>
+      )
+    }
+    <button
+      type="button"
+      class="favorite-btn absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-400 shadow transition hover:text-rk-pink"
+      data-favorite-slug={product.slug}
+      aria-label="Añadir a favoritos"
+    >
+      ♡
+    </button>
+  </a>
+  <div class="flex flex-1 flex-col p-4">
+    <p class="text-xs font-semibold tracking-wide text-rk-pink uppercase">{label}</p>
+    <h3 class="mt-1 line-clamp-2 text-base font-bold">
+      <a href={`/producto/${product.slug}`} class="hover:text-rk-pink">{product.title}</a>
+    </h3>
+    {
+      price && (
+        <p class="mt-2 text-lg font-bold text-rk-pink">
+          {variant === 'deal' && showDealBadge ? (
+            <>
+              <span class="mr-2 text-sm font-normal text-gray-400 line-through">{price}</span>
+              {price}
+            </>
+          ) : (
+            price
+          )}
+        </p>
+      )
+    }
+    <div class="mt-auto pt-3">
+      <ExternalShopLink
+        href={product.affiliateUrl}
+        label={`Ver en ${product.tiendaTitle.replace(' España', '')}`}
+      />
+    </div>
+  </div>
+</article>
+
+<script>
+  import { initFavoriteButtons } from '../scripts/favorites.client';
+  initFavoriteButtons();
+</script>
