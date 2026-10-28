@@ -1,0 +1,37 @@
+---
+interface Chip {
+  id: string;
+  label: string;
+}
+
+interface Props {
+  chips: Chip[];
+  gridId?: string;
+}
+
+const { chips, gridId = 'product-grid' } = Astro.props;
+---
+
+<div class="flex flex-wrap gap-2" id="filter-chips" data-grid-id={gridId}>
+  {
+    chips.map((chip, i) => (
+      <button
+        type="button"
+        data-filter={chip.id}
+        class:list={[
+          'rounded-full px-4 py-2 text-sm font-medium transition',
+          i === 0
+            ? 'bg-rk-pink text-white'
+            : 'bg-white text-gray-700 ring-1 ring-gray-200 hover:ring-rk-pink',
+        ]}
+      >
+        {chip.label}
+      </button>
+    ))
+  }
+</div>
+
+<script>
+  import { initFilterChips } from '../scripts/filter-chips.client';
+  initFilterChips();
+</script>

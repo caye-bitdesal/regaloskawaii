@@ -1,9 +1,49 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import FilterChips from '../components/FilterChips.astro';
+import ProductGrid from '../components/ProductGrid.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getCatalog } from '../lib/catalog';
+
+const catalog = await getCatalog();
+const chips = [
+  { id: 'all', label: 'Todos' },
+  ...catalog.collections.map((c) => ({ id: c.slug, label: c.title })),
+];
 ---
 
-<SiteLayout pathname="/">
-  <div class="mx-auto max-w-6xl px-4 py-16">
-    <p class="text-center text-lg text-gray-600">Regalos Kawaii — catálogo en construcción.</p>
-  </div>
+<SiteLayout
+  pathname="/"
+  title="Regalos Kawaii — Tu rincón más kawaii"
+  description="Encuentra regalos y detalles kawaii con enlaces directos a tiendas externas."
+>
+  <PageHero
+    theme="light"
+    title='Tu rincón más <span class="text-rk-pink">kawaii</span>'
+    subtitle="Descubre objetos bonitos que te harán sonreír. Curamos hallazgos para que no tengas que perderte entre miles de opciones."
+    ctaHref="#catalogo"
+    ctaLabel="Ver descubrimientos →"
+  >
+    <div slot="media" class="flex justify-center">
+      <div class="rotate-2 rounded-lg bg-white p-3 shadow-lg">
+        <div class="flex h-48 w-48 items-center justify-center rounded bg-pink-100 text-4xl">🧸</div>
+        <p class="mt-2 text-center text-xs font-medium text-gray-500">100% achuchable</p>
+      </div>
+    </div>
+  </PageHero>
+
+  <section id="catalogo" class="mx-auto max-w-6xl px-4 pb-16">
+    <h2 class="text-2xl font-bold">Encuentra tu próximo favorito</h2>
+    <div class="mt-6">
+      <FilterChips chips={chips} />
+    </div>
+    <div class="mt-8">
+      <ProductGrid>
+        {catalog.products.map((p) => (
+          <ProductCard product={p} />
+        ))}
+      </ProductGrid>
+    </div>
+  </section>
 </SiteLayout>

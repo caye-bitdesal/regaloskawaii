@@ -1,0 +1,67 @@
+---
+interface Props {
+  theme?: 'light' | 'dark' | 'mint' | 'yellow' | 'pink';
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+}
+
+const { theme = 'light', eyebrow, title, subtitle, ctaHref, ctaLabel } = Astro.props;
+
+const themes: Record<string, string> = {
+  light: 'bg-white',
+  dark: 'bg-rk-footer text-white',
+  mint: 'bg-rk-mint',
+  yellow: 'bg-rk-yellow',
+  pink: 'bg-gradient-to-br from-pink-50 to-white',
+};
+---
+
+<section class:list={['px-4 py-12 md:py-16', themes[theme]]}>
+  <div class="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 md:items-center">
+    <div>
+      {eyebrow && (
+        <p
+          class:list={[
+            'mb-2 text-xs font-semibold tracking-wide uppercase',
+            theme === 'dark' ? 'text-rk-pink' : 'text-rk-pink',
+          ]}
+        >
+          {eyebrow}
+        </p>
+      )}
+      <h1
+        class:list={[
+          'text-3xl leading-tight font-bold md:text-4xl',
+          theme === 'dark' ? 'text-white' : 'text-rk-footer',
+        ]}
+        set:html={title}
+      />
+      {subtitle && (
+        <p
+          class:list={[
+            'mt-4 max-w-lg text-base leading-relaxed',
+            theme === 'dark' ? 'text-white/75' : 'text-gray-600',
+          ]}
+        >
+          {subtitle}
+        </p>
+      )}
+      {
+        ctaHref && ctaLabel && (
+          <a
+            href={ctaHref}
+            class="mt-6 inline-flex rounded-full bg-rk-pink px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-rk-pink-dark"
+          >
+            {ctaLabel}
+          </a>
+        )
+      }
+    </div>
+    <div class="hidden md:block">
+      <slot name="media" />
+    </div>
+  </div>
+</section>
