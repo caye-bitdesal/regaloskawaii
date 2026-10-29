@@ -2,6 +2,7 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProductDetailPanel from '../../components/ProductDetailPanel.astro';
 import RelatedProducts from '../../components/RelatedProducts.astro';
+import RkIcon from '../../components/RkIcon.astro';
 import { getCatalog } from '../../lib/catalog';
 
 export async function getStaticPaths() {
@@ -26,33 +27,22 @@ const seoTitle = product.seo?.title ?? product.title;
 const seoDesc = product.seo?.description ?? product.resumen;
 ---
 
-<SiteLayout
-  headerVariant="minimal"
-  title={seoTitle}
-  description={seoDesc ?? product.resumen}
->
-  <article class="mx-auto max-w-6xl px-4 py-10">
-    <div class="grid gap-10 lg:grid-cols-2">
-      <div>
-        {
-          product.imagenUrl ? (
-            <img
-              src={product.imagenUrl}
-              alt={product.imagenAlt ?? product.title}
-              class="w-full rounded-3xl object-cover shadow-md"
-              width="800"
-              height="800"
-            />
-          ) : (
-            <div class="flex aspect-square items-center justify-center rounded-3xl bg-gray-100">Sin imagen</div>
-          )
-        }
-        <span class="mt-3 inline-block rounded-full bg-white px-3 py-1 text-xs shadow-sm">
-          Selección kawaii
-        </span>
-      </div>
-      <ProductDetailPanel product={product} />
+<SiteLayout headerVariant="minimal" title={seoTitle} description={seoDesc ?? product.resumen}>
+  <section class="detail shell">
+    <a class="back mobile-back" href="/">
+      <RkIcon name="back" /> Volver
+    </a>
+    <div class="detail-image">
+      {
+        product.imagenUrl ? (
+          <img src={product.imagenUrl} alt={product.imagenAlt ?? product.title} width="800" height="570" />
+        ) : (
+          <span class="meta" style="display:grid;place-items:center;height:100%;">Sin imagen</span>
+        )
+      }
+      <span class="detail-sticker">Selección kawaii</span>
     </div>
-    <RelatedProducts products={related} />
-  </article>
+    <ProductDetailPanel product={product} />
+  </section>
+  <RelatedProducts products={related} />
 </SiteLayout>

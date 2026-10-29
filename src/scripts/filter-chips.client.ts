@@ -15,13 +15,7 @@ export function initFilterChips(): void {
 
   const setActive = (active: HTMLButtonElement) => {
     buttons.forEach((btn) => {
-      const on = btn === active;
-      btn.classList.toggle('bg-rk-pink', on);
-      btn.classList.toggle('text-white', on);
-      btn.classList.toggle('bg-white', !on);
-      btn.classList.toggle('text-gray-700', !on);
-      btn.classList.toggle('ring-1', !on);
-      btn.classList.toggle('ring-gray-200', !on);
+      btn.classList.toggle('active', btn === active);
     });
   };
 

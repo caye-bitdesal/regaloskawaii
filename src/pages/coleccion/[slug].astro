@@ -1,6 +1,5 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import PageHero from '../../components/PageHero.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import { getCatalog } from '../../lib/catalog';
@@ -26,20 +25,34 @@ const products = catalog.products.filter((p) => p.coleccionSlugs.includes(collec
   title={collection.title}
   description={collection.descripcion}
 >
-  <PageHero theme="light" title={collection.title} subtitle={collection.descripcion} />
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow">{collection.title}</span>
+      <h1 set:html={collection.title.includes(' ') ? collection.title : `<em>${collection.title}</em>`} />
+      {collection.descripcion && <p>{collection.descripcion}</p>}
+    </div>
+  </section>
 
-  <section class="mx-auto max-w-6xl px-4 pb-16">
-    <p class="mb-6 text-sm text-gray-500">
-      {products.length} {products.length === 1 ? 'producto' : 'productos'} en esta colección
-    </p>
-    <ProductGrid>
-        {products.map((p) => (
-          <ProductCard product={p} />
-        ))}
-    </ProductGrid>
+  <section class="catalog shell">
+    <div class="section-heading">
+      <div>
+        <h2>Productos en esta colección</h2>
+      </div>
+      <p>
+        {products.length} {products.length === 1 ? 'producto' : 'productos'}
+      </p>
+    </div>
     {
-      products.length === 0 && (
-        <p class="py-12 text-center text-gray-500">Aún no hay productos en esta colección.</p>
+      products.length > 0 ? (
+        <ProductGrid>
+          {products.map((p) => (
+            <ProductCard product={p} />
+          ))}
+        </ProductGrid>
+      ) : (
+        <div class="empty">
+          <p>Aún no hay productos en esta colección.</p>
+        </div>
       )
     }
   </section>

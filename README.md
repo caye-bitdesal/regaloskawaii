@@ -1,26 +1,41 @@
 # Regalos Kawaii
 
-Catálogo web estático (Astro) con enlaces de afiliado a tiendas externas.
+Catálogo estático (Astro) con datos de EmDash e imágenes locales.
 
-## Desarrollo
+## Uso local
 
 ```bash
-cp .env.example .env
+cp .env.example .env   # EMDASH_URL + EMDASH_TOKEN del admin
 npm install
-npm run dev
+npm run dev            # http://localhost:4322
 ```
 
-## Build
+**Qué hace `npm run dev`:**
+
+1. Si hay `EMDASH_TOKEN` y aún no hay caché → descarga contenido + imágenes (una vez).
+2. Si ya existe `.cache/content/` → usa eso (sin llamadas JSON a la API).
+3. Las fotos se sirven desde `/media/...` en `public/media/`.
+4. Sin token → datos de ejemplo en `fixtures/emdash/`.
+
+Admin EmDash en **4321**, web en **4322** (cambiable con `PORT` en `.env`).
+
+Refrescar datos desde EmDash (el **admin tiene que estar en marcha**, p. ej. en el 4321):
 
 ```bash
-npm run build
+REFRESH_CONTENT=1 npm run dev
+# o
+npm run sync-content
+```
+
+Si pides refresh con el admin parado pero ya tienes `.cache/content/`, `npm run dev` arranca igual usando la caché.
+
+## Producción
+
+```bash
+npm run build    # usa la caché; sync automático si hay token y no hay caché
 npm run preview
 ```
 
-Variables de entorno (solo en build; ver `.env.example`):
+Sube la carpeta `dist/` a cualquier hosting estático. No hace falta systemd ni cron en el servidor: sincroniza en tu PC o CI antes de desplegar.
 
-- `EMDASH_URL` — URL del admin EmDash
-- `EMDASH_TOKEN` — token de lectura (`content:read`, `media:read`)
-- `EMDASH_USE_FIXTURES=1` — usa `fixtures/emdash/` si no hay token
-
-Spec de implementación: `specs/regaloskawaii-web/spec.html`.
+Spec: `specs/regaloskawaii-web/spec.html`.

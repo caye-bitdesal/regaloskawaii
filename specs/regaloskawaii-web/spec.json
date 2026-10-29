@@ -3,8 +3,8 @@
   "feature_slug": "regaloskawaii-web",
   "parent_package": "regaloskawaii (repo root, Astro)",
   "scaffold": "SiteLayout",
-  "summary": "Sitio estático **Astro** en la raíz del repo: catálogo kawaii con enlaces de afiliado a tiendas externas, hub de categorías (colecciones EmDash), página de chollos, sobre nosotros, fichas de producto y búsqueda en cliente sobre todo el catálogo.",
-  "overview": "Regalos Kawaii es un **curador**, no una tienda. Los datos vienen de **EmDash** (`regaloskawaii-admin`) solo en **build time** (`EMDASH_URL`, `EMDASH_TOKEN`). El HTML estático no expone el token.\n\nReferencias de contrato: `regaloskawaii-admin/docs/api/API-completa-para-IA.md` y muestras JSON en `docs/api/samples/`.\n\n**Rutas de marketing (mockups):**\n- `/` — Home / catálogo con hero, chips de colección y grid de productos.\n- `/categorias` — Hub de colecciones (grid de tarjetas).\n- `/chollos` — Listado promocional (mismo `ProductCard` con variante descuento cuando haya datos).\n- `/sobre-nosotros` — Storytelling + bloque «Cómo funciona».\n- `/producto/[slug]` — Detalle; header minimal «← Volver al catálogo».\n\n**Rutas de contenido (API):**\n- `/coleccion/[slug]` — Productos de una colección (enlace desde tarjetas de categoría y chips).\n- `/[slug]` — Páginas CMS (p. ej. `aviso-afiliados`, obligatoria en el pie).\n\n**Nav del mockup** (Catálogo · Categorías · Chollos · Sobre nosotros): labels fijos en diseño; resaltar ítem activo (pill amarilla en Chollos). La API expone `GET /_emdash/api/menus/primary` pero el seed actual no coincide con el mockup — no sustituir el nav visual por el menú CMS hasta que editorial lo alinee.\n\n**Stack:** Astro `output: \"static\"`, CSS (Tailwind recomendado para radios/pastels del mockup), islas ligeras para búsqueda, filtros y favoritos.\n\n**Imágenes:** `${EMDASH_URL}/_emdash/api/media/file/${storageKey}` (público, sin token).\n\n**No publicar:** `notas`, `para_grabar`. Booleanos `0`/`1` → `Boolean()`. Precios como **orientativos** (`precio_ref`). Enlaces `rel=\"sponsored nofollow noopener\"` `target=\"_blank\"`.",
+  "summary": "Sitio estático **Astro 7** en la raíz del repo: catálogo kawaii con enlaces de afiliado, hub de categorías, chollos, sobre nosotros, fichas de producto y búsqueda en cliente. Contenido e imágenes se **sincronizan desde EmDash** a caché local; la web en dev/build **no llama a la API** salvo durante `sync-content` / refresh.",
+  "overview": "Regalos Kawaii es un **curador**, no una tienda.\n\n**Datos e imágenes**\n- Origen: **EmDash** (`regaloskawaii-admin`, p. ej. `http://localhost:4321`) con `EMDASH_URL` + `EMDASH_TOKEN` (solo máquina de desarrollo / CI, nunca en el navegador).\n- Tras sync: JSON en `.cache/content/snapshot.json` e imágenes en `public/media/` (rutas `/media/{basename}`). Ambos están en `.gitignore`.\n- `src/lib/emdash/client.ts` lee **fixtures** (`fixtures/emdash/`) sin token, **caché** (`EMDASH_CONTENT_CACHE=1` o snapshot existente) o **API** (`EMDASH_FORCE_API=1` durante sync).\n- Scripts: `npm run dev` → `scripts/dev.ts`; `npm run build` → `scripts/build.ts`; `npm run sync-content` → `scripts/sync-content.ts`.\n- `REFRESH_CONTENT=1`: fuerza sync en dev/build. Si el admin no está en marcha y ya hay caché, **dev sigue** con mensaje claro; sin caché, error explicativo.\n\n**Referencia visual**\n- Mockups en `specs/regaloskawaii-web/images/`.\n- CSS y markup alineados al prototipo (clases `.shell`, `.hero`, `.product-card`, etc.) en `src/styles/global.css` (DM Sans + Fredoka, colores `#ef5d8a`, footer `#332735`).\n- Componentes de marca: `BrandMark.astro`, `RkIcon.astro`.\n\n**Rutas de marketing**\n- `/` — Hero + catálogo con chips y grid.\n- `/categorias` — Hub de colecciones (`CategoryCard` con copy «ideítas»).\n- `/chollos` — Hero amarillo + `deal-notice` + grid variante deal.\n- `/sobre-nosotros` — Intro oscura + bloque about + HowItWorks.\n- `/producto/[slug]` — Detalle; header minimal con logo + volver.\n\n**Rutas de contenido**\n- `/coleccion/[slug]` — Listado por colección (sin chips de otras colecciones).\n- `/[slug]` — Páginas CMS (`aviso-afiliados` en footer).\n\n**Nav (mockup)**\n- Catálogo · Categorías · **Chollos** (enlace con clase `.deal-nav`, pill amarilla permanente; padding vertical 0) · Sobre nosotros.\n- No sustituir por `GET /_emdash/api/menus/primary` hasta alinear CMS.\n\n**Stack:** Astro `output: \"static\"`, Tailwind 4 (`@tailwindcss/vite`) + **hoja global del prototipo**, scripts cliente en `src/scripts/*.client.ts` (sin islas Astro separadas en v1).\n\n**Dev:** puerto por defecto **4322** (`PORT`); admin suele usar **4321**. Plugin Vite `scripts/vite-synced-media-plugin.ts` sirve `/media/*` desde disco si Vite indexó `public/` antes de un sync. `astro dev --force` evita servidores zombie.\n\n**Producción:** `dist/` estático; sincronizar en CI o local antes de `npm run build`. No systemd en el flujo documentado.\n\nContrato API: `regaloskawaii-admin/docs/api/API-completa-para-IA.md`.",
   "images": [
     { "kind": "mockup", "caption": "Home / catálogo", "path": "images/mockup-home.png" },
     { "kind": "mockup", "caption": "Categorías (hub)", "path": "images/mockup-categorias.png" },
@@ -17,177 +17,177 @@
       "name": "SiteLayout",
       "location": "src/layouts/SiteLayout.astro",
       "decision": "create",
-      "usage": "Shell global: slot main + footer; elige header completo o minimal.",
-      "notes": "Prop `headerVariant`: `full` | `minimal`. Footer siempre."
+      "usage": "Shell: header (full o minimal), `<main>`, footer. Importa `global.css`.",
+      "notes": "Props: `headerVariant`, `pathname`, `hideSearch` (oculta búsqueda en categorías/chollos/about)."
     },
     {
       "name": "SiteHeader",
       "location": "src/components/SiteHeader.astro",
       "decision": "create",
-      "usage": "Logo, nav mockup, campo búsqueda (todas las páginas con variant full).",
-      "notes": "Sticky top. Nav links: /, /categorias, /chollos, /sobre-nosotros. Active state por pathname."
+      "usage": "`.nav.shell`: BrandMark, nav, label `.search` + `site-search.client.ts`.",
+      "notes": "Sticky (CSS). Chollos siempre `.deal-nav`. Active state en otros ítems vía pathname."
     },
     {
       "name": "ProductDetailHeader",
       "location": "src/components/ProductDetailHeader.astro",
       "decision": "create",
-      "usage": "Solo detalle producto: enlace «← Volver al catálogo» a /.",
-      "notes": "Sin nav ni búsqueda (mockup)."
+      "usage": "Logo + enlace `.back` «Volver al catálogo».",
+      "notes": "Sin nav ni búsqueda."
     },
     {
       "name": "SiteFooter",
       "location": "src/components/SiteFooter.astro",
       "decision": "create",
-      "usage": "Pie oscuro: logo, tagline, disclaimer, enlace a /aviso-afiliados.",
-      "notes": "Textos legales cortos en layout; contenido largo desde CMS page."
+      "usage": "`.footer-inner`: brand light, taglines, enlace `/aviso-afiliados`.",
+      "notes": "Fondo oscuro del prototipo."
     },
     {
-      "name": "PageHero",
-      "location": "src/components/PageHero.astro",
+      "name": "BrandMark",
+      "location": "src/components/BrandMark.astro",
       "decision": "create",
-      "usage": "Hero configurable por página (home, categorías, chollos, about).",
-      "notes": "Props: eyebrow, title HTML, subtitle, cta, media, theme (light/dark/mint/yellow)."
+      "usage": "SVG nube kawaii (`.brand-mark`).",
+      "notes": "Header, footer, detalle."
+    },
+    {
+      "name": "RkIcon",
+      "location": "src/components/RkIcon.astro",
+      "decision": "create",
+      "usage": "Iconos SVG inline (search, arrow, heart, sparkle, back, external).",
+      "notes": "Sustituye iconos del prototipo React."
     },
     {
       "name": "CategoryCard",
       "location": "src/components/CategoryCard.astro",
       "decision": "create",
-      "usage": "Tarjeta grande en /categorias; enlace a /coleccion/{slug}.",
-      "notes": "Muestra título, descripción corta, conteo productos (desde mapa build), abreviatura decorativa opcional."
+      "usage": "`.category-tile.tone-N` en `/categorias`.",
+      "notes": "Contador con copy editorial: 0/1/plural con emojis e «ideítas» (4 variantes rotando por índice). Abreviatura en `.category-mark`."
     },
     {
       "name": "ProductCard",
       "location": "src/components/ProductCard.astro",
       "decision": "create",
-      "usage": "Grid en home, colección, chollos, related.",
-      "notes": "Variantes: default | deal. Badge desde colección destacada o flags CMS futuros."
+      "usage": "`.product-card`: imagen, badge, favorito, precio, `.shop-link` afiliado.",
+      "notes": "Variante `deal`: badge `-X%` decorativo y precio tachado orientativo. Favoritos: `.favorite-btn` + `favorites.client.ts`. Enlace tienda en card (no componente ExternalShopLink separado en grid)."
     },
     {
       "name": "FilterChips",
-      "location": "src/components/FilterChips.client.ts",
+      "location": "src/components/FilterChips.astro",
       "decision": "create",
-      "usage": "Fila de chips en home y páginas de listado.",
-      "notes": "Isla cliente; filtra grid sin recargar."
+      "usage": "`.category-row` con botones `.category` / `.active`.",
+      "notes": "Lógica en `src/scripts/filter-chips.client.ts`."
     },
     {
       "name": "ProductGrid",
       "location": "src/components/ProductGrid.astro",
       "decision": "create",
-      "usage": "Contenedor responsive 1→2→4 columnas + slot/lista de ProductCard.",
-      "notes": "Id DOM para filtro cliente."
-    },
-    {
-      "name": "FavoriteButton",
-      "location": "src/components/FavoriteButton.client.ts",
-      "decision": "create",
-      "usage": "Corazón en ProductCard; persiste en localStorage.",
-      "notes": "Key `regaloskawaii:favorites` (array de slugs)."
-    },
-    {
-      "name": "SiteSearch",
-      "location": "src/components/SiteSearch.client.ts",
-      "decision": "create",
-      "usage": "Input header; busca en catálogo completo inyectado.",
-      "notes": "Normaliza acentos; match title, resumen, colecciones, personaje/marca si están en payload."
-    },
-    {
-      "name": "ExternalShopLink",
-      "location": "src/components/ExternalShopLink.astro",
-      "decision": "create",
-      "usage": "CTA «Ver en {tienda}» / «Visitar producto en …».",
-      "notes": "URL desde plantilla_url + id_externo + tag_web."
-    },
-    {
-      "name": "LegalNoticeBar",
-      "location": "src/components/LegalNoticeBar.astro",
-      "decision": "create",
-      "usage": "Banner amarillo bajo hero en /chollos.",
-      "notes": "Copy fijo orientativo + enlace afiliados."
+      "usage": "Contenedor `.product-grid` (opcional clase `three` en related).",
+      "notes": "`id` para filtro cliente."
     },
     {
       "name": "HowItWorksSection",
       "location": "src/components/HowItWorksSection.astro",
       "decision": "create",
-      "usage": "Tres pasos 01–03 en /sobre-nosotros.",
-      "notes": "Contenido estático alineado al mockup."
+      "usage": "`.how-it-works` + `.steps` en sobre nosotros.",
+      "notes": "Copy estático del mockup."
     },
     {
       "name": "ProductDetailPanel",
       "location": "src/components/ProductDetailPanel.astro",
       "decision": "create",
-      "usage": "Columna info en detalle: etiqueta colección, título, precio orientativo, bullets, CTA.",
-      "notes": "Render Portable Text en descripcion."
+      "usage": "`.detail-copy`: precio, bullets, CTA `.primary.wide`, aviso afiliado.",
+      "notes": "Portable Text en descripción si hay bloques CMS."
     },
     {
       "name": "RelatedProducts",
       "location": "src/components/RelatedProducts.astro",
       "decision": "create",
-      "usage": "«Más cositas bonitas» — otros productos de la misma colección principal.",
-      "notes": "Excluir producto actual; máx 3–4."
+      "usage": "Sección `.related.shell`, grid de 3 cards.",
+      "notes": "Misma colección principal; excluir producto actual."
     },
     {
       "name": "PortableText",
       "location": "src/components/PortableText.astro",
       "decision": "create",
-      "usage": "Bloques CMS en detalle producto y páginas.",
-      "notes": "astro-portabletext o @portabletext/to-html."
+      "usage": "Bloques CMS en detalle y páginas.",
+      "notes": "Render mínimo de bloques soportados."
+    },
+    {
+      "name": "PageHero",
+      "location": "src/components/PageHero.astro",
+      "decision": "modify",
+      "usage": "Legacy Tailwind; **no usado** en páginas principales tras alineación al prototipo.",
+      "notes": "Heroes implementados con markup directo (`.hero`, `.page-intro`, `.deals-hero`)."
+    },
+    {
+      "name": "LegalNoticeBar",
+      "location": "src/components/LegalNoticeBar.astro",
+      "decision": "modify",
+      "usage": "Legacy; chollos usa `.deal-notice` inline.",
+      "notes": "Opcional reutilizar; spec visual = deal-notice del CSS global."
+    },
+    {
+      "name": "ExternalShopLink",
+      "location": "src/components/ExternalShopLink.astro",
+      "decision": "modify",
+      "usage": "Legacy; CTA detalle integrado en ProductDetailPanel; cards usan `.shop-link`.",
+      "notes": "Mantener si se necesita variante botón reutilizable."
     }
   ],
-  "structure": "## Layout global\n\n```\nSiteLayout\n├── SiteHeader (sticky, variant=full)     ← todas excepto detalle producto\n├── ProductDetailHeader (variant=minimal) ← solo /producto/[slug]\n├── <main> … contenido página …\n└── SiteFooter\n```\n\nScroll: **una sola columna** por página (main scrollable; header sticky).\n\n## Datos en build (`src/lib/emdash/`)\n\n1. Paginar `productos?status=published&limit=100`.\n2. `colecciones?status=published` → ordenar por `data.orden` ascendente.\n3. `tiendas?status=published` → mapa id → tienda activa.\n4. Por cada colección: `colecciones/{id}/references/productos_colecciones/parents` → mapa colección → product ids.\n5. Enriquecer cada producto del **listado** con: slugs de colecciones, tienda (si una sola tienda global, asignar Amazon ES a todos; si varias, `productos/{id}/references/productos_tienda/children` por producto).\n6. Opcional v1: personajes/marcas vía `…/terms/personaje|marca` solo en detalle o en build completo si búsqueda lo requiere.\n7. `pages?status=published` para rutas legales.\n\nExportar tipos TS desde el contrato API. **No usar** endpoint detalle producto para generar paths (regla API: listado published es fuente de verdad).\n\n## Catálogo en cliente\n\nEn páginas con `SiteHeader`, incluir `<script type=\"application/json\" id=\"catalog-index\">` con array mínimo de todos los productos publicados (slug, title, resumen, coleccionSlugs[], precio_ref). `SiteSearch` lee esto y navega a `/producto/{slug}` o filtra in-page según UX acordada (v1: dropdown resultados → navegar a ficha).",
+  "structure": "## Layout global\n\n```\nSiteLayout\n├── SiteHeader (full) — salvo hideSearch en hub/chollos/about\n├── ProductDetailHeader (minimal) — /producto/[slug]\n├── <main> — secciones con .shell del prototipo\n└── SiteFooter\n```\n\n## Contenido y sync (`src/lib/content/`)\n\n1. `fetchContentSnapshot()` — API EmDash (productos, colecciones, tiendas, pages, refs).\n2. `writeSnapshot()` → `.cache/content/snapshot.json`.\n3. `runSyncContent()` — snapshot + `syncMediaFiles()` (vacía y rellena `public/media/`) + `buildCatalog()` con `WRITE_CATALOG_INDEX=1`.\n4. `buildCatalog()` — enriquece catálogo; escribe `public/catalog-index.json` solo en build/sync o si `WRITE_CATALOG_INDEX=1` (en dev Astro **no** reescribe el índice por defecto, evita bucles HMR).\n\n## Imágenes\n\n- URL pública: `/media/{basename(storageKey)}`.\n- `resolveProductImageUrl()`: usa fichero local si existe; en dev sin fichero puede apuntar a URL EmDash; build/prod prioriza local con caché.\n- Dev: plugin `syncedMediaDevPlugin` en `astro.config.mjs`.\n\n## Catálogo en cliente\n\n- Búsqueda: `GET /catalog-index.json` (generado en sync/build).\n- `site-search.client.ts`: normaliza acentos; dropdown bajo input; navega a `/producto/{slug}`.\n- Filtros home: chips por `coleccionSlugs` en `data-colecciones` de cada card.\n\n## Scripts npm\n\n| Comando | Comportamiento |\n|---------|----------------|\n| `npm run dev` | `.env`, sync si token y (sin caché o REFRESH), luego `astro dev --force` |\n| `npm run sync-content` | Solo sync; requiere admin + token |\n| `npm run build` | Sync condicional; `astro build` con caché/fixtures |\n| `npm run preview` | Sirve `dist/` |\n\n## Entorno (`src/lib/runtime/env.ts`)\n\nHelpers `isAstroDev()` / `isAstroProd()` / `env()` — uso en scripts **tsx** donde `import.meta.env` no está definido.",
   "sections": [
     {
-      "title": "SiteHeader + SiteSearch",
-      "description": "Barra blanca: logo K + «Regalos Kawaii», nav centrada/derecha, input redondeado «Buscar cositas…» con icono lupa.",
-      "behavior": "Sticky. Búsqueda en **todas** las páginas con header full. SiteSearch filtra sobre **todo** el catálogo cargado en JSON embebido, no solo productos visibles en el grid. Enter o click resultado → `/producto/[slug]`.",
-      "components": ["SiteHeader", "SiteSearch"]
+      "title": "SiteHeader + búsqueda",
+      "description": "Barra del prototipo: logo nube, nav, pill Chollos (`.deal-nav`), input `.search` «Buscar cositas...».",
+      "behavior": "Sticky. Búsqueda en páginas con header full y `hideSearch` false. Resultados sobre todo el índice JSON, no solo el grid visible.",
+      "components": ["SiteHeader", "BrandMark", "RkIcon"]
     },
     {
       "title": "Home `/`",
-      "description": "PageHero (polaroid + CTA «Ver descubrimientos»), sección «Encuentra tu próximo favorito», FilterChips (Todos + una chip por colección publicada), ProductGrid con todos los productos (orden: destacado desc, luego title).",
-      "behavior": "Chips filtran grid en cliente. Card → `/producto/{slug}`. FavoriteButton toggle localStorage. ExternalShopLink en card abre tienda externa.",
-      "components": ["PageHero", "FilterChips", "ProductGrid", "ProductCard", "FavoriteButton", "ExternalShopLink"]
+      "description": "`.hero.shell` (blob, imagen producto o fallback), `.catalog.shell` con section-heading, FilterChips, ProductGrid 4 cols.",
+      "behavior": "CTA ancla `#catalogo`. Chips `.category` filtran cards. Card → detalle; corazón → localStorage; shop-link → afiliado.",
+      "components": ["FilterChips", "ProductGrid", "ProductCard"]
     },
     {
       "title": "Categorías `/categorias`",
-      "description": "PageHero rosa «Explora por categorías», grid 2×3 CategoryCard (datos de colecciones API), bloque CTA «Empieza por nuestros favoritos» → `/coleccion/lo-mas-viral` o `/chollos`.",
-      "behavior": "CategoryCard href `/coleccion/{slug}`. Contador «X ideas seleccionadas» = número de productos en mapa colección.",
-      "components": ["PageHero", "CategoryCard"]
+      "description": "`.page-intro.categories-intro`, `.categories-section` con `.category-showcase`, `.category-help` CTA a lo-mas-viral.",
+      "behavior": "CategoryCard → `/coleccion/{slug}`. Subtítulo con copy ideítas (no «X ideas seleccionadas» genérico). Sin búsqueda en header.",
+      "components": ["CategoryCard", "BrandMark", "RkIcon"]
     },
     {
       "title": "Colección `/coleccion/[slug]`",
-      "description": "Misma plantilla de listado que home pero productos prefiltrados a la colección; hero opcional con título/descripcion de la colección.",
-      "behavior": "getStaticPaths desde colecciones publicadas. Chips opcionales para saltar a otras colecciones.",
-      "components": ["PageHero", "FilterChips", "ProductGrid", "ProductCard"]
+      "description": "Intro tipo categories + listado `.catalog.shell`.",
+      "behavior": "getStaticPaths desde colecciones. Sin FilterChips de otras colecciones.",
+      "components": ["ProductGrid", "ProductCard"]
     },
     {
       "title": "Chollos `/chollos`",
-      "description": "PageHero amarillo, badge decorativo «HASTA -40%…», LegalNoticeBar, ProductGrid en variante deal.",
-      "behavior": "**CMS hoy no tiene campo descuento/chollo.** v1: mostrar productos de colección slug `chollos` si existe; si no, fallback `destacado === 1`. Ocultar badge `-X%` y precio tachado hasta que el modelo de producto incluya `precio_anterior` o similar. Copy legal visible.",
-      "components": ["PageHero", "LegalNoticeBar", "ProductGrid", "ProductCard"]
+      "description": "`.deals-hero` + bubble −40%; `.deals-catalog` con `.deal-notice` y ProductCard `variant=deal`.",
+      "behavior": "Productos colección `chollos` o fallback `destacado`. Badge/precio tachado **decorativos** (sin campo CMS descuento). Sin búsqueda en header.",
+      "components": ["ProductGrid", "ProductCard"]
     },
     {
       "title": "Sobre nosotros `/sobre-nosotros`",
-      "description": "Hero oscuro con collage (assets estáticos en `public/`), texto valor, pills, CTA a /chollos, HowItWorksSection mint.",
-      "behavior": "Contenido estático en Astro (no hay page CMS en seed). CTA «Descubrir los chollos» → /chollos.",
-      "components": ["PageHero", "HowItWorksSection"]
+      "description": "`.about-intro`, `.about.shell` (collage imágenes catálogo), HowItWorksSection.",
+      "behavior": "Estático. CTA a /chollos. hideSearch.",
+      "components": ["HowItWorksSection", "BrandMark", "RkIcon"]
     },
     {
       "title": "Detalle `/producto/[slug]`",
-      "description": "ProductDetailHeader, layout 2 cols: imagen (+ galería si `galeria`), ProductDetailPanel, RelatedProducts.",
-      "behavior": "getStaticPaths desde listado productos. Primera colección → etiqueta rosa. Bullets fijos (diseño) + resumen/descripcion CMS. CTA ExternalShopLink primario. No mostrar notas. SEO desde producto.seo.",
-      "components": ["ProductDetailHeader", "ProductDetailPanel", "PortableText", "ExternalShopLink", "RelatedProducts", "ProductCard"]
+      "description": "`.detail.shell`: imagen + sticker; ProductDetailPanel; RelatedProducts.",
+      "behavior": "getStaticPaths desde productos. SEO en head. CTA afiliado externo.",
+      "components": ["ProductDetailHeader", "ProductDetailPanel", "PortableText", "RelatedProducts", "ProductCard"]
     },
     {
       "title": "Páginas CMS `/[slug]`",
-      "description": "Plantilla simple para pages (aviso-afiliados).",
-      "behavior": "getStaticPaths desde pages API. PortableText body. Enlazada desde footer.",
+      "description": "`.catalog.shell` + título + PortableText.",
+      "behavior": "Excluye rutas reservadas. aviso-afiliados enlazada desde footer.",
       "components": ["PortableText", "SiteLayout"]
     },
     {
       "title": "SiteFooter",
-      "description": "Fondo `#2D2430` aprox., logo, tagline, disclaimer derecha, link «Enlaces de afiliado».",
-      "behavior": "En todas las páginas.",
-      "components": ["SiteFooter"]
+      "description": "Pie oscuro prototipo + enlace afiliados.",
+      "behavior": "Todas las páginas.",
+      "components": ["SiteFooter", "BrandMark"]
     }
   ],
   "endpoints": [
@@ -195,198 +195,208 @@
       "name": "Listado productos",
       "method": "GET",
       "path": "/_emdash/api/content/productos?status=published&limit=100",
-      "notes": "Build; paginar con cursor. Fuente para paths y datos de ficha."
+      "notes": "Sync/build; paginar cursor. En runtime web → snapshot."
     },
     {
       "name": "Listado colecciones",
       "method": "GET",
       "path": "/_emdash/api/content/colecciones?status=published",
-      "notes": "Build; categorías, chips, /coleccion/[slug]."
+      "notes": "Sync; chips, categorías, colección."
     },
     {
       "name": "Productos de colección",
       "method": "GET",
       "path": "/_emdash/api/content/colecciones/{id}/references/productos_colecciones/parents",
-      "notes": "Build; una llamada por colección."
+      "notes": "Sync; mapa colección → productos."
     },
     {
       "name": "Listado tiendas",
       "method": "GET",
       "path": "/_emdash/api/content/tiendas?status=published",
-      "notes": "Build; plantillas de afiliado."
+      "notes": "Sync; afiliados."
     },
     {
       "name": "Tienda de producto",
       "method": "GET",
       "path": "/_emdash/api/content/productos/{id}/references/productos_tienda/children",
-      "notes": "Build si hay múltiples tiendas."
-    },
-    {
-      "name": "Colecciones de producto",
-      "method": "GET",
-      "path": "/_emdash/api/content/productos/{id}/references/productos_colecciones/children",
-      "notes": "Alternativa a mapa por colección; preferir mapa inverso eficiente."
-    },
-    {
-      "name": "Términos personaje/marca",
-      "method": "GET",
-      "path": "/_emdash/api/content/productos/{id}/terms/{personaje|marca}",
-      "notes": "Opcional build para búsqueda/filtros futuros."
+      "notes": "Sync si varias tiendas."
     },
     {
       "name": "Listado páginas",
       "method": "GET",
       "path": "/_emdash/api/content/pages?status=published",
-      "notes": "Build; aviso-afiliados obligatorio."
+      "notes": "Sync; aviso-afiliados."
+    },
+    {
+      "name": "Fichero media",
+      "method": "GET",
+      "path": "/_emdash/api/media/file/{storageKey}",
+      "notes": "Sync: descarga a public/media. Público, sin token."
     },
     {
       "name": "Menú principal",
       "method": "GET",
       "path": "/_emdash/api/menus/primary",
-      "notes": "Reservado; nav visual sigue mockup hasta alinear CMS."
-    },
-    {
-      "name": "Taxonomías / términos",
-      "method": "GET",
-      "path": "/_emdash/api/taxonomies, /_emdash/api/taxonomies/personaje/terms",
-      "notes": "Futuro: páginas por personaje."
+      "notes": "Reservado; nav visual fijo mockup."
     }
   ],
-  "persistence": "**Build time:** datos EmDash en memoria al generar HTML estático.\n\n**Runtime (navegador):**\n- Favoritos: `localStorage` key `regaloskawaii:favorites` (JSON array de slugs).\n- Búsqueda/filtros: estado en cliente; índice de catálogo embebido en cada página con header (o un bundle compartido `/catalog-index.json` generado en build).\n\nSin cookies ni backend propio en v1.",
+  "persistence": "**Disco (gitignored):**\n- `.cache/content/snapshot.json` — JSON completo post-sync.\n- `public/media/` — imágenes WebP/JPG.\n- `public/catalog-index.json` — índice búsqueda (commit opcional; regenerable).\n\n**Build / dev:** catálogo en memoria vía `getCatalog()`; en dev se invalida caché en memoria cada request.\n\n**Navegador:**\n- Favoritos: `localStorage` `regaloskawaii:favorites` (slugs).\n- Búsqueda/filtros: solo cliente.\n\nSin cookies ni backend propio.",
   "tasks": [
     {
       "id": "T1",
       "title": "Bootstrap Astro en repo root",
-      "spec": "Inicializar proyecto Astro con `output: 'static'`, TypeScript, Tailwind (opcional pero recomendado), estructura `src/pages`, `src/layouts`, `src/components`, `src/lib`. Variables de entorno documentadas: `EMDASH_URL`, `EMDASH_TOKEN`. Añadir `.env.example`. README con comando build.",
+      "spec": "Astro 7 static, TypeScript, Tailwind 4, `src/pages|layouts|components|lib`, `.env.example`, README.",
       "acceptance_criteria": [
-        "`npm run build` genera `dist/` sin errores",
-        "Página placeholder en `/` usando SiteLayout vacío"
+        "`npm run build` genera `dist/`",
+        "Scripts tsx: dev, build, sync-content"
       ],
       "dependencies": [],
       "components": ["SiteLayout"]
     },
     {
       "id": "T2",
-      "title": "Cliente EmDash y tipos",
-      "spec": "Implementar `src/lib/emdash/client.ts` (fetch autenticado, parse `{ success, data }`, paginación cursor) y `src/lib/emdash/types.ts` según API-completa-para-IA.md. Helpers: `mediaUrl(storageKey)`, `affiliateUrl(producto, tienda)`, `booleanFrom01`. Filtrar campos internos al mapear DTO público.",
+      "title": "Cliente EmDash, tipos y caché",
+      "spec": "`client.ts` API + fixtures + snapshot cache. Helpers media/affiliate. `env.ts` para scripts tsx.",
       "acceptance_criteria": [
-        "Tests manuales o script que liste productos contra local admin con token",
-        "Nunca loguear token"
+        "Sin token → fixtures",
+        "Con snapshot → sin fetch en getCatalog",
+        "Token nunca en cliente"
       ],
       "dependencies": ["T1"],
       "components": []
     },
     {
       "id": "T3",
-      "title": "Pipeline build: catálogo unificado",
-      "spec": "Crear `src/lib/catalog/buildCatalog.ts` que ejecute el flujo eficiente (productos + colecciones + tiendas + parents por colección) y devuelva `Catalog` tipado: productos enriquecidos, colecciones ordenadas, maps slug→ids. Escribir además `public/catalog-index.json` para búsqueda global.",
+      "title": "Catálogo unificado",
+      "spec": "`buildCatalog.ts`, tipo `Catalog`, `catalog-index.json` con reglas dev/write flag.",
       "acceptance_criteria": [
-        "Cada producto publicado tiene slug, coleccionSlugs[], tienda y affiliateUrl",
-        "Colección `menos-de-10` lista productos coherentes con sample 08"
+        "Productos con coleccionSlugs, affiliateUrl, imagen local o URL",
+        "Índice búsqueda tras sync/build"
       ],
       "dependencies": ["T2"],
       "components": []
     },
     {
       "id": "T4",
-      "title": "Design tokens y SiteLayout / footer",
-      "spec": "Tokens CSS/Tailwind: pink primary, pastels, footer dark, radius 16–24px, tipografía sans redondeada. Implementar SiteLayout + SiteFooter con enlace `/aviso-afiliados`. Tagline del mockup.",
+      "title": "CSS prototipo + layout",
+      "spec": "`global.css` del mockup (DM Sans, Fredoka, componentes). SiteLayout + SiteFooter + BrandMark.",
       "acceptance_criteria": [
-        "Footer visible en `/`",
-        "Link afiliados resuelve cuando exista page CMS"
+        "Home visualmente alineada a mockup-home.png",
+        "Footer con /aviso-afiliados"
       ],
       "dependencies": ["T1"],
-      "components": ["SiteLayout", "SiteFooter"]
+      "components": ["SiteLayout", "SiteFooter", "BrandMark"]
     },
     {
       "id": "T5",
-      "title": "SiteHeader sticky + nav mockup",
-      "spec": "SiteHeader con logo, links / /categorias /chollos /sobre-nosotros, estado activo (pill amarilla en Chollos cuando pathname `/chollos`). Prop sticky. Integrar en SiteLayout variant full.",
+      "title": "SiteHeader + nav",
+      "spec": "Nav mockup; `.deal-nav` en Chollos (padding vertical 0); sticky; pathname active.",
       "acceptance_criteria": [
-        "Nav coincide con mockup",
-        "Header permanece visible al scroll"
+        "Chollos muestra pill amarilla",
+        "Logo SVG nube"
       ],
       "dependencies": ["T4"],
-      "components": ["SiteHeader"]
+      "components": ["SiteHeader", "BrandMark", "RkIcon"]
     },
     {
       "id": "T6",
-      "title": "SiteSearch + índice global",
-      "spec": "SiteSearch.client.ts lee `catalog-index.json` o JSON embebido; búsqueda insensible a acentos en title/resumen; muestra lista de resultados; navega a producto. Presente en SiteHeader en todas las páginas con header full.",
+      "title": "Búsqueda global",
+      "spec": "`site-search.client.ts` + `/catalog-index.json`.",
       "acceptance_criteria": [
-        "Buscar «kuromi» encuentra producto aunque no esté en el grid visible",
-        "Funciona en /categorias y /chollos"
+        "≥2 caracteres, sin acentos",
+        "Navega a ficha producto"
       ],
       "dependencies": ["T3", "T5"],
-      "components": ["SiteSearch", "SiteHeader"]
+      "components": ["SiteHeader"]
     },
     {
       "id": "T7",
-      "title": "ProductCard, grid, favoritos, enlace tienda",
-      "spec": "ProductCard + ProductGrid responsive. FavoriteButton localStorage. ExternalShopLink con rel sponsored. Badges: usar primera colección como label; VIRAL/FAVORITO desde slug colección o destacado.",
+      "title": "ProductCard y grid",
+      "spec": "Markup prototipo; favoritos; badges Viral/Favorito; variante deal decorativa.",
       "acceptance_criteria": [
-        "Card clicable a detalle",
-        "Enlace externo abre tienda correcta",
-        "Favorito persiste tras reload"
+        "Grid 4→2→2 cols responsive",
+        "rel sponsored en shop-link"
       ],
       "dependencies": ["T3", "T4"],
-      "components": ["ProductCard", "ProductGrid", "FavoriteButton", "ExternalShopLink"]
+      "components": ["ProductCard", "ProductGrid"]
     },
     {
       "id": "T8",
-      "title": "Home `/`",
-      "spec": "PageHero home según mockup. FilterChips + grid todos los productos. Inyectar catalog index para búsqueda.",
+      "title": "Home",
+      "spec": "`.hero` + `.catalog`; FilterChips; contador productos en section-heading.",
       "acceptance_criteria": [
-        "Chips filtran grid",
-        "Layout visual alineado con mockup-home.png"
+        "Chips filtran",
+        "Imagen hero desde catálogo si existe"
       ],
       "dependencies": ["T6", "T7"],
-      "components": ["PageHero", "FilterChips", "ProductGrid", "ProductCard"]
+      "components": ["FilterChips", "ProductGrid", "ProductCard"]
     },
     {
       "id": "T9",
       "title": "Categorías y colección",
-      "spec": "Página `/categorias` con CategoryCard por colección. Dynamic route `/coleccion/[slug].astro` con getStaticPaths; listado filtrado + hero colección.",
+      "spec": "Hub + CategoryCard ideítas; `/coleccion/[slug]` sin chips cruzados.",
       "acceptance_criteria": [
-        "6 colecciones seed visibles en hub",
-        "/coleccion/lo-mas-viral muestra solo productos de esa colección"
+        "6 tonos category-tile",
+        "Copy 0/1/plural emojis en cards"
       ],
       "dependencies": ["T3", "T7"],
-      "components": ["CategoryCard", "PageHero", "ProductGrid"]
+      "components": ["CategoryCard", "ProductGrid"]
     },
     {
       "id": "T10",
       "title": "Chollos y sobre nosotros",
-      "spec": "/chollos con hero amarillo, LegalNoticeBar, grid variante deal (badges descuento solo si hay datos). /sobre-nosotros estático con HowItWorksSection y assets collage.",
+      "spec": "deals-hero, deal-notice, about + how-it-works.",
       "acceptance_criteria": [
-        "Aviso legal visible en chollos",
-        "Fallback lista no vacía con seed (destacados o colección chollos)"
+        "Fallback productos si no hay colección chollos",
+        "hideSearch en estas rutas"
       ],
       "dependencies": ["T7"],
-      "components": ["PageHero", "LegalNoticeBar", "HowItWorksSection"]
+      "components": ["HowItWorksSection", "ProductGrid", "ProductCard"]
     },
     {
       "id": "T11",
       "title": "Detalle producto",
-      "spec": "/producto/[slug].astro con ProductDetailHeader, imagen, ProductDetailPanel (Portable Text), RelatedProducts. getStaticPaths desde catalog.",
+      "spec": "ProductDetailHeader/Panel, related, portable text.",
       "acceptance_criteria": [
-        "Sin nav completa; solo volver",
-        "CTA afiliado correcto",
-        "Related excluye producto actual"
+        "Layout .detail dos columnas",
+        "Related máx 3"
       ],
       "dependencies": ["T3", "T7"],
-      "components": ["ProductDetailHeader", "ProductDetailPanel", "PortableText", "RelatedProducts"]
+      "components": ["ProductDetailHeader", "ProductDetailPanel", "RelatedProducts", "PortableText"]
     },
     {
       "id": "T12",
       "title": "Páginas CMS y SEO",
-      "spec": "Ruta `/[slug].astro` para pages (excluir colisiones con rutas fijas). Render PortableText. Meta tags por producto/colección/page desde seo + defaults en astro.config.",
+      "spec": "`/[slug].astro` reservados; meta por página/producto.",
       "acceptance_criteria": [
-        "/aviso-afiliados renderiza content CMS",
-        "Producto tiene title/description en `<head>`"
+        "/aviso-afiliados renderiza",
+        "title/description en head"
       ],
       "dependencies": ["T2", "T4"],
       "components": ["PortableText", "SiteLayout"]
+    },
+    {
+      "id": "T13",
+      "title": "Pipeline sync contenido e imágenes",
+      "spec": "`runSync.ts`, `sync-content.ts`, integración dev/build. `explain-emdash-sync-error.ts`. Fallback caché si REFRESH falla. Restaurar env si sync aborta.",
+      "acceptance_criteria": [
+        "sync-content rellena .cache y public/media",
+        "dev sin admin + caché arranca",
+        "Mensaje claro ECONNREFUSED 4321"
+      ],
+      "dependencies": ["T2", "T3"],
+      "components": []
+    },
+    {
+      "id": "T14",
+      "title": "Media local y dev server",
+      "spec": "`syncMedia.ts`, plugin `vite-synced-media-plugin.ts`, `astro dev --force`.",
+      "acceptance_criteria": [
+        "/media/* 200 en dev tras sync sin reinicio manual",
+        "preview/build copian media a dist"
+      ],
+      "dependencies": ["T13"],
+      "components": []
     }
   ]
 }

@@ -1,11 +1,8 @@
+import { env } from '../runtime/env';
 import type { EmDashBool, EmDashImage, ProductoData, TiendaData } from './types';
 
 export function booleanFrom01(value: EmDashBool | undefined): boolean {
   return value === 1;
-}
-
-function env(name: string): string | undefined {
-  return (typeof import.meta !== 'undefined' && import.meta.env?.[name]) || process.env[name];
 }
 
 export function getEmdashUrl(): string {

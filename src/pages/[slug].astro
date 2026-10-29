@@ -27,10 +27,10 @@ if (!page) throw new Error(`Página no encontrada: ${pageSlug}`);
 ---
 
 <SiteLayout pathname={`/${page.slug}`} title={page.title} description={page.title}>
-  <div class="mx-auto max-w-3xl px-4 py-12">
-    <h1 class="text-3xl font-bold">{page.title}</h1>
-    <div class="mt-8">
+  <section class="catalog shell">
+    <h1>{page.title}</h1>
+    <div class="about-copy" style="max-width:720px;margin-top:2rem;">
       <PortableText blocks={page.content} />
     </div>
-  </div>
+  </section>
 </SiteLayout>

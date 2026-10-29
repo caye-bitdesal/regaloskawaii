@@ -14,8 +14,8 @@ function setFavorites(slugs: string[]): void {
 }
 
 function updateButton(btn: HTMLButtonElement, active: boolean): void {
-  btn.textContent = active ? '♥' : '♡';
-  btn.classList.toggle('text-rk-pink', active);
+  const heart = btn.closest('.heart');
+  heart?.classList.toggle('is-favorite', active);
 }
 
 let initialized = false;
@@ -39,12 +39,13 @@ export function initFavoriteButtons(): void {
     if (!target?.dataset.favoriteSlug) return;
     e.preventDefault();
     e.stopPropagation();
+
     const slug = target.dataset.favoriteSlug;
     const favs = getFavorites();
-    const idx = favs.indexOf(slug);
-    if (idx >= 0) favs.splice(idx, 1);
-    else favs.push(slug);
-    setFavorites(favs);
-    updateButton(target, favs.includes(slug));
+    const set = new Set(favs);
+    if (set.has(slug)) set.delete(slug);
+    else set.add(slug);
+    setFavorites([...set]);
+    updateButton(target, set.has(slug));
   });
 }

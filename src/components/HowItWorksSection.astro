@@ -3,31 +3,36 @@ const steps = [
   {
     n: '01',
     title: 'Buscamos',
-    text: 'Exploramos tiendas y marketplaces para encontrar propuestas kawaii.',
+    text: 'Exploramos tiendas y marketplaces en busca de productos especiales.',
   },
   {
     n: '02',
     title: 'Seleccionamos',
-    text: 'Elegimos cosas bonitas, útiles y con personalidad.',
+    text: 'Elegimos propuestas bonitas, útiles y con personalidad propia.',
   },
   {
     n: '03',
     title: 'Te conectamos',
-    text: 'Te llevamos a la tienda externa para que compres con tranquilidad.',
+    text: 'Te llevamos a la tienda externa para consultar o comprar el producto.',
   },
 ];
 ---
 
-<section class="bg-rk-mint px-4 py-16">
-  <div class="mx-auto max-w-6xl">
-    <h2 class="text-center text-2xl font-bold md:text-3xl">Cómo funciona Regalos Kawaii</h2>
-    <div class="mt-10 grid gap-6 md:grid-cols-3">
+<section class="how-it-works">
+  <div class="shell">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Así de sencillo</span>
+        <h2>Cómo funciona Regalos Kawaii</h2>
+      </div>
+    </div>
+    <div class="steps">
       {
         steps.map((step) => (
-          <div class="rounded-3xl bg-white p-6 shadow-sm">
-            <span class="text-2xl font-bold text-rk-pink">{step.n}</span>
-            <h3 class="mt-2 text-lg font-bold">{step.title}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-gray-600">{step.text}</p>
+          <div>
+            <span>{step.n}</span>
+            <strong>{step.title}</strong>
+            <p>{step.text}</p>
           </div>
         ))
       }

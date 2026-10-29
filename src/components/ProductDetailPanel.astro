@@ -1,7 +1,7 @@
 ---
 import type { CatalogProduct } from '../lib/emdash/types';
 import { formatPriceEur } from '../lib/emdash/helpers';
-import ExternalShopLink from './ExternalShopLink.astro';
+import RkIcon from './RkIcon.astro';
 import PortableText from './PortableText.astro';
 
 interface Props {
@@ -10,7 +10,8 @@ interface Props {
 
 const { product } = Astro.props;
 const price = formatPriceEur(product.precioRef);
-const label = product.coleccionTitles[0]?.toUpperCase() ?? 'KAWAII';
+const label = product.coleccionTitles[0] ?? 'Kawaii';
+const shopLabel = product.tiendaTitle.replace(' España', '');
 const bullets = [
   'Elegido por su diseño especial',
   'Ideal para regalar o darte un capricho',
@@ -18,45 +19,35 @@ const bullets = [
 ];
 ---
 
-<div>
-  <p class="text-xs font-semibold tracking-wide text-rk-pink">{label}</p>
-  <h1 class="mt-2 text-3xl font-bold">{product.title}</h1>
+<div class="detail-copy">
+  <span class="eyebrow">{label}</span>
+  <h1>{product.title}</h1>
   {
     price && (
-      <p class="mt-4">
-        <span class="text-3xl font-bold text-rk-pink">{price}</span>
-        <span class="ml-2 text-sm text-gray-500">Precio orientativo</span>
-      </p>
+      <div class="detail-price">
+        {price}
+        <small>Precio orientativo</small>
+      </div>
     )
   }
-  <p class="mt-4 text-gray-600">{product.resumen}</p>
+  <p>{product.resumen}</p>
   {
     product.descripcion && product.descripcion.length > 0 && (
-      <div class="mt-4">
+      <div>
         <PortableText blocks={product.descripcion} />
       </div>
     )
   }
-  <ul class="mt-6 space-y-2 rounded-2xl bg-pink-50 p-4 text-sm">
-    {
-      bullets.map((b) => (
-        <li class="flex gap-2">
-          <span class="text-rk-pink" aria-hidden="true">
-            ♥
-          </span>
-          {b}
-        </li>
-      ))
-    }
+  <ul>
+    {bullets.map((b) => (
+      <li>{b}</li>
+    ))}
   </ul>
-  <div class="mt-8">
-    <ExternalShopLink
-      href={product.affiliateUrl}
-      label={`Visitar producto en ${product.tiendaTitle.replace(' España', '')}`}
-      variant="button"
-    />
-    <p class="mt-3 text-xs text-gray-500">
-      Enlace de afiliado. Regalos Kawaii no vende ni gestiona pedidos.
-    </p>
-  </div>
+  <a class="primary wide" href={product.affiliateUrl} target="_blank" rel="sponsored nofollow noopener">
+    Visitar producto en {shopLabel}
+    <RkIcon name="external" />
+  </a>
+  <p class="affiliate">
+    Al visitar la tienda saldrás de Regalos Kawaii. No vendemos directamente este producto.
+  </p>
 </div>

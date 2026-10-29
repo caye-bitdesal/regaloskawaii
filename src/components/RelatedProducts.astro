@@ -1,6 +1,7 @@
 ---
 import type { CatalogProduct } from '../lib/emdash/types';
 import ProductCard from './ProductCard.astro';
+import ProductGrid from './ProductGrid.astro';
 
 interface Props {
   products: CatalogProduct[];
@@ -11,14 +12,18 @@ const { products } = Astro.props;
 
 {
   products.length > 0 && (
-    <section class="mt-16 border-t border-gray-100 pt-12">
-      <p class="text-xs font-semibold tracking-wide text-rk-pink uppercase">También te gustará</p>
-      <h2 class="mt-2 text-2xl font-bold">Más cositas bonitas</h2>
-      <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <section class="related shell">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">También te gustará</span>
+          <h2>Más cositas bonitas</h2>
+        </div>
+      </div>
+      <ProductGrid class="three">
         {products.map((p) => (
           <ProductCard product={p} />
         ))}
-      </div>
+      </ProductGrid>
     </section>
   )
 }

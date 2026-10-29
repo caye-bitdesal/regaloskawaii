@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -7,12 +7,20 @@ import {
   fetchProductStoreRefs,
   getEmDashBaseUrl,
 } from '../emdash/client';
+import { useContentCache, useFixtures } from '../emdash/client';
 import {
   affiliateUrl,
   booleanFrom01,
-  productImageUrl,
+  mediaUrl,
   stripInternalProductFields,
 } from '../emdash/helpers';
+import {
+  collectStorageKeysFromProductos,
+  localMediaPath,
+  PUBLIC_MEDIA_DIR,
+  syncMediaFiles,
+} from '../media/syncMedia';
+import type { ProductoData } from '../emdash/types';
 import type {
   Catalog,
   CatalogCollection,
@@ -24,9 +32,41 @@ import type {
   ProductoEntry,
   TiendaEntry,
 } from '../emdash/types';
+import { env, isAstroDev, isAstroProd } from '../runtime/env';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, '../../../public');
+
+function shouldSyncMedia(): boolean {
+  if (isAstroDev()) return false;
+  const flag = env('SYNC_MEDIA');
+  return flag === '1' || flag === 'true';
+}
+
+function localMediaFileExists(storageKey: string): boolean {
+  const file = path.join(PUBLIC_MEDIA_DIR, path.basename(storageKey));
+  return existsSync(file);
+}
+
+/** Preferir /media/ si el fichero existe (p. ej. tras sync-content) o en build con caché. */
+function resolveProductImageUrl(data: ProductoData, emdashUrl: string): string | undefined {
+  const key = data.imagen?.meta.storageKey;
+  if (!key) return undefined;
+
+  if (localMediaFileExists(key)) return localMediaPath(key);
+
+  const forceLocal =
+    useContentCache() ||
+    shouldSyncMedia() ||
+    env('EMDASH_LOCAL_MEDIA') === '1' ||
+    (isAstroProd() && !useFixtures());
+
+  if (forceLocal) return localMediaPath(key);
+
+  if (isAstroDev()) return mediaUrl(key, emdashUrl);
+
+  return localMediaPath(key);
+}
 
 function assignCollectionsHeuristic(
   product: ProductoEntry,
@@ -63,6 +103,16 @@ export async function buildCatalog(): Promise<Catalog> {
     fetchAllItems<TiendaEntry>('/_emdash/api/content/tiendas', '09-tiendas-lista.json'),
     fetchAllItems<PageEntry>('/_emdash/api/content/pages', '10-paginas-lista.json'),
   ]);
+
+  if (shouldSyncMedia()) {
+    const { ok, failed } = await syncMediaFiles(
+      collectStorageKeysFromProductos(productos),
+      emdashUrl,
+    );
+    if (failed.length > 0) {
+      console.warn(`[sync-media] ${failed.length} imágenes no descargadas (${ok} ok)`);
+    }
+  }
 
   const tiendasActivas = tiendas.filter((t) => booleanFrom01(t.data.activa));
   const defaultTienda = tiendasActivas[0];
@@ -111,7 +161,7 @@ export async function buildCatalog(): Promise<Catalog> {
       resumen: data.resumen ?? '',
       descripcion: data.descripcion,
       precioRef: data.precio_ref,
-      imagenUrl: productImageUrl(data, emdashUrl),
+      imagenUrl: resolveProductImageUrl(data, emdashUrl),
       imagenAlt: data.imagen?.alt ?? data.title,
       destacado: booleanFrom01(data.destacado),
       coleccionSlugs,
@@ -163,8 +213,8 @@ export async function buildCatalog(): Promise<Catalog> {
 }
 
 function writeCatalogIndex(catalog: Catalog): void {
-  // En dev, escribir en public/ dispara el file watcher de Vite → recarga infinita.
-  if (import.meta.env.DEV) return;
+  const allowWrite = env('WRITE_CATALOG_INDEX') === '1';
+  if (isAstroDev() && !allowWrite) return;
 
   const index: CatalogSearchEntry[] = catalog.products.map((p) => ({
     slug: p.slug,
@@ -187,6 +237,7 @@ function writeCatalogIndex(catalog: Catalog): void {
 let cached: Catalog | null = null;
 
 export async function getCatalog(): Promise<Catalog> {
+  if (isAstroDev()) cached = null;
   if (!cached) cached = await buildCatalog();
   return cached;
 }

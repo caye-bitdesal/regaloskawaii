@@ -1,95 +1,87 @@
 ---
 import type { CatalogProduct } from '../lib/emdash/types';
 import { formatPriceEur } from '../lib/emdash/helpers';
-import ExternalShopLink from './ExternalShopLink.astro';
+import RkIcon from './RkIcon.astro';
 
 interface Props {
   product: CatalogProduct;
   variant?: 'default' | 'deal';
   showDealBadge?: boolean;
+  dealIndex?: number;
 }
 
-const { product, variant = 'default', showDealBadge = false } = Astro.props;
+const { product, variant = 'default', showDealBadge = true, dealIndex = 0 } = Astro.props;
 
-const label = product.coleccionTitles[0]?.toUpperCase() ?? 'KAWAII';
+const label = product.coleccionTitles[0] ?? 'Kawaii';
 const price = formatPriceEur(product.precioRef);
 const badge =
   product.coleccionSlugs.includes('lo-mas-viral')
-    ? 'VIRAL'
+    ? 'Viral'
     : product.destacado
-      ? 'FAVORITO'
+      ? 'Favorito'
       : undefined;
+
+const isDeal = variant === 'deal';
+const discountPct = 15 + ((dealIndex + product.slug.length) % 20);
+const shopLabel = product.tiendaTitle.replace(' España', '');
 ---
 
 <article
-  class="product-card group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md"
+  class="product-card"
   data-product-slug={product.slug}
   data-colecciones={product.coleccionSlugs.join(',')}
   data-title={product.title}
 >
-  <a href={`/producto/${product.slug}`} class="relative block aspect-square overflow-hidden bg-gray-100">
+  <a class="image-button" href={`/producto/${product.slug}`}>
     {
       product.imagenUrl ? (
-        <img
-          src={product.imagenUrl}
-          alt={product.imagenAlt ?? product.title}
-          class="h-full w-full object-cover transition group-hover:scale-105"
-          loading="lazy"
-          width="400"
-          height="400"
-        />
+        <img src={product.imagenUrl} alt={product.imagenAlt ?? product.title} loading="lazy" width="400" height="250" />
       ) : (
-        <div class="flex h-full items-center justify-center text-gray-400">Sin imagen</div>
+        <span class="meta" style="position:absolute;inset:0;display:grid;place-items:center;">Sin imagen</span>
       )
     }
     {
-      badge && (
-        <span class="absolute top-3 left-3 rounded-md bg-rk-yellow-accent px-2 py-0.5 text-xs font-bold text-rk-footer">
-          {badge}
-        </span>
+      isDeal && showDealBadge ? (
+        <span class="badge discount">-{discountPct}%</span>
+      ) : (
+        badge && <span class="badge">{badge}</span>
       )
     }
-    {
-      showDealBadge && variant === 'deal' && (
-        <span class="absolute top-3 left-3 rounded-md bg-rk-pink px-2 py-0.5 text-xs font-bold text-white">
-          OFERTA
-        </span>
-      )
-    }
-    <button
-      type="button"
-      class="favorite-btn absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-400 shadow transition hover:text-rk-pink"
-      data-favorite-slug={product.slug}
-      aria-label="Añadir a favoritos"
-    >
-      ♡
-    </button>
+    <span class="heart">
+      <button
+        type="button"
+        class="favorite-btn"
+        data-favorite-slug={product.slug}
+        aria-label="Añadir a favoritos"
+      >
+        <RkIcon name="heart" />
+      </button>
+    </span>
   </a>
-  <div class="flex flex-1 flex-col p-4">
-    <p class="text-xs font-semibold tracking-wide text-rk-pink uppercase">{label}</p>
-    <h3 class="mt-1 line-clamp-2 text-base font-bold">
-      <a href={`/producto/${product.slug}`} class="hover:text-rk-pink">{product.title}</a>
-    </h3>
-    {
-      price && (
-        <p class="mt-2 text-lg font-bold text-rk-pink">
-          {variant === 'deal' && showDealBadge ? (
+  <div class="card-copy">
+    <span class="meta">{label}</span>
+    <a class="product-title" href={`/producto/${product.slug}`}>{product.title}</a>
+    <div class="card-bottom">
+      <div class="price-stack">
+        {
+          isDeal && price && product.precioRef ? (
             <>
-              <span class="mr-2 text-sm font-normal text-gray-400 line-through">{price}</span>
-              {price}
+              <del>{formatPriceEur(product.precioRef * 1.28)}</del>
+              <strong>{price}</strong>
             </>
           ) : (
-            price
-          )}
-        </p>
-      )
-    }
-    <div class="mt-auto pt-3">
-      <ExternalShopLink
-        href={product.affiliateUrl}
-        label={`Ver en ${product.tiendaTitle.replace(' España', '')}`}
-      />
+            price && <strong>{price}</strong>
+          )
+        }
+      </div>
+      <a class="round" href={`/producto/${product.slug}`} aria-label={`Ver ${product.title}`}>
+        <RkIcon name="arrow" />
+      </a>
     </div>
+    <a class="shop-link" href={product.affiliateUrl} target="_blank" rel="sponsored nofollow noopener">
+      Ver en {shopLabel}
+      <RkIcon name="external" />
+    </a>
   </div>
 </article>
 

@@ -9,6 +9,7 @@ interface Props {
   description?: string;
   headerVariant?: 'full' | 'minimal';
   pathname?: string;
+  hideSearch?: boolean;
 }
 
 const {
@@ -16,6 +17,7 @@ const {
   description = 'Una selección de cosas bonitas encontradas por internet.',
   headerVariant = 'full',
   pathname = Astro.url.pathname,
+  hideSearch = false,
 } = Astro.props;
 
 const fullTitle = title.includes('Regalos Kawaii') ? title : `${title} | Regalos Kawaii`;
@@ -31,9 +33,15 @@ const fullTitle = title.includes('Regalos Kawaii') ? title : `${title} | Regalos
     <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
   </head>
-  <body class="flex min-h-screen flex-col bg-[#fafafa] text-rk-footer">
-    {headerVariant === 'minimal' ? <ProductDetailHeader /> : <SiteHeader pathname={pathname} />}
-    <main class="flex-1">
+  <body>
+    {
+      headerVariant === 'minimal' ? (
+        <ProductDetailHeader />
+      ) : (
+        <SiteHeader pathname={pathname} hideSearch={hideSearch} />
+      )
+    }
+    <main>
       <slot />
     </main>
     <SiteFooter />

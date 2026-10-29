@@ -1,9 +1,8 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
-import PageHero from '../components/PageHero.astro';
-import LegalNoticeBar from '../components/LegalNoticeBar.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import ProductCard from '../components/ProductCard.astro';
+import RkIcon from '../components/RkIcon.astro';
 import { getCatalog } from '../lib/catalog';
 
 const catalog = await getCatalog();
@@ -13,33 +12,43 @@ let products = chollosCol
   : catalog.products.filter((p) => p.destacado);
 ---
 
-<SiteLayout pathname="/chollos" title="Chollos kawaii" description="Ofertas y hallazgos kawaii a buen precio.">
-  <PageHero
-    theme="yellow"
-    title='Chollos muy <span class="text-rk-pink">kawaii</span>'
-    subtitle="Selección de propuestas con precio orientativo especial. El precio final lo marca la tienda de destino."
-  >
-    <div slot="media" class="flex justify-center">
-      <div
-        class="flex h-40 w-40 items-center justify-center rounded-full border-4 border-dashed border-rk-pink/30 bg-rk-pink text-center text-sm font-bold text-white"
-      >
-        HASTA -40%<br /><span class="text-xs font-normal">EN NUESTRA SELECCIÓN</span>
+<SiteLayout pathname="/chollos" title="Chollos kawaii" description="Ofertas y hallazgos kawaii a buen precio." hideSearch>
+  <section class="deals-hero">
+    <div class="shell deals-hero-inner">
+      <div>
+        <span class="eyebrow"><RkIcon name="sparkle" /> Precios para sonreír</span>
+        <h1>Chollos muy <em>kawaii</em></h1>
+        <p>
+          Una selección especial de oportunidades bonitas. Los precios pueden cambiar en la tienda de
+          destino, así que no los dejes escapar.
+        </p>
+      </div>
+      <div class="deal-bubble">
+        <strong>Hasta</strong>
+        <span>−40%</span>
+        <small>en nuestra selección</small>
       </div>
     </div>
-  </PageHero>
+  </section>
 
-  <div class="py-6">
-    <LegalNoticeBar />
-  </div>
-
-  <section class="mx-auto max-w-6xl px-4 pb-16">
-    <div class="mb-8 flex flex-wrap items-end justify-between gap-2">
-      <h2 class="text-2xl font-bold">Pequeños precios, grandes hallazgos</h2>
-      <p class="text-sm text-gray-500">{products.length} chollos disponibles</p>
+  <section class="catalog shell deals-catalog">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Actualizado recientemente</span>
+        <h2>Pequeños precios, grandes hallazgos</h2>
+      </div>
+      <p>{products.length} chollos disponibles</p>
+    </div>
+    <div class="deal-notice">
+      <RkIcon name="sparkle" />
+      <p>
+        <strong>Te llevamos a la oferta.</strong> Regalos Kawaii no procesa compras y el precio final
+        siempre será el mostrado por la tienda externa.
+      </p>
     </div>
     <ProductGrid>
-      {products.map((p) => (
-        <ProductCard product={p} variant="deal" showDealBadge={false} />
+      {products.map((p, i) => (
+        <ProductCard product={p} variant="deal" dealIndex={i} />
       ))}
     </ProductGrid>
   </section>

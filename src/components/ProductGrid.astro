@@ -1,14 +1,12 @@
 ---
 interface Props {
   gridId?: string;
+  class?: string;
 }
 
-const { gridId = 'product-grid' } = Astro.props;
+const { gridId = 'product-grid', class: extraClass } = Astro.props;
 ---
 
-<div
-  id={gridId}
-  class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
->
+<div id={gridId} class:list={['product-grid', extraClass]}>
   <slot />
 </div>

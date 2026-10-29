@@ -24,8 +24,6 @@ export function initSiteSearch(): void {
   const root = document.getElementById('site-search-root');
   if (!input || !results || !root) return;
 
-  root.classList.add('relative');
-
   const hide = () => {
     results.classList.add('hidden');
     results.replaceChildren();
@@ -35,7 +33,10 @@ export function initSiteSearch(): void {
     results.replaceChildren();
     if (items.length === 0) {
       const li = document.createElement('li');
-      li.className = 'px-3 py-2 text-sm text-gray-500';
+      li.className = 'search-empty';
+      li.style.padding = '0.5rem 0.85rem';
+      li.style.fontSize = '13px';
+      li.style.color = '#8a7e86';
       li.textContent = 'Sin resultados';
       results.appendChild(li);
     } else {
@@ -43,11 +44,10 @@ export function initSiteSearch(): void {
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.href = `/producto/${item.slug}`;
-        a.className = 'block px-3 py-2 text-sm hover:bg-pink-50';
-        a.innerHTML = `<span class="font-medium">${highlight(item.title, query)}</span>`;
+        a.innerHTML = `<span>${highlight(item.title, query)}</span>`;
         if (item.resumen) {
           const sub = document.createElement('span');
-          sub.className = 'block truncate text-xs text-gray-500';
+          sub.className = 'search-sub';
           sub.textContent = item.resumen;
           a.appendChild(sub);
         }

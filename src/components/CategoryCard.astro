@@ -1,6 +1,7 @@
 ---
 import type { CatalogCollection } from '../lib/emdash/types';
 import { collectionAbbrev } from '../lib/emdash/helpers';
+import RkIcon from './RkIcon.astro';
 
 interface Props {
   collection: CatalogCollection;
@@ -9,39 +10,31 @@ interface Props {
 
 const { collection, index } = Astro.props;
 const abbrev = collectionAbbrev(collection.title);
-const pastels = [
-  'bg-pink-100',
-  'bg-emerald-100',
-  'bg-violet-100',
-  'bg-amber-100',
-  'bg-sky-100',
-  'bg-orange-100',
-];
-const bg = pastels[index % pastels.length];
+const tone = (index % 6) + 1;
 const count = collection.productIds.length;
+
+const PLURAL_IDEITAS = [
+  (n: number) => `✨ ¡${n} ideítas por aquí!`,
+  (n: number) => `🌸 ${n} ideas esperándote`,
+  (n: number) => `🍡 ¡Hay ${n} ideas monísimas!`,
+  (n: number) => `💖 ${n} ideítas viviendo aquí`,
+];
+
+function categoryCountLabel(n: number, variantIndex: number): string {
+  if (n <= 0) return '🥺 Aquí no vive ninguna ideíta todavía...';
+  if (n === 1) return '🌟 ¡Una ideíta solita te espera!';
+  const pick = PLURAL_IDEITAS[variantIndex % PLURAL_IDEITAS.length];
+  return pick(n);
+}
+
+const countLabel = categoryCountLabel(count, index);
 ---
 
-<a
-  href={`/coleccion/${collection.slug}`}
-  class:list={[
-    'flex items-center gap-4 rounded-3xl p-5 transition hover:shadow-md md:p-6',
-    bg,
-  ]}
->
-  <span
-    class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-sm font-bold text-rk-footer shadow-sm"
-  >
-    {abbrev}
+<a href={`/coleccion/${collection.slug}`} class={`category-tile tone-${tone}`}>
+  <span class="category-mark">{abbrev}</span>
+  <span class="category-info">
+    <strong>{collection.title}</strong>
+    <small>{countLabel}</small>
   </span>
-  <div class="min-w-0 flex-1">
-    <h2 class="text-lg font-bold text-rk-footer">{collection.title}</h2>
-    <p class="mt-1 line-clamp-2 text-sm text-gray-600">{collection.descripcion}</p>
-    <p class="mt-2 text-xs font-medium text-gray-500">{count} ideas seleccionadas</p>
-  </div>
-  <span
-    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-rk-pink shadow-sm"
-    aria-hidden="true"
-  >
-    →
-  </span>
+  <span class="category-arrow"><RkIcon name="arrow" /></span>
 </a>

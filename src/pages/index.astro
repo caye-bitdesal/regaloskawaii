@@ -1,9 +1,9 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
-import PageHero from '../components/PageHero.astro';
 import FilterChips from '../components/FilterChips.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import ProductCard from '../components/ProductCard.astro';
+import RkIcon from '../components/RkIcon.astro';
 import { getCatalog } from '../lib/catalog';
 
 const catalog = await getCatalog();
@@ -11,6 +11,10 @@ const chips = [
   { id: 'all', label: 'Todos' },
   ...catalog.collections.map((c) => ({ id: c.slug, label: c.title })),
 ];
+const heroImage =
+  catalog.products.find((p) => p.imagenUrl)?.imagenUrl ??
+  'https://images.unsplash.com/photo-1643014941083-d369d5cd3516?auto=format&fit=crop&w=900&q=85';
+const count = catalog.products.length;
 ---
 
 <SiteLayout
@@ -18,32 +22,41 @@ const chips = [
   title="Regalos Kawaii — Tu rincón más kawaii"
   description="Encuentra regalos y detalles kawaii con enlaces directos a tiendas externas."
 >
-  <PageHero
-    theme="light"
-    title='Tu rincón más <span class="text-rk-pink">kawaii</span>'
-    subtitle="Descubre objetos bonitos que te harán sonreír. Curamos hallazgos para que no tengas que perderte entre miles de opciones."
-    ctaHref="#catalogo"
-    ctaLabel="Ver descubrimientos →"
-  >
-    <div slot="media" class="flex justify-center">
-      <div class="rotate-2 rounded-lg bg-white p-3 shadow-lg">
-        <div class="flex h-48 w-48 items-center justify-center rounded bg-pink-100 text-4xl">🧸</div>
-        <p class="mt-2 text-center text-xs font-medium text-gray-500">100% achuchable</p>
-      </div>
+  <section class="hero shell">
+    <div class="hero-copy">
+      <span class="eyebrow"><RkIcon name="sparkle" /> Pequeñas cosas, grandes sonrisas</span>
+      <h1>Tu rincón más <em>kawaii</em></h1>
+      <p>
+        Descubre objetos bonitos que hacen tu día un poquito más feliz. Nosotros los encontramos, tú
+        eliges tu favorito.
+      </p>
+      <a class="primary" href="#catalogo">
+        Ver descubrimientos
+        <RkIcon name="arrow" />
+      </a>
     </div>
-  </PageHero>
+    <div class="hero-visual">
+      <div class="blob"></div>
+      <img src={heroImage} alt="Colección de peluches kawaii en tonos pastel" width="900" height="390" />
+      <span class="float-note">100% achuchable</span>
+      <span class="doodle one">✦</span>
+      <span class="doodle two">♡</span>
+    </div>
+  </section>
 
-  <section id="catalogo" class="mx-auto max-w-6xl px-4 pb-16">
-    <h2 class="text-2xl font-bold">Encuentra tu próximo favorito</h2>
-    <div class="mt-6">
-      <FilterChips chips={chips} />
+  <section class="catalog shell" id="catalogo">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Selección bonita</span>
+        <h2>Encuentra tu próximo favorito</h2>
+      </div>
+      <p>{count} productos seleccionados con mimo</p>
     </div>
-    <div class="mt-8">
-      <ProductGrid>
-        {catalog.products.map((p) => (
-          <ProductCard product={p} />
-        ))}
-      </ProductGrid>
-    </div>
+    <FilterChips chips={chips} />
+    <ProductGrid>
+      {catalog.products.map((p) => (
+        <ProductCard product={p} />
+      ))}
+    </ProductGrid>
   </section>
 </SiteLayout>

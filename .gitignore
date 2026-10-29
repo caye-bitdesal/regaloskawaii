@@ -1,5 +1,10 @@
 # build output
 dist/
+
+# contenido e imágenes generados (npm run sync-content)
+.cache/
+public/media/
+public/catalog-index.json
 # generated types
 .astro/
 

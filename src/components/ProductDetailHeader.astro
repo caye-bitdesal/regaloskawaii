@@ -1,13 +1,16 @@
 ---
+import BrandMark from './BrandMark.astro';
+import RkIcon from './RkIcon.astro';
 ---
 
-<header class="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur">
-  <div class="mx-auto flex max-w-6xl items-center px-4 py-4">
-    <a
-      href="/"
-      class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 transition hover:text-rk-pink"
-    >
-      <span aria-hidden="true">←</span> Volver al catálogo
+<header>
+  <div class="nav shell">
+    <a href="/" class="brand">
+      <BrandMark />
+      <strong>Regalos Kawaii</strong>
+    </a>
+    <a class="back" href="/">
+      <RkIcon name="back" /> Volver al catálogo
     </a>
   </div>
 </header>

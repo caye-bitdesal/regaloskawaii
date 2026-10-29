@@ -6,8 +6,9 @@
     "node": ">=22.23.4"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "EMDASH_USE_FIXTURES=${EMDASH_USE_FIXTURES:-1} astro build",
+    "dev": "tsx scripts/dev.ts",
+    "build": "tsx scripts/build.ts",
+    "sync-content": "tsx scripts/sync-content.ts",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -15,5 +16,8 @@
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.4.3",
     "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.0"
   }
 }

@@ -1,10 +1,15 @@
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readSnapshot, SNAPSHOT_PATH, type ContentSnapshot } from '../content/snapshot';
+import { env } from '../runtime/env';
 import type { ReferenceSummary } from './types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_DIR = path.join(__dirname, '../../../fixtures/emdash');
+
+let snapshotMem: ContentSnapshot | null | undefined;
 
 export class EmDashError extends Error {
   constructor(
@@ -16,14 +21,31 @@ export class EmDashError extends Error {
   }
 }
 
-function env(name: string): string | undefined {
-  return (typeof import.meta !== 'undefined' && import.meta.env?.[name]) || process.env[name];
+function forceApi(): boolean {
+  return env('EMDASH_FORCE_API') === '1' || env('EMDASH_FORCE_API') === 'true';
 }
 
 function useFixtures(): boolean {
+  if (forceApi()) return false;
+  if (useContentCache()) return false;
   const flag = env('EMDASH_USE_FIXTURES');
   if (flag === '1' || flag === 'true') return true;
+  if (existsSync(SNAPSHOT_PATH)) return false;
   return !env('EMDASH_TOKEN');
+}
+
+function useContentCache(): boolean {
+  if (forceApi()) return false;
+  const flag = env('EMDASH_CONTENT_CACHE');
+  if (flag === '0' || flag === 'false') return false;
+  if (flag === '1' || flag === 'true') return true;
+  return existsSync(SNAPSHOT_PATH);
+}
+
+async function getSnapshot(): Promise<ContentSnapshot | null> {
+  if (snapshotMem !== undefined) return snapshotMem;
+  snapshotMem = await readSnapshot();
+  return snapshotMem;
 }
 
 function baseUrl(): string {
@@ -72,6 +94,21 @@ export async function fetchAllItems<T>(
   listPath: string,
   fixtureFile: string,
 ): Promise<T[]> {
+  if (useContentCache()) {
+    const snap = await getSnapshot();
+    if (!snap) {
+      throw new EmDashError(
+        'No hay caché de contenido. Ejecuta: npm run sync-content',
+        'CONTENT_CACHE_MISSING',
+      );
+    }
+    if (listPath.includes('/productos')) return snap.productos as T[];
+    if (listPath.includes('/colecciones')) return snap.colecciones as T[];
+    if (listPath.includes('/tiendas')) return snap.tiendas as T[];
+    if (listPath.includes('/pages')) return snap.pages as T[];
+    throw new EmDashError(`Listado no en caché: ${listPath}`, 'CONTENT_CACHE_MISSING');
+  }
+
   if (useFixtures()) {
     const data = await loadFixture<PaginatedItems<T>>(fixtureFile);
     return data.items ?? [];
@@ -93,6 +130,12 @@ export async function fetchAllItems<T>(
 export async function fetchCollectionProductRefs(
   collectionId: string,
 ): Promise<ReferenceSummary[]> {
+  if (useContentCache()) {
+    const snap = await getSnapshot();
+    if (!snap) throw new EmDashError('No hay caché de contenido.', 'CONTENT_CACHE_MISSING');
+    return snap.collectionProductRefs[collectionId] ?? [];
+  }
+
   if (useFixtures()) {
     const colecciones = await loadFixture<PaginatedItems<{ id: string; slug: string }>>(
       '07-colecciones-lista.json',
@@ -114,6 +157,12 @@ export async function fetchCollectionProductRefs(
 }
 
 export async function fetchProductStoreRefs(productId: string): Promise<ReferenceSummary[]> {
+  if (useContentCache()) {
+    const snap = await getSnapshot();
+    if (!snap) throw new EmDashError('No hay caché de contenido.', 'CONTENT_CACHE_MISSING');
+    return snap.productStoreRefs[productId] ?? [];
+  }
+
   if (useFixtures()) {
     void productId;
     const data = await loadFixture<{ children: ReferenceSummary[] }>('03-producto-tienda.json');
@@ -125,4 +174,4 @@ export async function fetchProductStoreRefs(productId: string): Promise<Referenc
   return data.children ?? [];
 }
 
-export { useFixtures, baseUrl as getEmDashBaseUrl };
+export { useFixtures, useContentCache, baseUrl as getEmDashBaseUrl };
