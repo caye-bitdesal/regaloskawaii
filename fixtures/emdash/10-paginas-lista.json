@@ -8,7 +8,7 @@
                 "slug": "aviso-afiliados",
                 "status": "published",
                 "data": {
-                    "title": "Enlaces de afiliado",
+                    "title": "💖 ¿Cómo nos ayudas?",
                     "content": [
                         {
                             "_type": "block",
@@ -18,7 +18,7 @@
                                 {
                                     "_type": "span",
                                     "_key": "a1",
-                                    "text": "Regalos Kawaii participa en programas de afiliados. Cuando compras a través de nuestros enlaces podemos recibir una pequeña comisión, sin coste adicional para ti."
+                                    "text": "En Regalos Kawaii no vendemos nada: recorremos tiendas de todo el mundo buscando los productos más adorables y te los traemos aquí. Cuando compras a través de nuestros enlaces, la tienda nos da una pequeña comisión, y a ti no te cuesta ni un céntimo más. Con ese granito de azúcar mantenemos la web viva y seguimos cazando cositas monísimas para ti. ¡Gracias por ser parte de esta familia kawaii! 🌸"
                                 }
                             ]
                         },

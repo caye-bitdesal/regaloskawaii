@@ -1,0 +1,39 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+
+const title = '💖 ¿Cómo nos ayudas?';
+const description =
+  'Regalos Kawaii no vende productos: te explicamos cómo funcionan los enlaces de afiliado y cómo nos ayudas sin coste extra.';
+---
+
+<SiteLayout pathname="/aviso-afiliados" {title} {description}>
+  <section class="catalog shell">
+    <h1>{title}</h1>
+    <div class="about-copy affiliate-page">
+      <p>
+        En Regalos Kawaii no vendemos nada: recorremos tiendas de todo el mundo buscando los productos más
+        adorables y te los traemos aquí. Cuando compras a través de nuestros enlaces, la tienda nos da una
+        pequeña comisión, y a ti no te cuesta ni un céntimo más. Con ese granito de azúcar mantenemos la web
+        viva y seguimos cazando cositas monísimas para ti. ¡Gracias por ser parte de esta familia kawaii! 🌸
+      </p>
+      <p class="affiliate-amazon">
+        Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos
+        aplicables.
+      </p>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .affiliate-page {
+    max-width: 720px;
+    margin-top: 2rem;
+  }
+  .affiliate-amazon {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #eee5ea;
+    font-size: 14px;
+    color: #8a7e86;
+  }
+</style>
