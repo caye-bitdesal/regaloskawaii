@@ -1,0 +1,37 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import RkIcon from '../components/RkIcon.astro';
+import { getCatalog } from '../lib/catalog';
+
+const catalog = await getCatalog();
+---
+
+<SiteLayout
+  pathname="/personajes"
+  title="Personajes"
+  description="Regalos kawaii de tus personajes favoritos."
+>
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow"><RkIcon name="sparkle" /> Tu universo kawaii</span>
+      <h1>Explora por <em>personaje</em></h1>
+      <p>Kuromi, Hello Kitty, Labubu y más: encuentra regalos de quien más te gusta.</p>
+    </div>
+  </section>
+
+  <section class="categories-section">
+    <div class="shell">
+      <div class="category-showcase">
+        {catalog.characters.map((character, i) => (
+          <CategoryCard
+            href={`/personaje/${character.slug}`}
+            title={character.label}
+            productCount={character.productIds.length}
+            index={i}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+</SiteLayout>

@@ -25,6 +25,10 @@ export interface ContentSnapshot {
   productStoreRefs: Record<string, ReferenceSummary[]>;
   categoriaTerms: TaxonomyTerm[];
   productCategoriaTerms: Record<string, TaxonomyTerm[]>;
+  marcaTerms?: TaxonomyTerm[];
+  personajeTerms?: TaxonomyTerm[];
+  productMarcaTerms?: Record<string, TaxonomyTerm[]>;
+  productPersonajeTerms?: Record<string, TaxonomyTerm[]>;
 }
 
 export async function readSnapshot(): Promise<ContentSnapshot | null> {

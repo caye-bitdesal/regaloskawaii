@@ -8,10 +8,15 @@ export async function getStaticPaths() {
     'aviso-afiliados',
     'categorias',
     'chollos',
+    'colecciones',
+    'marcas',
+    'personajes',
     'sobre-nosotros',
     'producto',
     'coleccion',
     'categoria',
+    'marca',
+    'personaje',
   ]);
   const catalog = await getCatalog();
   return catalog.pages

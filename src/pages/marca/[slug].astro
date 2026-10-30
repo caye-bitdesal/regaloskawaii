@@ -1,0 +1,54 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getCatalog } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const catalog = await getCatalog();
+  return catalog.brands.map((brand) => ({
+    params: { slug: brand.slug },
+    props: { brandSlug: brand.slug },
+  }));
+}
+
+const { brandSlug } = Astro.props;
+const catalog = await getCatalog();
+const brand = catalog.brandsBySlug[brandSlug as string];
+if (!brand) throw new Error(`Marca no encontrada: ${brandSlug}`);
+
+const products = catalog.products.filter((p) => p.marcaSlugs.includes(brand.slug));
+---
+
+<SiteLayout
+  pathname={`/marca/${brand.slug}`}
+  title={brand.label}
+  description={`Regalos kawaii de ${brand.label}.`}
+>
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow">Marca</span>
+      <h1 set:html={brand.label.includes(' ') ? brand.label : `<em>${brand.label}</em>`} />
+      <p>
+        {products.length}{' '}
+        {products.length === 1 ? 'producto de esta marca' : 'productos de esta marca'}
+      </p>
+    </div>
+  </section>
+
+  <section class="catalog shell">
+    {
+      products.length > 0 ? (
+        <ProductGrid>
+          {products.map((p) => (
+            <ProductCard product={p} />
+          ))}
+        </ProductGrid>
+      ) : (
+        <div class="empty">
+          <p>Aún no hay productos de esta marca.</p>
+        </div>
+      )
+    }
+  </section>
+</SiteLayout>

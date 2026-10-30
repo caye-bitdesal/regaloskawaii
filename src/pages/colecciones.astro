@@ -1,0 +1,57 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import ProductGrid from '../components/ProductGrid.astro';
+import ProductCard from '../components/ProductCard.astro';
+import RkIcon from '../components/RkIcon.astro';
+import { getCatalog } from '../lib/catalog';
+
+const catalog = await getCatalog();
+const collectionsWithProducts = catalog.collections.filter((c) => c.productIds.length > 0);
+---
+
+<SiteLayout
+  pathname="/colecciones"
+  title="Colecciones"
+  description="Selecciones kawaii por precio, estilo y tendencias."
+>
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow"><RkIcon name="sparkle" /> Curadas a mano</span>
+      <h1>Nuestras <em>colecciones</em></h1>
+      <p>
+        Listas hechas con mimo: por precio, por vibe viral o por temática. Cada bloque muestra los
+        productos de esa colección.
+      </p>
+    </div>
+  </section>
+
+  <section class="catalog shell collection-blocks">
+    {
+      collectionsWithProducts.map((col) => {
+        const products = catalog.products.filter((p) => p.coleccionSlugs.includes(col.slug));
+        return (
+          <article class="collection-block" id={`coleccion-${col.slug}`}>
+            <div class="collection-block-header">
+              <div>
+                <span class="eyebrow">Colección</span>
+                <h2>
+                  <a href={`/coleccion/${col.slug}`}>{col.title}</a>
+                </h2>
+                {col.descripcion && <p>{col.descripcion}</p>}
+              </div>
+              <a class="primary collection-block-link" href={`/coleccion/${col.slug}`}>
+                Ver solo esta colección
+                <RkIcon name="arrow" />
+              </a>
+            </div>
+            <ProductGrid>
+              {products.map((p) => (
+                <ProductCard product={p} />
+              ))}
+            </ProductGrid>
+          </article>
+        );
+      })
+    }
+  </section>
+</SiteLayout>

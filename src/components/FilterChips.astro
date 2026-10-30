@@ -14,7 +14,12 @@ interface Props {
 const { chips, gridId = 'product-grid', urlSync = false } = Astro.props;
 ---
 
-<div class="category-row" id="filter-chips" data-grid-id={gridId}>
+<div
+  class="category-row"
+  id="filter-chips"
+  data-grid-id={gridId}
+  data-url-sync={urlSync ? 'true' : undefined}
+>
   {
     chips.map((chip, i) => (
       <button type="button" data-filter={chip.id} class:list={['category', i === 0 && 'active']}>
@@ -24,12 +29,11 @@ const { chips, gridId = 'product-grid', urlSync = false } = Astro.props;
   }
 </div>
 
-<script define:vars={{ urlSync }}>
-  if (urlSync) {
-    import('../scripts/category-collection-filter.client').then((m) =>
-      m.initCategoryCollectionFilter(),
-    );
-  } else {
-    import('../scripts/filter-chips.client').then((m) => m.initFilterChips());
-  }
+<script>
+  import { initCategoryCollectionFilter } from '../scripts/category-collection-filter.client';
+  import { initFilterChips } from '../scripts/filter-chips.client';
+
+  const root = document.getElementById('filter-chips');
+  if (root?.dataset.urlSync === 'true') initCategoryCollectionFilter();
+  else initFilterChips();
 </script>

@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "data": {
+    "terms": [
+      {
+        "id": "01M61R19GX50G4FR3SGTXY0ZJG",
+        "name": "marca",
+        "slug": "sanrio",
+        "label": "Sanrio",
+        "parentId": null,
+        "children": [],
+        "count": 1,
+        "locale": "es",
+        "translationGroup": "01M61R19GX50G4FR3SGTXY0ZJG"
+      },
+      {
+        "id": "marca-pop-mart",
+        "name": "marca",
+        "slug": "pop-mart",
+        "label": "Pop Mart",
+        "parentId": null,
+        "children": [],
+        "count": 1,
+        "locale": "es",
+        "translationGroup": "marca-pop-mart"
+      }
+    ]
+  }
+}

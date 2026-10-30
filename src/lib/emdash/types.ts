@@ -139,6 +139,10 @@ export interface CatalogProduct {
   destacado: boolean;
   categoriaSlugs: string[];
   categoriaLabels: string[];
+  marcaSlugs: string[];
+  marcaLabels: string[];
+  personajeSlugs: string[];
+  personajeLabels: string[];
   coleccionSlugs: string[];
   coleccionTitles: string[];
   tiendaId: string;
@@ -147,13 +151,17 @@ export interface CatalogProduct {
   seo: ProductoEntry['seo'];
 }
 
-export interface CatalogCategory {
+export interface CatalogTaxonomy {
   id: string;
   slug: string;
   label: string;
   count: number;
   productIds: string[];
 }
+
+export type CatalogCategory = CatalogTaxonomy;
+export type CatalogBrand = CatalogTaxonomy;
+export type CatalogCharacter = CatalogTaxonomy;
 
 export interface CatalogCollection {
   id: string;
@@ -177,6 +185,10 @@ export interface Catalog {
   productsBySlug: Record<string, CatalogProduct>;
   categories: CatalogCategory[];
   categoriesBySlug: Record<string, CatalogCategory>;
+  brands: CatalogBrand[];
+  brandsBySlug: Record<string, CatalogBrand>;
+  characters: CatalogCharacter[];
+  charactersBySlug: Record<string, CatalogCharacter>;
   collections: CatalogCollection[];
   collectionsBySlug: Record<string, CatalogCollection>;
   pages: CatalogPage[];

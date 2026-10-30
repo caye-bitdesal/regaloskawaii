@@ -20,14 +20,14 @@ export function initHomeHubTabs(): void {
       panel.hidden = panel.dataset.hubPanel !== name;
     });
     const url = new URL(window.location.href);
-    if (name === 'colecciones') url.searchParams.set('ver', 'colecciones');
-    else url.searchParams.delete('ver');
+    if (name === 'categorias') url.searchParams.delete('ver');
+    else url.searchParams.set('ver', name);
     window.history.replaceState({}, '', url);
   };
 
-  const initial = new URLSearchParams(window.location.search).get('ver') === 'colecciones'
-    ? 'colecciones'
-    : 'categorias';
+  const HUB_TABS = new Set(['categorias', 'colecciones', 'marcas', 'personajes']);
+  const ver = new URLSearchParams(window.location.search).get('ver') ?? 'categorias';
+  const initial = HUB_TABS.has(ver) ? ver : 'categorias';
   show(initial);
 
   tabs.forEach((tab) => {

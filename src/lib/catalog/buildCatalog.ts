@@ -4,12 +4,16 @@ import { fileURLToPath } from 'node:url';
 import {
   fetchAllItems,
   fetchAllProductCategoriaTerms,
+  fetchAllProductTaxonomyTerms,
   fetchCategoriaTerms,
   fetchCollectionProductRefs,
+  fetchMarcaTerms,
+  fetchPersonajeTerms,
   fetchProductStoreRefs,
   getEmDashBaseUrl,
   useContentCache,
 } from '../emdash/client';
+import { buildTaxonomyGroups, labelAt } from './taxonomyGroups';
 import { useFixtures } from '../emdash/client';
 import {
   affiliateUrl,
@@ -91,6 +95,48 @@ async function loadCategoriaTerms(): Promise<TaxonomyTerm[]> {
   return fetchCategoriaTerms();
 }
 
+async function loadMarcaTerms(): Promise<TaxonomyTerm[]> {
+  if (useContentCache()) {
+    const snap = await readSnapshot();
+    if (snap?.marcaTerms?.length) return snap.marcaTerms;
+  }
+  return fetchMarcaTerms();
+}
+
+async function loadPersonajeTerms(): Promise<TaxonomyTerm[]> {
+  if (useContentCache()) {
+    const snap = await readSnapshot();
+    if (snap?.personajeTerms?.length) return snap.personajeTerms;
+  }
+  return fetchPersonajeTerms();
+}
+
+async function loadProductMarcaTerms(
+  productos: ProductoEntry[],
+): Promise<Record<string, TaxonomyTerm[]>> {
+  if (useContentCache()) {
+    const snap = await readSnapshot();
+    if (snap?.productMarcaTerms) return snap.productMarcaTerms;
+  }
+  return fetchAllProductTaxonomyTerms(
+    productos.map((p) => p.id),
+    'marca',
+  );
+}
+
+async function loadProductPersonajeTerms(
+  productos: ProductoEntry[],
+): Promise<Record<string, TaxonomyTerm[]>> {
+  if (useContentCache()) {
+    const snap = await readSnapshot();
+    if (snap?.productPersonajeTerms) return snap.productPersonajeTerms;
+  }
+  return fetchAllProductTaxonomyTerms(
+    productos.map((p) => p.id),
+    'personaje',
+  );
+}
+
 async function loadProductStoreRefs(
   productId: string,
   cached?: Record<string, import('../emdash/types').ReferenceSummary[]>,
@@ -103,18 +149,25 @@ export async function buildCatalog(): Promise<Catalog> {
   const emdashUrl = getEmDashBaseUrl();
   const snap = useContentCache() ? await readSnapshot() : null;
 
-  const [productos, colecciones, tiendas, pages, categoriaTermsRaw] = await Promise.all([
-    fetchAllItems<ProductoEntry>('/_emdash/api/content/productos', '01-productos-lista.json'),
-    fetchAllItems<ColeccionEntry>(
-      '/_emdash/api/content/colecciones',
-      '07-colecciones-lista.json',
-    ),
-    fetchAllItems<TiendaEntry>('/_emdash/api/content/tiendas', '09-tiendas-lista.json'),
-    fetchAllItems<PageEntry>('/_emdash/api/content/pages', '10-paginas-lista.json'),
-    loadCategoriaTerms(),
-  ]);
+  const [productos, colecciones, tiendas, pages, categoriaTermsRaw, marcaTermsRaw, personajeTermsRaw] =
+    await Promise.all([
+      fetchAllItems<ProductoEntry>('/_emdash/api/content/productos', '01-productos-lista.json'),
+      fetchAllItems<ColeccionEntry>(
+        '/_emdash/api/content/colecciones',
+        '07-colecciones-lista.json',
+      ),
+      fetchAllItems<TiendaEntry>('/_emdash/api/content/tiendas', '09-tiendas-lista.json'),
+      fetchAllItems<PageEntry>('/_emdash/api/content/pages', '10-paginas-lista.json'),
+      loadCategoriaTerms(),
+      loadMarcaTerms(),
+      loadPersonajeTerms(),
+    ]);
 
-  const productCategoriaTerms = await loadProductCategoriaTerms(productos);
+  const [productCategoriaTerms, productMarcaTerms, productPersonajeTerms] = await Promise.all([
+    loadProductCategoriaTerms(productos),
+    loadProductMarcaTerms(productos),
+    loadProductPersonajeTerms(productos),
+  ]);
 
   if (shouldSyncMedia()) {
     const { ok, failed } = await syncMediaFiles(
@@ -160,6 +213,14 @@ export async function buildCatalog(): Promise<Catalog> {
     const categoriaSlugs = catTerms.map((t) => t.slug);
     const categoriaLabels = catTerms.map((t) => t.label);
 
+    const marcaTerms = productMarcaTerms[raw.id] ?? [];
+    const marcaSlugs = marcaTerms.map((t) => t.slug);
+    const marcaLabels = marcaTerms.map((t) => t.label);
+
+    const personajeTerms = productPersonajeTerms[raw.id] ?? [];
+    const personajeSlugs = personajeTerms.map((t) => t.slug);
+    const personajeLabels = personajeTerms.map((t) => t.label);
+
     let tienda = defaultTienda;
     const storeRefs = await loadProductStoreRefs(raw.id, snap?.productStoreRefs);
     if (storeRefs[0]) {
@@ -181,6 +242,10 @@ export async function buildCatalog(): Promise<Catalog> {
       destacado: booleanFrom01(data.destacado),
       categoriaSlugs,
       categoriaLabels,
+      marcaSlugs,
+      marcaLabels,
+      personajeSlugs,
+      personajeLabels,
       coleccionSlugs,
       coleccionTitles,
       tiendaId: tienda.id,
@@ -207,43 +272,26 @@ export async function buildCatalog(): Promise<Catalog> {
     }))
     .sort((a, b) => a.orden - b.orden);
 
-  const categoriesBySlug = new Map<
-    string,
-    { id: string; slug: string; label: string; productIds: string[] }
-  >();
+  const categories = buildTaxonomyGroups(
+    categoriaTermsRaw,
+    products,
+    (p) => p.categoriaSlugs,
+    (p, slug) => labelAt(p.categoriaSlugs, p.categoriaLabels, slug),
+  );
 
-  for (const term of categoriaTermsRaw) {
-    categoriesBySlug.set(term.slug, {
-      id: term.id,
-      slug: term.slug,
-      label: term.label,
-      productIds: [],
-    });
-  }
+  const brands = buildTaxonomyGroups(
+    marcaTermsRaw,
+    products,
+    (p) => p.marcaSlugs,
+    (p, slug) => labelAt(p.marcaSlugs, p.marcaLabels, slug),
+  );
 
-  for (const product of products) {
-    product.categoriaSlugs.forEach((slug, index) => {
-      let cat = categoriesBySlug.get(slug);
-      if (!cat) {
-        cat = {
-          id: slug,
-          slug,
-          label: product.categoriaLabels[index] ?? slug,
-          productIds: [],
-        };
-        categoriesBySlug.set(slug, cat);
-      }
-      if (!cat.productIds.includes(product.id)) cat.productIds.push(product.id);
-    });
-  }
-
-  const categories = [...categoriesBySlug.values()]
-    .map((cat) => ({
-      ...cat,
-      count: cat.productIds.length,
-    }))
-    .filter((cat) => cat.count > 0)
-    .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+  const characters = buildTaxonomyGroups(
+    personajeTermsRaw,
+    products,
+    (p) => p.personajeSlugs,
+    (p, slug) => labelAt(p.personajeSlugs, p.personajeLabels, slug),
+  );
 
   const catalogPages: CatalogPage[] = pages.map((p) => ({
     slug: p.slug,
@@ -257,6 +305,10 @@ export async function buildCatalog(): Promise<Catalog> {
     productsBySlug: Object.fromEntries(products.map((p) => [p.slug, p])),
     categories,
     categoriesBySlug: Object.fromEntries(categories.map((c) => [c.slug, c])),
+    brands,
+    brandsBySlug: Object.fromEntries(brands.map((b) => [b.slug, b])),
+    characters,
+    charactersBySlug: Object.fromEntries(characters.map((c) => [c.slug, c])),
     collections,
     collectionsBySlug: Object.fromEntries(collections.map((c) => [c.slug, c])),
     pages: catalogPages,

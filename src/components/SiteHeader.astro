@@ -1,18 +1,19 @@
 ---
 import BrandMark from './BrandMark.astro';
-import RkIcon from './RkIcon.astro';
+import SiteSearch from './SiteSearch.astro';
 
 interface Props {
   pathname?: string;
-  hideSearch?: boolean;
 }
 
-const { pathname = '/', hideSearch = false } = Astro.props;
+const { pathname = '/' } = Astro.props;
 
 const nav = [
   { href: '/', label: 'Catálogo' },
   { href: '/categorias', label: 'Categorías' },
-  { href: '/chollos', label: 'Chollos', deal: true },
+  { href: '/colecciones', label: 'Colecciones' },
+  { href: '/marcas', label: 'Marcas' },
+  { href: '/personajes', label: 'Personajes' },
   { href: '/sobre-nosotros', label: 'Sobre nosotros' },
 ];
 
@@ -31,32 +32,13 @@ function isActive(href: string): boolean {
     <nav aria-label="Principal">
       {
         nav.map((item) => (
-          <a
-            href={item.href}
-            class:list={[item.deal && 'deal-nav', isActive(item.href) && !item.deal && 'is-active']}
-          >
+          <a href={item.href} class:list={[isActive(item.href) && 'is-active']}>
             {item.label}
           </a>
         ))
       }
     </nav>
-    {
-      !hideSearch && (
-        <div id="site-search-root">
-          <label class="search">
-            <RkIcon name="search" />
-            <span class="sr-only">Buscar</span>
-            <input
-              type="search"
-              id="site-search-input"
-              placeholder="Buscar cositas..."
-              autocomplete="off"
-            />
-          </label>
-          <ul id="site-search-results" class="hidden" role="listbox" />
-        </div>
-      )
-    }
+    <SiteSearch />
   </div>
 </header>
 
@@ -65,8 +47,3 @@ function isActive(href: string): boolean {
     color: #ec5b87;
   }
 </style>
-
-<script>
-  import { initSiteSearch } from '../scripts/site-search.client';
-  initSiteSearch();
-</script>

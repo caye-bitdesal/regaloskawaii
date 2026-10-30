@@ -1,0 +1,33 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import RkIcon from '../components/RkIcon.astro';
+import { getCatalog } from '../lib/catalog';
+
+const catalog = await getCatalog();
+---
+
+<SiteLayout pathname="/marcas" title="Marcas" description="Regalos kawaii por marca.">
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow"><RkIcon name="sparkle" /> Oficiales y favoritas</span>
+      <h1>Explora por <em>marca</em></h1>
+      <p>Sanrio, Pop Mart y otras marcas que amamos, con los productos que tenemos indexados.</p>
+    </div>
+  </section>
+
+  <section class="categories-section">
+    <div class="shell">
+      <div class="category-showcase">
+        {catalog.brands.map((brand, i) => (
+          <CategoryCard
+            href={`/marca/${brand.slug}`}
+            title={brand.label}
+            productCount={brand.productIds.length}
+            index={i}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+</SiteLayout>

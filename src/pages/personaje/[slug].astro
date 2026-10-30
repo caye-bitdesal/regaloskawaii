@@ -1,0 +1,54 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getCatalog } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const catalog = await getCatalog();
+  return catalog.characters.map((character) => ({
+    params: { slug: character.slug },
+    props: { characterSlug: character.slug },
+  }));
+}
+
+const { characterSlug } = Astro.props;
+const catalog = await getCatalog();
+const character = catalog.charactersBySlug[characterSlug as string];
+if (!character) throw new Error(`Personaje no encontrado: ${characterSlug}`);
+
+const products = catalog.products.filter((p) => p.personajeSlugs.includes(character.slug));
+---
+
+<SiteLayout
+  pathname={`/personaje/${character.slug}`}
+  title={character.label}
+  description={`Regalos kawaii de ${character.label}.`}
+>
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow">Personaje</span>
+      <h1 set:html={character.label.includes(' ') ? character.label : `<em>${character.label}</em>`} />
+      <p>
+        {products.length}{' '}
+        {products.length === 1 ? 'producto de este personaje' : 'productos de este personaje'}
+      </p>
+    </div>
+  </section>
+
+  <section class="catalog shell">
+    {
+      products.length > 0 ? (
+        <ProductGrid>
+          {products.map((p) => (
+            <ProductCard product={p} />
+          ))}
+        </ProductGrid>
+      ) : (
+        <div class="empty">
+          <p>Aún no hay productos de este personaje.</p>
+        </div>
+      )
+    }
+  </section>
+</SiteLayout>

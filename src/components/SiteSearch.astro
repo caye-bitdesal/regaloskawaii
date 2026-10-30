@@ -1,0 +1,22 @@
+---
+import RkIcon from './RkIcon.astro';
+---
+
+<div id="site-search-root">
+  <label class="search">
+    <RkIcon name="search" />
+    <span class="sr-only">Buscar</span>
+    <input
+      type="search"
+      id="site-search-input"
+      placeholder="Buscar cositas..."
+      autocomplete="off"
+    />
+  </label>
+  <ul id="site-search-results" class="hidden" role="listbox" />
+</div>
+
+<script>
+  import { initSiteSearch } from '../scripts/site-search.client';
+  initSiteSearch();
+</script>

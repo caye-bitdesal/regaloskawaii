@@ -62,6 +62,12 @@ const count = catalog.products.length;
         <button type="button" class="category hub-tab" data-hub-tab="colecciones" role="tab">
           Por colección
         </button>
+        <button type="button" class="category hub-tab" data-hub-tab="marcas" role="tab">
+          Por marcas
+        </button>
+        <button type="button" class="category hub-tab" data-hub-tab="personajes" role="tab">
+          Por personajes
+        </button>
       </div>
 
       <div class="hub-panel" data-hub-panel="categorias" role="tabpanel">
@@ -84,6 +90,32 @@ const count = catalog.products.length;
               href={`/coleccion/${col.slug}`}
               title={col.title}
               productCount={col.productIds.length}
+              index={i}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div class="hub-panel" data-hub-panel="marcas" role="tabpanel" hidden>
+        <div class="category-showcase hub-showcase">
+          {catalog.brands.map((brand, i) => (
+            <CategoryCard
+              href={`/marca/${brand.slug}`}
+              title={brand.label}
+              productCount={brand.productIds.length}
+              index={i}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div class="hub-panel" data-hub-panel="personajes" role="tabpanel" hidden>
+        <div class="category-showcase hub-showcase">
+          {catalog.characters.map((character, i) => (
+            <CategoryCard
+              href={`/personaje/${character.slug}`}
+              title={character.label}
+              productCount={character.productIds.length}
               index={i}
             />
           ))}
