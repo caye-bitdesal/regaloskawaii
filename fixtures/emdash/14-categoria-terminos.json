@@ -1,0 +1,62 @@
+{
+  "success": true,
+  "data": {
+    "terms": [
+      {
+        "id": "cat-peluches",
+        "name": "categoria",
+        "slug": "peluches",
+        "label": "Peluches",
+        "parentId": null,
+        "children": [],
+        "count": 1,
+        "locale": "es",
+        "translationGroup": "cat-peluches"
+      },
+      {
+        "id": "cat-papeleria",
+        "name": "categoria",
+        "slug": "papeleria",
+        "label": "Papelería",
+        "parentId": null,
+        "children": [],
+        "count": 1,
+        "locale": "es",
+        "translationGroup": "cat-papeleria"
+      },
+      {
+        "id": "cat-cajas-sorpresa",
+        "name": "categoria",
+        "slug": "cajas-sorpresa",
+        "label": "Cajas sorpresa",
+        "parentId": null,
+        "children": [],
+        "count": 1,
+        "locale": "es",
+        "translationGroup": "cat-cajas-sorpresa"
+      },
+      {
+        "id": "cat-abrigos",
+        "name": "categoria",
+        "slug": "abrigos",
+        "label": "Abrigos",
+        "parentId": null,
+        "children": [],
+        "count": 0,
+        "locale": "es",
+        "translationGroup": "cat-abrigos"
+      },
+      {
+        "id": "cat-moda",
+        "name": "categoria",
+        "slug": "moda",
+        "label": "Moda",
+        "parentId": null,
+        "children": [],
+        "count": 0,
+        "locale": "es",
+        "translationGroup": "cat-moda"
+      }
+    ]
+  }
+}

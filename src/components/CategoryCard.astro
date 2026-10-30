@@ -1,17 +1,17 @@
 ---
-import type { CatalogCollection } from '../lib/emdash/types';
 import { collectionAbbrev } from '../lib/emdash/helpers';
 import RkIcon from './RkIcon.astro';
 
 interface Props {
-  collection: CatalogCollection;
+  href: string;
+  title: string;
+  productCount: number;
   index: number;
 }
 
-const { collection, index } = Astro.props;
-const abbrev = collectionAbbrev(collection.title);
+const { href, title, productCount, index } = Astro.props;
+const abbrev = collectionAbbrev(title);
 const tone = (index % 6) + 1;
-const count = collection.productIds.length;
 
 const PLURAL_IDEITAS = [
   (n: number) => `✨ ¡${n} ideítas por aquí!`,
@@ -27,13 +27,13 @@ function categoryCountLabel(n: number, variantIndex: number): string {
   return pick(n);
 }
 
-const countLabel = categoryCountLabel(count, index);
+const countLabel = categoryCountLabel(productCount, index);
 ---
 
-<a href={`/coleccion/${collection.slug}`} class={`category-tile tone-${tone}`}>
+<a href={href} class={`category-tile tone-${tone}`}>
   <span class="category-mark">{abbrev}</span>
   <span class="category-info">
-    <strong>{collection.title}</strong>
+    <strong>{title}</strong>
     <small>{countLabel}</small>
   </span>
   <span class="category-arrow"><RkIcon name="arrow" /></span>

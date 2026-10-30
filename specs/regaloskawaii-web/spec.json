@@ -4,7 +4,7 @@
   "parent_package": "regaloskawaii (repo root, Astro)",
   "scaffold": "SiteLayout",
   "summary": "Sitio estático **Astro 7** en la raíz del repo: catálogo kawaii con enlaces de afiliado, hub de categorías, chollos, sobre nosotros, fichas de producto y búsqueda en cliente. Contenido e imágenes se **sincronizan desde EmDash** a caché local; la web en dev/build **no llama a la API** salvo durante `sync-content` / refresh.",
-  "overview": "Regalos Kawaii es un **curador**, no una tienda.\n\n**Datos e imágenes**\n- Origen: **EmDash** (`regaloskawaii-admin`, p. ej. `http://localhost:4321`) con `EMDASH_URL` + `EMDASH_TOKEN` (solo máquina de desarrollo / CI, nunca en el navegador).\n- Tras sync: JSON en `.cache/content/snapshot.json` e imágenes en `public/media/` (rutas `/media/{basename}`). Ambos están en `.gitignore`.\n- `src/lib/emdash/client.ts` lee **fixtures** (`fixtures/emdash/`) sin token, **caché** (`EMDASH_CONTENT_CACHE=1` o snapshot existente) o **API** (`EMDASH_FORCE_API=1` durante sync).\n- Scripts: `npm run dev` → `scripts/dev.ts`; `npm run build` → `scripts/build.ts`; `npm run sync-content` → `scripts/sync-content.ts`.\n- `REFRESH_CONTENT=1`: fuerza sync en dev/build. Si el admin no está en marcha y ya hay caché, **dev sigue** con mensaje claro; sin caché, error explicativo.\n\n**Referencia visual**\n- Mockups en `specs/regaloskawaii-web/images/`.\n- CSS y markup alineados al prototipo (clases `.shell`, `.hero`, `.product-card`, etc.) en `src/styles/global.css` (DM Sans + Fredoka, colores `#ef5d8a`, footer `#332735`).\n- Componentes de marca: `BrandMark.astro`, `RkIcon.astro`.\n\n**Rutas de marketing**\n- `/` — Hero + catálogo con chips y grid.\n- `/categorias` — Hub de colecciones (`CategoryCard` con copy «ideítas»).\n- `/chollos` — Hero amarillo + `deal-notice` + grid variante deal.\n- `/sobre-nosotros` — Intro oscura + bloque about + HowItWorks.\n- `/producto/[slug]` — Detalle; header minimal con logo + volver.\n\n**Rutas de contenido**\n- `/coleccion/[slug]` — Listado por colección (sin chips de otras colecciones).\n- `/[slug]` — Páginas CMS (`aviso-afiliados` en footer).\n\n**Nav (mockup)**\n- Catálogo · Categorías · **Chollos** (enlace con clase `.deal-nav`, pill amarilla permanente; padding vertical 0) · Sobre nosotros.\n- No sustituir por `GET /_emdash/api/menus/primary` hasta alinear CMS.\n\n**Stack:** Astro `output: \"static\"`, Tailwind 4 (`@tailwindcss/vite`) + **hoja global del prototipo**, scripts cliente en `src/scripts/*.client.ts` (sin islas Astro separadas en v1).\n\n**Dev:** puerto por defecto **4322** (`PORT`); admin suele usar **4321**. Plugin Vite `scripts/vite-synced-media-plugin.ts` sirve `/media/*` desde disco si Vite indexó `public/` antes de un sync. `astro dev --force` evita servidores zombie.\n\n**Producción:** `dist/` estático; sincronizar en CI o local antes de `npm run build`. No systemd en el flujo documentado.\n\nContrato API: `regaloskawaii-admin/docs/api/API-completa-para-IA.md`.",
+  "overview": "Regalos Kawaii es un **curador**, no una tienda.\n\n**Datos e imágenes**\n- Origen: **EmDash** (`regaloskawaii-admin`, p. ej. `http://localhost:4321`) con `EMDASH_URL` + `EMDASH_TOKEN` (solo máquina de desarrollo / CI, nunca en el navegador).\n- Tras sync: JSON en `.cache/content/snapshot.json` e imágenes en `public/media/` (rutas `/media/{basename}`). Ambos están en `.gitignore`.\n- `src/lib/emdash/client.ts` lee **fixtures** (`fixtures/emdash/`) sin token, **caché** (`EMDASH_CONTENT_CACHE=1` o snapshot existente) o **API** (`EMDASH_FORCE_API=1` durante sync).\n- Scripts: `npm run dev` → `scripts/dev.ts`; `npm run build` → `scripts/build.ts`; `npm run sync-content` → `scripts/sync-content.ts`.\n- `REFRESH_CONTENT=1`: fuerza sync en dev/build. Si el admin no está en marcha y ya hay caché, **dev sigue** con mensaje claro; sin caché, error explicativo.\n\n**Referencia visual**\n- Mockups en `specs/regaloskawaii-web/images/`.\n- CSS y markup alineados al prototipo (clases `.shell`, `.hero`, `.product-card`, etc.) en `src/styles/global.css` (DM Sans + Fredoka, colores `#ef5d8a`, footer `#332735`).\n- Componentes de marca: `BrandMark.astro`, `RkIcon.astro`.\n\n**Categorías vs colecciones (EmDash)**\n- **Categorías** — taxonomía `categoria` (tipo de producto: peluches, papelería…). Lista: `GET /_emdash/api/taxonomies/categoria/terms`; por producto: `…/productos/{id}/terms/categoria`.\n- **Colecciones** — contenido `colecciones` (selecciones manuales: precio, viral…). Relación vía `…/colecciones/{id}/references/productos_colecciones/parents` (no heurística por precio).\n- **Afiliado** — `data.enlace_afiliado` del producto si existe; si no, plantilla de la tienda.\n\n**Rutas de marketing**\n- `/` — Hero; hub con pestañas «Por categoría» / «Por colección» (`?ver=colecciones`); grid global con FilterChips por colección.\n- `/categorias` — Hub de **categorías** (`CategoryCard` → `/categoria/{slug}`).\n- `/chollos` — Hero amarillo + `deal-notice` + grid variante deal.\n- `/sobre-nosotros` — Intro oscura + bloque about + HowItWorks.\n- `/producto/[slug]` — Detalle; header minimal con logo + volver.\n\n**Rutas de contenido**\n- `/categoria/[slug]` — Productos de una categoría; FilterChips solo colecciones presentes; filtro en cliente + URL `?coleccion=`.\n- `/coleccion/[slug]` — Listado por colección (sin chips cruzados).\n- `/[slug]` — Páginas CMS (`aviso-afiliados` en footer).\n\n**Nav (mockup)**\n- Catálogo · Categorías · **Chollos** (enlace con clase `.deal-nav`, pill amarilla permanente; padding vertical 0) · Sobre nosotros.\n- No sustituir por `GET /_emdash/api/menus/primary` hasta alinear CMS.\n\n**Stack:** Astro `output: \"static\"`, Tailwind 4 (`@tailwindcss/vite`) + **hoja global del prototipo**, scripts cliente en `src/scripts/*.client.ts` (sin islas Astro separadas en v1).\n\n**Dev:** puerto por defecto **4322** (`PORT`); admin suele usar **4321**. Plugin Vite `scripts/vite-synced-media-plugin.ts` sirve `/media/*` desde disco si Vite indexó `public/` antes de un sync. `astro dev --force` evita servidores zombie.\n\n**Producción:** `dist/` estático; sincronizar en CI o local antes de `npm run build`. No systemd en el flujo documentado.\n\nContrato API: `regaloskawaii-admin/docs/api/API-completa-para-IA.md`.",
   "images": [
     { "kind": "mockup", "caption": "Home / catálogo", "path": "images/mockup-home.png" },
     { "kind": "mockup", "caption": "Categorías (hub)", "path": "images/mockup-categorias.png" },
@@ -59,8 +59,8 @@
       "name": "CategoryCard",
       "location": "src/components/CategoryCard.astro",
       "decision": "create",
-      "usage": "`.category-tile.tone-N` en `/categorias`.",
-      "notes": "Contador con copy editorial: 0/1/plural con emojis e «ideítas» (4 variantes rotando por índice). Abreviatura en `.category-mark`."
+      "usage": "`.category-tile.tone-N` en `/categorias`, home (hub) y enlaces a `/categoria/` o `/coleccion/`.",
+      "notes": "Props: `href`, `title`, `productCount`, `index`. Copy ideítas 0/1/plural. Abreviatura en `.category-mark`."
     },
     {
       "name": "ProductCard",
@@ -74,7 +74,7 @@
       "location": "src/components/FilterChips.astro",
       "decision": "create",
       "usage": "`.category-row` con botones `.category` / `.active`.",
-      "notes": "Lógica en `src/scripts/filter-chips.client.ts`."
+      "notes": "Home/colección: `filter-chips.client.ts`. Página categoría: prop `urlSync` → `category-collection-filter.client.ts` (`?coleccion=`)."
     },
     {
       "name": "ProductGrid",
@@ -133,7 +133,7 @@
       "notes": "Mantener si se necesita variante botón reutilizable."
     }
   ],
-  "structure": "## Layout global\n\n```\nSiteLayout\n├── SiteHeader (full) — salvo hideSearch en hub/chollos/about\n├── ProductDetailHeader (minimal) — /producto/[slug]\n├── <main> — secciones con .shell del prototipo\n└── SiteFooter\n```\n\n## Contenido y sync (`src/lib/content/`)\n\n1. `fetchContentSnapshot()` — API EmDash (productos, colecciones, tiendas, pages, refs).\n2. `writeSnapshot()` → `.cache/content/snapshot.json`.\n3. `runSyncContent()` — snapshot + `syncMediaFiles()` (vacía y rellena `public/media/`) + `buildCatalog()` con `WRITE_CATALOG_INDEX=1`.\n4. `buildCatalog()` — enriquece catálogo; escribe `public/catalog-index.json` solo en build/sync o si `WRITE_CATALOG_INDEX=1` (en dev Astro **no** reescribe el índice por defecto, evita bucles HMR).\n\n## Imágenes\n\n- URL pública: `/media/{basename(storageKey)}`.\n- `resolveProductImageUrl()`: usa fichero local si existe; en dev sin fichero puede apuntar a URL EmDash; build/prod prioriza local con caché.\n- Dev: plugin `syncedMediaDevPlugin` en `astro.config.mjs`.\n\n## Catálogo en cliente\n\n- Búsqueda: `GET /catalog-index.json` (generado en sync/build).\n- `site-search.client.ts`: normaliza acentos; dropdown bajo input; navega a `/producto/{slug}`.\n- Filtros home: chips por `coleccionSlugs` en `data-colecciones` de cada card.\n\n## Scripts npm\n\n| Comando | Comportamiento |\n|---------|----------------|\n| `npm run dev` | `.env`, sync si token y (sin caché o REFRESH), luego `astro dev --force` |\n| `npm run sync-content` | Solo sync; requiere admin + token |\n| `npm run build` | Sync condicional; `astro build` con caché/fixtures |\n| `npm run preview` | Sirve `dist/` |\n\n## Entorno (`src/lib/runtime/env.ts`)\n\nHelpers `isAstroDev()` / `isAstroProd()` / `env()` — uso en scripts **tsx** donde `import.meta.env` no está definido.",
+  "structure": "## Layout global\n\n```\nSiteLayout\n├── SiteHeader (full) — salvo hideSearch en hub/chollos/about\n├── ProductDetailHeader (minimal) — /producto/[slug]\n├── <main> — secciones con .shell del prototipo\n└── SiteFooter\n```\n\n## Contenido y sync (`src/lib/content/`)\n\n1. `fetchContentSnapshot()` — API EmDash (productos, colecciones, tiendas, pages, refs tienda/colección, términos `categoria` globales y por producto).\n2. `writeSnapshot()` → `.cache/content/snapshot.json` (incl. `categoriaTerms`, `productCategoriaTerms`).\n3. `runSyncContent()` — snapshot + `syncMediaFiles()` (vacía y rellena `public/media/`) + `buildCatalog()` con `WRITE_CATALOG_INDEX=1`.\n4. `buildCatalog()` — enriquece catálogo; escribe `public/catalog-index.json` solo en build/sync o si `WRITE_CATALOG_INDEX=1` (en dev Astro **no** reescribe el índice por defecto, evita bucles HMR).\n\n## Imágenes\n\n- URL pública: `/media/{basename(storageKey)}`.\n- `resolveProductImageUrl()`: usa fichero local si existe; en dev sin fichero puede apuntar a URL EmDash; build/prod prioriza local con caché.\n- Dev: plugin `syncedMediaDevPlugin` en `astro.config.mjs`.\n\n## Catálogo en cliente\n\n- Búsqueda: `GET /catalog-index.json` (generado en sync/build).\n- `site-search.client.ts`: normaliza acentos; dropdown bajo input; navega a `/producto/{slug}`.\n- Filtros home: chips por `coleccionSlugs` en `data-colecciones` de cada card.\n\n## Scripts npm\n\n| Comando | Comportamiento |\n|---------|----------------|\n| `npm run dev` | `.env`, sync si token y (sin caché o REFRESH), luego `astro dev --force` |\n| `npm run sync-content` | Solo sync; requiere admin + token |\n| `npm run build` | Sync condicional; `astro build` con caché/fixtures |\n| `npm run preview` | Sirve `dist/` |\n\n## Entorno (`src/lib/runtime/env.ts`)\n\nHelpers `isAstroDev()` / `isAstroProd()` / `env()` — uso en scripts **tsx** donde `import.meta.env` no está definido.",
   "sections": [
     {
       "title": "SiteHeader + búsqueda",
@@ -143,15 +143,21 @@
     },
     {
       "title": "Home `/`",
-      "description": "`.hero.shell` (blob, imagen producto o fallback), `.catalog.shell` con section-heading, FilterChips, ProductGrid 4 cols.",
-      "behavior": "CTA ancla `#catalogo`. Chips `.category` filtran cards. Card → detalle; corazón → localStorage; shop-link → afiliado.",
-      "components": ["FilterChips", "ProductGrid", "ProductCard"]
+      "description": "`.hero.shell`; `#catalogo` con `.home-hub` (pestañas categoría/colección + `CategoryCard`); sección «Todos los productos» con FilterChips y ProductGrid.",
+      "behavior": "CTA ancla `#catalogo`. Pestañas vía `home-hub-tabs.client.ts` y `?ver=colecciones`. Chips filtran por `data-colecciones`. Afiliado respeta `enlace_afiliado`.",
+      "components": ["FilterChips", "ProductGrid", "ProductCard", "CategoryCard"]
     },
     {
       "title": "Categorías `/categorias`",
-      "description": "`.page-intro.categories-intro`, `.categories-section` con `.category-showcase`, `.category-help` CTA a lo-mas-viral.",
-      "behavior": "CategoryCard → `/coleccion/{slug}`. Subtítulo con copy ideítas (no «X ideas seleccionadas» genérico). Sin búsqueda en header.",
+      "description": "`.page-intro.categories-intro`, `.categories-section` con `.category-showcase` de taxonomía `categoria`, `.category-help` CTA a lo-mas-viral.",
+      "behavior": "Solo categorías con productos (`count` > 0). CategoryCard → `/categoria/{slug}`. Sin búsqueda en header.",
       "components": ["CategoryCard", "BrandMark", "RkIcon"]
+    },
+    {
+      "title": "Categoría `/categoria/[slug]`",
+      "description": "Intro + listado `.catalog.shell`; FilterChips de colecciones aplicables.",
+      "behavior": "getStaticPaths desde `catalog.categories`. Filtro cliente; URL compartible `/categoria/peluches?coleccion=menos-de-10`.",
+      "components": ["FilterChips", "ProductGrid", "ProductCard"]
     },
     {
       "title": "Colección `/coleccion/[slug]`",
@@ -180,7 +186,7 @@
     {
       "title": "Páginas CMS `/[slug]`",
       "description": "`.catalog.shell` + título + PortableText.",
-      "behavior": "Excluye rutas reservadas. aviso-afiliados enlazada desde footer.",
+      "behavior": "Excluye rutas reservadas (`categorias`, `categoria`, `coleccion`, `producto`, …). aviso-afiliados enlazada desde footer.",
       "components": ["PortableText", "SiteLayout"]
     },
     {
@@ -201,7 +207,19 @@
       "name": "Listado colecciones",
       "method": "GET",
       "path": "/_emdash/api/content/colecciones?status=published",
-      "notes": "Sync; chips, categorías, colección."
+      "notes": "Sync; hub colecciones, chips home, páginas `/coleccion/`."
+    },
+    {
+      "name": "Términos categoría",
+      "method": "GET",
+      "path": "/_emdash/api/taxonomies/categoria/terms",
+      "notes": "Sync; hub `/categorias` y home. Fixture `14-categoria-terminos.json`."
+    },
+    {
+      "name": "Categorías de producto",
+      "method": "GET",
+      "path": "/_emdash/api/content/productos/{id}/terms/categoria",
+      "notes": "Sync; una llamada por producto → `productCategoriaTerms` en snapshot."
     },
     {
       "name": "Productos de colección",
@@ -256,11 +274,12 @@
     {
       "id": "T2",
       "title": "Cliente EmDash, tipos y caché",
-      "spec": "`client.ts` API + fixtures + snapshot cache. Helpers media/affiliate. `env.ts` para scripts tsx.",
+      "spec": "`client.ts` API + fixtures + snapshot cache. Taxonomía `categoria`. Helpers media/affiliate (`enlace_afiliado`). `env.ts` para scripts tsx.",
       "acceptance_criteria": [
         "Sin token → fixtures",
         "Con snapshot → sin fetch en getCatalog",
-        "Token nunca en cliente"
+        "Token nunca en cliente",
+        "Snapshot incluye categoriaTerms y productCategoriaTerms"
       ],
       "dependencies": ["T1"],
       "components": []
@@ -270,7 +289,8 @@
       "title": "Catálogo unificado",
       "spec": "`buildCatalog.ts`, tipo `Catalog`, `catalog-index.json` con reglas dev/write flag.",
       "acceptance_criteria": [
-        "Productos con coleccionSlugs, affiliateUrl, imagen local o URL",
+        "Productos con categoriaSlugs, coleccionSlugs (solo refs API), affiliateUrl, imagen local o URL",
+        "Catalog expone categories y collections por separado",
         "Índice búsqueda tras sync/build"
       ],
       "dependencies": ["T2"],
@@ -323,9 +343,10 @@
     {
       "id": "T8",
       "title": "Home",
-      "spec": "`.hero` + `.catalog`; FilterChips; contador productos en section-heading.",
+      "spec": "`.hero` + hub categoría/colección + grid con FilterChips.",
       "acceptance_criteria": [
-        "Chips filtran",
+        "Pestañas hub y `?ver=colecciones`",
+        "Chips filtran por colección",
         "Imagen hero desde catálogo si existe"
       ],
       "dependencies": ["T6", "T7"],
@@ -333,11 +354,12 @@
     },
     {
       "id": "T9",
-      "title": "Categorías y colección",
-      "spec": "Hub + CategoryCard ideítas; `/coleccion/[slug]` sin chips cruzados.",
+      "title": "Categorías, categoría y colección",
+      "spec": "Hub `/categorias` (taxonomía); `/categoria/[slug]` con filtros; `/coleccion/[slug]` sin chips cruzados.",
       "acceptance_criteria": [
         "6 tonos category-tile",
-        "Copy 0/1/plural emojis en cards"
+        "Copy 0/1/plural emojis en cards",
+        "Filtro colección en URL en página categoría"
       ],
       "dependencies": ["T3", "T7"],
       "components": ["CategoryCard", "ProductGrid"]

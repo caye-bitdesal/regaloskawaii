@@ -25,11 +25,24 @@ export interface PortableTextBlock {
   children?: { _type: string; _key: string; text: string; marks?: string[] }[];
 }
 
+export interface TaxonomyTerm {
+  id: string;
+  name: string;
+  slug: string;
+  label: string;
+  parentId: string | null;
+  children?: TaxonomyTerm[];
+  count?: number;
+  locale: string;
+  translationGroup: string;
+}
+
 export interface ProductoData {
   title: string;
   resumen?: string;
   descripcion?: PortableTextBlock[];
   id_externo: string;
+  enlace_afiliado?: string;
   precio_ref?: number;
   precio_actualizado?: string;
   imagen?: EmDashImage;
@@ -124,12 +137,22 @@ export interface CatalogProduct {
   imagenUrl?: string;
   imagenAlt?: string;
   destacado: boolean;
+  categoriaSlugs: string[];
+  categoriaLabels: string[];
   coleccionSlugs: string[];
   coleccionTitles: string[];
   tiendaId: string;
   tiendaTitle: string;
   affiliateUrl: string;
   seo: ProductoEntry['seo'];
+}
+
+export interface CatalogCategory {
+  id: string;
+  slug: string;
+  label: string;
+  count: number;
+  productIds: string[];
 }
 
 export interface CatalogCollection {
@@ -152,6 +175,8 @@ export interface CatalogPage {
 export interface Catalog {
   products: CatalogProduct[];
   productsBySlug: Record<string, CatalogProduct>;
+  categories: CatalogCategory[];
+  categoriesBySlug: Record<string, CatalogCategory>;
   collections: CatalogCollection[];
   collectionsBySlug: Record<string, CatalogCollection>;
   pages: CatalogPage[];

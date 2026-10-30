@@ -19,11 +19,14 @@ export function productImageUrl(data: ProductoData, emdashUrl = getEmdashUrl()):
 }
 
 export function affiliateUrl(
-  idExterno: string,
+  producto: Pick<ProductoData, 'id_externo' | 'enlace_afiliado'>,
   tienda: TiendaData,
 ): string {
+  if (producto.enlace_afiliado?.trim()) {
+    return producto.enlace_afiliado.trim();
+  }
   return tienda.plantilla_url
-    .replace('{id}', encodeURIComponent(idExterno))
+    .replace('{id}', encodeURIComponent(producto.id_externo))
     .replace('{tag}', encodeURIComponent(tienda.tag_web));
 }
 

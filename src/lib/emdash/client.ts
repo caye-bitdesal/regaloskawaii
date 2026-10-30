@@ -4,10 +4,57 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readSnapshot, SNAPSHOT_PATH, type ContentSnapshot } from '../content/snapshot';
 import { env } from '../runtime/env';
-import type { ReferenceSummary } from './types';
+import type { ReferenceSummary, TaxonomyTerm } from './types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_DIR = path.join(__dirname, '../../../fixtures/emdash');
+
+/** Colección → ids de producto (fixtures; coherente con seed de ejemplo). */
+const FIXTURE_COLLECTION_PARENTS: Record<string, string[]> = {
+  '01M61R19HPS906VXNFW97FAGEB': [
+    '01M61R19KEXN3VFX3T9NSNMJ70',
+    '01M61R19M3XH5SGGTHNAN6YGWC',
+  ],
+  '01M61R19J3HCYA7RQTCVDNW8HG': ['01M61R19MACE1WCK8M0G51MM79'],
+  '01M61R19J0DBVNHPYNV0ER6HGA': ['01M61R19MACE1WCK8M0G51MM79'],
+};
+
+/** Producto → slugs de categoría (fixtures). */
+const FIXTURE_PRODUCT_CATEGORIAS: Record<string, TaxonomyTerm[]> = {
+  '01M61R19KEXN3VFX3T9NSNMJ70': [
+    {
+      id: 'cat-peluches',
+      name: 'categoria',
+      slug: 'peluches',
+      label: 'Peluches',
+      parentId: null,
+      locale: 'es',
+      translationGroup: 'cat-peluches',
+    },
+  ],
+  '01M61R19M3XH5SGGTHNAN6YGWC': [
+    {
+      id: 'cat-papeleria',
+      name: 'categoria',
+      slug: 'papeleria',
+      label: 'Papelería',
+      parentId: null,
+      locale: 'es',
+      translationGroup: 'cat-papeleria',
+    },
+  ],
+  '01M61R19MACE1WCK8M0G51MM79': [
+    {
+      id: 'cat-cajas-sorpresa',
+      name: 'categoria',
+      slug: 'cajas-sorpresa',
+      label: 'Cajas sorpresa',
+      parentId: null,
+      locale: 'es',
+      translationGroup: 'cat-cajas-sorpresa',
+    },
+  ],
+};
 
 let snapshotMem: ContentSnapshot | null | undefined;
 
@@ -137,17 +184,25 @@ export async function fetchCollectionProductRefs(
   }
 
   if (useFixtures()) {
-    const colecciones = await loadFixture<PaginatedItems<{ id: string; slug: string }>>(
-      '07-colecciones-lista.json',
+    const productIds = FIXTURE_COLLECTION_PARENTS[collectionId];
+    if (!productIds?.length) return [];
+    const productos = await loadFixture<PaginatedItems<{ id: string; slug: string; data: { title: string } }>>(
+      '01-productos-lista.json',
     );
-    const col = colecciones.items.find((c) => c.id === collectionId);
-    if (col?.slug === 'menos-de-10') {
-      const data = await loadFixture<{ parents: ReferenceSummary[] }>(
-        '08-coleccion-productos.json',
-      );
-      return data.parents ?? [];
-    }
-    return [];
+    return productIds
+      .map((id, sortOrder) => {
+        const p = productos.items.find((item) => item.id === id);
+        if (!p) return null;
+        return {
+          id: p.id,
+          slug: p.slug,
+          collection: 'productos',
+          title: p.data.title,
+          locale: 'es',
+          sortOrder,
+        } satisfies ReferenceSummary;
+      })
+      .filter(Boolean) as ReferenceSummary[];
   }
 
   const data = await fetchJson<{ parents: ReferenceSummary[] }>(
@@ -172,6 +227,51 @@ export async function fetchProductStoreRefs(productId: string): Promise<Referenc
     `/_emdash/api/content/productos/${productId}/references/productos_tienda/children`,
   );
   return data.children ?? [];
+}
+
+export async function fetchCategoriaTerms(): Promise<TaxonomyTerm[]> {
+  if (useContentCache()) {
+    const snap = await getSnapshot();
+    if (!snap) throw new EmDashError('No hay caché de contenido.', 'CONTENT_CACHE_MISSING');
+    return snap.categoriaTerms ?? [];
+  }
+
+  if (useFixtures()) {
+    const data = await loadFixture<{ terms: TaxonomyTerm[] }>('14-categoria-terminos.json');
+    return data.terms ?? [];
+  }
+
+  const data = await fetchJson<{ terms: TaxonomyTerm[] }>(
+    '/_emdash/api/taxonomies/categoria/terms',
+  );
+  return data.terms ?? [];
+}
+
+export async function fetchProductCategoriaTerms(productId: string): Promise<TaxonomyTerm[]> {
+  if (useContentCache()) {
+    const snap = await getSnapshot();
+    if (!snap) throw new EmDashError('No hay caché de contenido.', 'CONTENT_CACHE_MISSING');
+    return snap.productCategoriaTerms[productId] ?? [];
+  }
+
+  if (useFixtures()) {
+    return FIXTURE_PRODUCT_CATEGORIAS[productId] ?? [];
+  }
+
+  const data = await fetchJson<{ terms: TaxonomyTerm[] }>(
+    `/_emdash/api/content/productos/${productId}/terms/categoria`,
+  );
+  return data.terms ?? [];
+}
+
+export async function fetchAllProductCategoriaTerms(
+  productIds: string[],
+): Promise<Record<string, TaxonomyTerm[]>> {
+  const map: Record<string, TaxonomyTerm[]> = {};
+  for (const id of productIds) {
+    map[id] = await fetchProductCategoriaTerms(id);
+  }
+  return map;
 }
 
 export { useFixtures, useContentCache, baseUrl as getEmDashBaseUrl };

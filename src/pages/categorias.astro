@@ -29,8 +29,13 @@ const catalog = await getCatalog();
         <p>Ideas ordenadas para encontrar justo lo que buscas</p>
       </div>
       <div class="category-showcase">
-        {catalog.collections.map((col, i) => (
-          <CategoryCard collection={col} index={i} />
+        {catalog.categories.map((cat, i) => (
+          <CategoryCard
+            href={`/categoria/${cat.slug}`}
+            title={cat.label}
+            productCount={cat.productIds.length}
+            index={i}
+          />
         ))}
       </div>
     </div>

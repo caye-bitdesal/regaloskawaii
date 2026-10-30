@@ -1,0 +1,84 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import FilterChips from '../../components/FilterChips.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getCatalog } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const catalog = await getCatalog();
+  return catalog.categories.map((cat) => ({
+    params: { slug: cat.slug },
+    props: { categorySlug: cat.slug },
+  }));
+}
+
+const { categorySlug } = Astro.props;
+const catalog = await getCatalog();
+const category = catalog.categoriesBySlug[categorySlug as string];
+if (!category) throw new Error(`Categoría no encontrada: ${categorySlug}`);
+
+const products = catalog.products.filter((p) => p.categoriaSlugs.includes(category.slug));
+
+const collectionSlugsInView = new Set<string>();
+for (const p of products) {
+  for (const slug of p.coleccionSlugs) collectionSlugsInView.add(slug);
+}
+
+const chips = [
+  { id: 'all', label: 'Todas' },
+  ...catalog.collections
+    .filter((c) => collectionSlugsInView.has(c.slug))
+    .map((c) => ({ id: c.slug, label: c.title })),
+];
+---
+
+<SiteLayout
+  pathname={`/categoria/${category.slug}`}
+  title={category.label}
+  description={`Regalos kawaii de ${category.label.toLowerCase()}.`}
+>
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow">{category.label}</span>
+      <h1 set:html={category.label.includes(' ') ? category.label : `<em>${category.label}</em>`} />
+      <p>
+        {products.length}{' '}
+        {products.length === 1 ? 'producto en esta categoría' : 'productos en esta categoría'}
+      </p>
+    </div>
+  </section>
+
+  <section class="catalog shell">
+    {
+      chips.length > 1 && (
+        <>
+          <div class="section-heading">
+            <div>
+              <h2>Filtrar por colección</h2>
+            </div>
+          </div>
+          <FilterChips chips={chips} urlSync />
+        </>
+      )
+    }
+    <div class="section-heading" style="margin-top: 1.5rem;">
+      <div>
+        <h2>Productos</h2>
+      </div>
+    </div>
+    {
+      products.length > 0 ? (
+        <ProductGrid>
+          {products.map((p) => (
+            <ProductCard product={p} />
+          ))}
+        </ProductGrid>
+      ) : (
+        <div class="empty">
+          <p>Aún no hay productos en esta categoría.</p>
+        </div>
+      )
+    }
+  </section>
+</SiteLayout>

@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "data": {
+    "terms": [
+      {
+        "id": "cat-peluches",
+        "name": "categoria",
+        "slug": "peluches",
+        "label": "Peluches",
+        "parentId": null,
+        "locale": "es",
+        "translationGroup": "cat-peluches"
+      }
+    ],
+    "unresolved": [],
+    "entryLocale": "es",
+    "defaultLocale": "en",
+    "implicitDefaultLocale": true
+  }
+}

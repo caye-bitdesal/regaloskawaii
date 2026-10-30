@@ -7,9 +7,11 @@ interface Chip {
 interface Props {
   chips: Chip[];
   gridId?: string;
+  /** Refleja el filtro en `?coleccion=` (páginas de categoría). */
+  urlSync?: boolean;
 }
 
-const { chips, gridId = 'product-grid' } = Astro.props;
+const { chips, gridId = 'product-grid', urlSync = false } = Astro.props;
 ---
 
 <div class="category-row" id="filter-chips" data-grid-id={gridId}>
@@ -22,7 +24,12 @@ const { chips, gridId = 'product-grid' } = Astro.props;
   }
 </div>
 
-<script>
-  import { initFilterChips } from '../scripts/filter-chips.client';
-  initFilterChips();
+<script define:vars={{ urlSync }}>
+  if (urlSync) {
+    import('../scripts/category-collection-filter.client').then((m) =>
+      m.initCategoryCollectionFilter(),
+    );
+  } else {
+    import('../scripts/filter-chips.client').then((m) => m.initFilterChips());
+  }
 </script>

@@ -3,11 +3,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   fetchAllItems,
+  fetchAllProductCategoriaTerms,
+  fetchCategoriaTerms,
   fetchCollectionProductRefs,
   fetchProductStoreRefs,
   getEmDashBaseUrl,
+  useContentCache,
 } from '../emdash/client';
-import { useContentCache, useFixtures } from '../emdash/client';
+import { useFixtures } from '../emdash/client';
 import {
   affiliateUrl,
   booleanFrom01,
@@ -20,6 +23,7 @@ import {
   PUBLIC_MEDIA_DIR,
   syncMediaFiles,
 } from '../media/syncMedia';
+import { readSnapshot } from '../content/snapshot';
 import type { ProductoData } from '../emdash/types';
 import type {
   Catalog,
@@ -30,6 +34,7 @@ import type {
   ColeccionEntry,
   PageEntry,
   ProductoEntry,
+  TaxonomyTerm,
   TiendaEntry,
 } from '../emdash/types';
 import { env, isAstroDev, isAstroProd } from '../runtime/env';
@@ -68,33 +73,37 @@ function resolveProductImageUrl(data: ProductoData, emdashUrl: string): string |
   return localMediaPath(key);
 }
 
-function assignCollectionsHeuristic(
-  product: ProductoEntry,
-  collections: ColeccionEntry[],
-): string[] {
-  const slugs: string[] = [];
-  const price = product.data.precio_ref ?? 0;
-  const title = product.data.title.toLowerCase();
-
-  for (const col of collections) {
-    const slug = col.slug;
-    if (slug === 'lo-mas-viral' && booleanFrom01(product.data.destacado)) slugs.push(slug);
-    if (slug === 'menos-de-10' && price > 0 && price < 10) slugs.push(slug);
-    if (slug === 'de-10-a-20' && price >= 10 && price < 20) slugs.push(slug);
-    if (slug === 'de-20-a-40' && price >= 20 && price <= 40) slugs.push(slug);
-    if (slug === 'papeleria' && (title.includes('washi') || title.includes('papeler'))) {
-      slugs.push(slug);
-    }
-    if (slug === 'kawaii-para-adultos' && title.includes('labubu')) slugs.push(slug);
+async function loadProductCategoriaTerms(
+  productos: ProductoEntry[],
+): Promise<Record<string, TaxonomyTerm[]>> {
+  if (useContentCache()) {
+    const snap = await readSnapshot();
+    if (snap?.productCategoriaTerms) return snap.productCategoriaTerms;
   }
+  return fetchAllProductCategoriaTerms(productos.map((p) => p.id));
+}
 
-  return [...new Set(slugs)];
+async function loadCategoriaTerms(): Promise<TaxonomyTerm[]> {
+  if (useContentCache()) {
+    const snap = await readSnapshot();
+    if (snap?.categoriaTerms?.length) return snap.categoriaTerms;
+  }
+  return fetchCategoriaTerms();
+}
+
+async function loadProductStoreRefs(
+  productId: string,
+  cached?: Record<string, import('../emdash/types').ReferenceSummary[]>,
+): Promise<import('../emdash/types').ReferenceSummary[]> {
+  if (cached?.[productId]) return cached[productId];
+  return fetchProductStoreRefs(productId);
 }
 
 export async function buildCatalog(): Promise<Catalog> {
   const emdashUrl = getEmDashBaseUrl();
+  const snap = useContentCache() ? await readSnapshot() : null;
 
-  const [productos, colecciones, tiendas, pages] = await Promise.all([
+  const [productos, colecciones, tiendas, pages, categoriaTermsRaw] = await Promise.all([
     fetchAllItems<ProductoEntry>('/_emdash/api/content/productos', '01-productos-lista.json'),
     fetchAllItems<ColeccionEntry>(
       '/_emdash/api/content/colecciones',
@@ -102,7 +111,10 @@ export async function buildCatalog(): Promise<Catalog> {
     ),
     fetchAllItems<TiendaEntry>('/_emdash/api/content/tiendas', '09-tiendas-lista.json'),
     fetchAllItems<PageEntry>('/_emdash/api/content/pages', '10-paginas-lista.json'),
+    loadCategoriaTerms(),
   ]);
+
+  const productCategoriaTerms = await loadProductCategoriaTerms(productos);
 
   if (shouldSyncMedia()) {
     const { ok, failed } = await syncMediaFiles(
@@ -119,21 +131,20 @@ export async function buildCatalog(): Promise<Catalog> {
 
   const collectionProductIds = new Map<string, Set<string>>();
   for (const col of colecciones) {
-    const refs = await fetchCollectionProductRefs(col.id);
+    const refs =
+      snap?.collectionProductRefs[col.id] ?? (await fetchCollectionProductRefs(col.id));
     const ids = new Set(refs.map((r) => r.id));
     collectionProductIds.set(col.id, ids);
   }
 
   const productCollectionSlugs = new Map<string, string[]>();
-
   for (const product of productos) {
-    const slugsFromRefs: string[] = [];
+    const slugs: string[] = [];
     for (const col of colecciones) {
       const ids = collectionProductIds.get(col.id);
-      if (ids?.has(product.id)) slugsFromRefs.push(col.slug);
+      if (ids?.has(product.id)) slugs.push(col.slug);
     }
-    const heuristic = assignCollectionsHeuristic(product, colecciones);
-    productCollectionSlugs.set(product.id, [...new Set([...slugsFromRefs, ...heuristic])]);
+    productCollectionSlugs.set(product.id, slugs);
   }
 
   const products: CatalogProduct[] = [];
@@ -145,8 +156,12 @@ export async function buildCatalog(): Promise<Catalog> {
       .map((s) => colecciones.find((c) => c.slug === s)?.data.title)
       .filter(Boolean) as string[];
 
+    const catTerms = productCategoriaTerms[raw.id] ?? [];
+    const categoriaSlugs = catTerms.map((t) => t.slug);
+    const categoriaLabels = catTerms.map((t) => t.label);
+
     let tienda = defaultTienda;
-    const storeRefs = await fetchProductStoreRefs(raw.id);
+    const storeRefs = await loadProductStoreRefs(raw.id, snap?.productStoreRefs);
     if (storeRefs[0]) {
       const found = tiendasActivas.find((t) => t.id === storeRefs[0].id);
       if (found) tienda = found;
@@ -164,11 +179,13 @@ export async function buildCatalog(): Promise<Catalog> {
       imagenUrl: resolveProductImageUrl(data, emdashUrl),
       imagenAlt: data.imagen?.alt ?? data.title,
       destacado: booleanFrom01(data.destacado),
+      categoriaSlugs,
+      categoriaLabels,
       coleccionSlugs,
       coleccionTitles,
       tiendaId: tienda.id,
       tiendaTitle: tienda.data.title,
-      affiliateUrl: affiliateUrl(data.id_externo, tienda.data),
+      affiliateUrl: affiliateUrl(data, tienda.data),
       seo: raw.seo,
     });
   }
@@ -190,6 +207,44 @@ export async function buildCatalog(): Promise<Catalog> {
     }))
     .sort((a, b) => a.orden - b.orden);
 
+  const categoriesBySlug = new Map<
+    string,
+    { id: string; slug: string; label: string; productIds: string[] }
+  >();
+
+  for (const term of categoriaTermsRaw) {
+    categoriesBySlug.set(term.slug, {
+      id: term.id,
+      slug: term.slug,
+      label: term.label,
+      productIds: [],
+    });
+  }
+
+  for (const product of products) {
+    product.categoriaSlugs.forEach((slug, index) => {
+      let cat = categoriesBySlug.get(slug);
+      if (!cat) {
+        cat = {
+          id: slug,
+          slug,
+          label: product.categoriaLabels[index] ?? slug,
+          productIds: [],
+        };
+        categoriesBySlug.set(slug, cat);
+      }
+      if (!cat.productIds.includes(product.id)) cat.productIds.push(product.id);
+    });
+  }
+
+  const categories = [...categoriesBySlug.values()]
+    .map((cat) => ({
+      ...cat,
+      count: cat.productIds.length,
+    }))
+    .filter((cat) => cat.count > 0)
+    .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+
   const catalogPages: CatalogPage[] = pages.map((p) => ({
     slug: p.slug,
     title: p.data.title,
@@ -200,6 +255,8 @@ export async function buildCatalog(): Promise<Catalog> {
   const catalog: Catalog = {
     products,
     productsBySlug: Object.fromEntries(products.map((p) => [p.slug, p])),
+    categories,
+    categoriesBySlug: Object.fromEntries(categories.map((c) => [c.slug, c])),
     collections,
     collectionsBySlug: Object.fromEntries(collections.map((c) => [c.slug, c])),
     pages: catalogPages,

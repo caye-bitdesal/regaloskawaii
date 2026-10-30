@@ -3,6 +3,7 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import FilterChips from '../components/FilterChips.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import ProductCard from '../components/ProductCard.astro';
+import CategoryCard from '../components/CategoryCard.astro';
 import RkIcon from '../components/RkIcon.astro';
 import { getCatalog } from '../lib/catalog';
 
@@ -47,10 +48,54 @@ const count = catalog.products.length;
   <section class="catalog shell" id="catalogo">
     <div class="section-heading">
       <div>
-        <span class="eyebrow">Selección bonita</span>
+        <span class="eyebrow">Explora el catálogo</span>
         <h2>Encuentra tu próximo favorito</h2>
       </div>
       <p>{count} productos seleccionados con mimo</p>
+    </div>
+
+    <div class="home-hub" id="home-hub">
+      <div class="hub-tabs" role="tablist" aria-label="Agrupar catálogo">
+        <button type="button" class="category hub-tab" data-hub-tab="categorias" role="tab">
+          Por categoría
+        </button>
+        <button type="button" class="category hub-tab" data-hub-tab="colecciones" role="tab">
+          Por colección
+        </button>
+      </div>
+
+      <div class="hub-panel" data-hub-panel="categorias" role="tabpanel">
+        <div class="category-showcase hub-showcase">
+          {catalog.categories.map((cat, i) => (
+            <CategoryCard
+              href={`/categoria/${cat.slug}`}
+              title={cat.label}
+              productCount={cat.productIds.length}
+              index={i}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div class="hub-panel" data-hub-panel="colecciones" role="tabpanel" hidden>
+        <div class="category-showcase hub-showcase">
+          {catalog.collections.map((col, i) => (
+            <CategoryCard
+              href={`/coleccion/${col.slug}`}
+              title={col.title}
+              productCount={col.productIds.length}
+              index={i}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="section-heading" style="margin-top: 3rem;">
+      <div>
+        <span class="eyebrow">Selección bonita</span>
+        <h2>Todos los productos</h2>
+      </div>
     </div>
     <FilterChips chips={chips} />
     <ProductGrid>
@@ -60,3 +105,8 @@ const count = catalog.products.length;
     </ProductGrid>
   </section>
 </SiteLayout>
+
+<script>
+  import { initHomeHubTabs } from '../scripts/home-hub-tabs.client';
+  initHomeHubTabs();
+</script>

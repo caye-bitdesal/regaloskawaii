@@ -1,8 +1,14 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ReferenceSummary } from '../emdash/types';
-import type { ColeccionEntry, PageEntry, ProductoEntry, TiendaEntry } from '../emdash/types';
+import type {
+  ColeccionEntry,
+  PageEntry,
+  ProductoEntry,
+  ReferenceSummary,
+  TaxonomyTerm,
+  TiendaEntry,
+} from '../emdash/types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const CONTENT_CACHE_DIR = path.join(__dirname, '../../../.cache/content');
@@ -17,6 +23,8 @@ export interface ContentSnapshot {
   pages: PageEntry[];
   collectionProductRefs: Record<string, ReferenceSummary[]>;
   productStoreRefs: Record<string, ReferenceSummary[]>;
+  categoriaTerms: TaxonomyTerm[];
+  productCategoriaTerms: Record<string, TaxonomyTerm[]>;
 }
 
 export async function readSnapshot(): Promise<ContentSnapshot | null> {

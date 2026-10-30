@@ -68,7 +68,7 @@ footer { color: var(--muted); font-size: 13px; margin-top: 32px; text-align: cen
 <header class="spec-header">
 <h1>Regalos Kawaii — Web catálogo</h1>
 <p>Sitio estático <strong>Astro 7</strong> en la raíz del repo: catálogo kawaii con enlaces de afiliado, hub de categorías, chollos, sobre nosotros, fichas de producto y búsqueda en cliente. Contenido e imágenes se <strong>sincronizan desde EmDash</strong> a caché local; la web en dev/build <strong>no llama a la API</strong> salvo durante <code>sync-content</code> / refresh.</p>
-<div class="meta"><span class="chip"><strong>Package</strong> regaloskawaii (repo root, Astro)</span><span class="chip"><strong>Scaffold</strong> SiteLayout</span><span class="chip"><strong>Tasks</strong> 14</span><span class="chip"><strong>Endpoints</strong> 8</span><span class="chip"><strong>Components</strong> 17</span></div>
+<div class="meta"><span class="chip"><strong>Package</strong> regaloskawaii (repo root, Astro)</span><span class="chip"><strong>Scaffold</strong> SiteLayout</span><span class="chip"><strong>Tasks</strong> 14</span><span class="chip"><strong>Endpoints</strong> 10</span><span class="chip"><strong>Components</strong> 17</span></div>
 </header>
 <section class="block"><h2>Overview</h2><p>Regalos Kawaii es un <strong>curador</strong>, no una tienda.</p>
 <p><strong>Datos e imágenes</strong></p>
@@ -76,9 +76,9 @@ footer { color: var(--muted); font-size: 13px; margin-top: 32px; text-align: cen
 <p><strong>Referencia visual</strong></p>
 <ul><li>Mockups en <code>specs/regaloskawaii-web/images/</code>.</li><li>CSS y markup alineados al prototipo (clases <code>.shell</code>, <code>.hero</code>, <code>.product-card</code>, etc.) en <code>src/styles/global.css</code> (DM Sans + Fredoka, colores <code>#ef5d8a</code>, footer <code>#332735</code>).</li><li>Componentes de marca: <code>BrandMark.astro</code>, <code>RkIcon.astro</code>.</li></ul>
 <p><strong>Rutas de marketing</strong></p>
-<ul><li><code>/</code> — Hero + catálogo con chips y grid.</li><li><code>/categorias</code> — Hub de colecciones (<code>CategoryCard</code> con copy «ideítas»).</li><li><code>/chollos</code> — Hero amarillo + <code>deal-notice</code> + grid variante deal.</li><li><code>/sobre-nosotros</code> — Intro oscura + bloque about + HowItWorks.</li><li><code>/producto/[slug]</code> — Detalle; header minimal con logo + volver.</li></ul>
+<ul><li><code>/</code> — Hero; hub «Por categoría» / «Por colección» (<code>?ver=colecciones</code>); grid con chips.</li><li><code>/categorias</code> — Hub de taxonomía <code>categoria</code> (<code>CategoryCard</code> → <code>/categoria/{slug}</code>).</li><li><code>/chollos</code> — Hero amarillo + <code>deal-notice</code> + grid variante deal.</li><li><code>/sobre-nosotros</code> — Intro oscura + bloque about + HowItWorks.</li><li><code>/producto/[slug]</code> — Detalle; header minimal con logo + volver.</li></ul>
 <p><strong>Rutas de contenido</strong></p>
-<ul><li><code>/coleccion/[slug]</code> — Listado por colección (sin chips de otras colecciones).</li><li><code>/[slug]</code> — Páginas CMS (<code>aviso-afiliados</code> en footer).</li></ul>
+<ul><li><code>/categoria/[slug]</code> — Productos por categoría; filtros por colección (<code>?coleccion=</code>).</li><li><code>/coleccion/[slug]</code> — Listado por colección (sin chips de otras colecciones).</li><li><code>/[slug]</code> — Páginas CMS (<code>aviso-afiliados</code> en footer).</li></ul>
 <p><strong>Nav (mockup)</strong></p>
 <ul><li>Catálogo · Categorías · <strong>Chollos</strong> (enlace con clase <code>.deal-nav</code>, pill amarilla permanente; padding vertical 0) · Sobre nosotros.</li><li>No sustituir por <code>GET /_emdash/api/menus/primary</code> hasta alinear CMS.</li></ul>
 <p><strong>Stack:</strong> Astro <code>output: &quot;static&quot;</code>, Tailwind 4 (<code>@tailwindcss/vite</code>) + <strong>hoja global del prototipo</strong>, scripts cliente en <code>src/scripts/*.client.ts</code> (sin islas Astro separadas en v1).</p>

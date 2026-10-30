@@ -48,6 +48,10 @@ h1 em::after { content: ''; height: 9px; width: 100%; position: absolute; bottom
 .section-heading h2 { margin-top: 9px; font-size: clamp(32px, 4vw, 48px); letter-spacing: -.035em; }
 .section-heading > p { color: #8a7e86; font-size: 14px; }
 .category-row { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
+.home-hub { margin-bottom: 8px; }
+.hub-tabs { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 22px; }
+.hub-tab.active { background: #ef5d8a; color: #fff; border-color: #ef5d8a; }
+.hub-showcase { margin-bottom: 0; }
 .category { flex: 0 0 auto; border: 1px solid #eadfe5; padding: 10px 15px; border-radius: 999px; background: white; color: #746972; font-size: 13px; font-weight: 600; }
 .category:hover, .category.active { border-color: #ef5d8a; background: #ef5d8a; color: white; }
 .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 16px; }

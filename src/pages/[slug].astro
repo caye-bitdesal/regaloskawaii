@@ -11,6 +11,7 @@ export async function getStaticPaths() {
     'sobre-nosotros',
     'producto',
     'coleccion',
+    'categoria',
   ]);
   const catalog = await getCatalog();
   return catalog.pages
