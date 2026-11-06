@@ -35,6 +35,16 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Check configuration
+        env:
+          EMDASH_URL: ${{ vars.EMDASH_URL }}
+          EMDASH_TOKEN: ${{ secrets.EMDASH_TOKEN }}
+        run: |
+          missing=0
+          [ -n "$EMDASH_URL" ]   || { echo "::error::Missing repository variable EMDASH_URL (Settings → Secrets and variables → Actions → Variables)"; missing=1; }
+          [ -n "$EMDASH_TOKEN" ] || { echo "::error::Missing repository secret EMDASH_TOKEN (Settings → Secrets and variables → Actions → Secrets)"; missing=1; }
+          exit $missing
+
       - name: Install dependencies
         run: npm ci
 
@@ -49,7 +59,7 @@ jobs:
         env:
           EMDASH_TOKEN: ${{ secrets.EMDASH_TOKEN }}
         run: |
-          if grep -rqF "$EMDASH_TOKEN" dist; then
+          if [ -n "$EMDASH_TOKEN" ] && grep -rqF -- "$EMDASH_TOKEN" dist; then
             echo "::error::EMDASH_TOKEN found in dist/"
             exit 1
           fi
