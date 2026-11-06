@@ -18,6 +18,25 @@ import BrandMark from './BrandMark.astro';
         <a href="/aviso-legal">Aviso legal</a>
         <a href="/privacidad">Privacidad</a>
         <a href="/cookies">Cookies</a>
+        <a
+          class="footer-credit"
+          href="https://bitdesal.es"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Diseño web Bitdesal (se abre en una pestaña nueva)"
+        >
+          Diseño web{' '}
+          <img
+            class="footer-credit-logo"
+            src="/bitdesal-logo.png"
+            width="32"
+            height="32"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />{' '}
+          Bitdesal
+        </a>
       </nav>
     </div>
   </div>
@@ -28,8 +47,23 @@ import BrandMark from './BrandMark.astro';
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem 1rem;
+    align-items: center;
     margin-top: 0.75rem;
     font-size: 13px;
     opacity: 0.85;
+  }
+
+  .footer-credit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .footer-credit-logo {
+    display: block;
+    height: 1.1em;
+    width: auto;
+    flex-shrink: 0;
+    border-radius: 4px;
   }
 </style>
