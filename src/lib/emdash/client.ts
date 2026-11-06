@@ -285,10 +285,19 @@ export async function fetchCollectionProductRefs(
       .filter(Boolean) as ReferenceSummary[];
   }
 
-  const data = await fetchJson<{ parents: ReferenceSummary[] }>(
-    `/_emdash/api/content/colecciones/${collectionId}/references/productos_colecciones/parents`,
-  );
-  return data.parents ?? [];
+  // La API devuelve los resultados por páginas (sin `limit`, menos de 50): hay que seguir `nextCursor`.
+  const parents: ReferenceSummary[] = [];
+  let cursor: string | undefined;
+  do {
+    const qs = new URLSearchParams({ limit: '100' });
+    if (cursor) qs.set('cursor', cursor);
+    const data = await fetchJson<{ parents: ReferenceSummary[]; nextCursor?: string }>(
+      `/_emdash/api/content/colecciones/${collectionId}/references/productos_colecciones/parents?${qs.toString()}`,
+    );
+    parents.push(...(data.parents ?? []));
+    cursor = data.nextCursor;
+  } while (cursor);
+  return parents;
 }
 
 export async function fetchProductStoreRefs(productId: string): Promise<ReferenceSummary[]> {
