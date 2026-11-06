@@ -14,6 +14,22 @@ import BrandMark from './BrandMark.astro';
     <div class="footer-meta">
       <p>No somos una tienda. Solo compartimos hallazgos kawaii.</p>
       <a href="/aviso-afiliados">¿Cómo nos ayudas?</a>
+      <nav class="footer-legal" aria-label="Información legal">
+        <a href="/aviso-legal">Aviso legal</a>
+        <a href="/privacidad">Privacidad</a>
+        <a href="/cookies">Cookies</a>
+      </nav>
     </div>
   </div>
 </footer>
+
+<style>
+  .footer-legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 13px;
+    opacity: 0.85;
+  }
+</style>

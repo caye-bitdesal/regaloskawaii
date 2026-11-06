@@ -1,0 +1,64 @@
+---
+import LegalPage from '../components/LegalPage.astro';
+import { LEGAL } from '../lib/legal';
+---
+
+<LegalPage pathname="/privacidad" title="Política de privacidad" description="Qué datos tratamos en Regalos Kawaii y cómo ejercer tus derechos.">
+  <h2>1. Responsable del tratamiento</h2>
+  <ul>
+    <li>Responsable: {LEGAL.titular} (NIF {LEGAL.nif})</li>
+    <li>Domicilio: {LEGAL.domicilio}</li>
+    <li>Contacto: <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li>
+  </ul>
+
+  <h2>2. Qué datos tratamos</h2>
+  <p>Regalos Kawaii no tiene registro de usuarios, formularios, boletín ni herramientas de analítica. Solo se tratan:</p>
+  <ul>
+    <li>
+      <strong>Datos técnicos de navegación</strong> (dirección IP, navegador, página solicitada), que
+      registra nuestro proveedor de alojamiento al servir la web, para su funcionamiento y seguridad.
+    </li>
+    <li>
+      <strong>Los datos que nos envíes por correo electrónico</strong> si nos escribes a {LEGAL.email}, para
+      responderte.
+    </li>
+  </ul>
+  <p>
+    Tus favoritos se guardan solo en tu propio navegador (almacenamiento local) y nunca nos llegan.
+  </p>
+
+  <h2>3. Finalidad y base legal</h2>
+  <ul>
+    <li>Servir la web y protegerla frente a abusos: interés legítimo (art. 6.1.f RGPD).</li>
+    <li>Responder a tus consultas: tu consentimiento al escribirnos (art. 6.1.a RGPD).</li>
+  </ul>
+
+  <h2>4. Conservación</h2>
+  <p>
+    Los registros técnicos se conservan el tiempo que determina el proveedor de alojamiento por motivos de
+    seguridad. Los correos, el tiempo necesario para atender tu consulta y, después, durante los plazos
+    legales que correspondan.
+  </p>
+
+  <h2>5. Destinatarios</h2>
+  <p>
+    No cedemos datos a terceros salvo obligación legal. Usamos como encargado del tratamiento a
+    Cloudflare, Inc., que aloja la web y puede tratar datos fuera del Espacio Económico Europeo con las
+    garantías del Marco de Privacidad de Datos UE-EE. UU. y cláusulas contractuales tipo.
+  </p>
+
+  <h2>6. Enlaces a tiendas</h2>
+  <p>
+    Al pulsar un enlace a una tienda (Amazon, AliExpress u otras) sales de esta web. A partir de ese
+    momento se aplica la política de privacidad y de cookies de esa tienda, que puede registrar que
+    llegaste desde nuestro enlace para calcular nuestra comisión.
+  </p>
+
+  <h2>7. Tus derechos</h2>
+  <p>
+    Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad
+    escribiendo a <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a>. Si consideras que no hemos atendido
+    bien tu solicitud, puedes reclamar ante la Agencia Española de Protección de Datos
+    (<a href="https://www.aepd.es" rel="noopener">www.aepd.es</a>).
+  </p>
+</LegalPage>

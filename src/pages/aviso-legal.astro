@@ -1,0 +1,68 @@
+---
+import LegalPage from '../components/LegalPage.astro';
+import { LEGAL } from '../lib/legal';
+---
+
+<LegalPage pathname="/aviso-legal" title="Aviso legal" description="Datos del titular y condiciones de uso de Regalos Kawaii.">
+  <h2>1. Titular de la web</h2>
+  <p>
+    En cumplimiento del artículo 10 de la Ley 34/2002, de servicios de la sociedad de la información y de
+    comercio electrónico (LSSI), se informa de que esta web ({LEGAL.web}) es propiedad de:
+  </p>
+  <ul>
+    <li>Titular: {LEGAL.titular}</li>
+    <li>NIF: {LEGAL.nif}</li>
+    <li>Domicilio: {LEGAL.domicilio}</li>
+    {LEGAL.registroMercantil && <li>Datos registrales: {LEGAL.registroMercantil}</li>}
+    <li>Correo electrónico: <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li>
+  </ul>
+
+  <h2>2. Objeto</h2>
+  <p>
+    Regalos Kawaii es un catálogo de productos de estética kawaii seleccionados en tiendas online de
+    terceros. <strong>No vendemos productos</strong>: cada ficha enlaza a la tienda donde se compra, que es
+    la única responsable de la venta, el precio, el envío, la garantía y la atención al cliente.
+  </p>
+
+  <h2>3. Enlaces de afiliado</h2>
+  <p>
+    Muchos enlaces son de afiliado: si compras a través de ellos, la tienda nos paga una comisión sin que
+    a ti te cueste más. Como Afiliado de Amazon, obtenemos ingresos por las compras adscritas que cumplen
+    los requisitos aplicables. Más detalles en <a href="/aviso-afiliados">¿Cómo nos ayudas?</a>.
+  </p>
+
+  <h2>4. Precios y disponibilidad</h2>
+  <p>
+    Los precios y la disponibilidad que mostramos son orientativos y corresponden al momento en que se
+    revisó cada producto. Pueden cambiar en cualquier momento: el precio válido es siempre el que indica
+    la tienda al comprar.
+  </p>
+
+  <h2>5. Propiedad intelectual e industrial</h2>
+  <p>
+    Los textos, el diseño y la selección de productos de esta web pertenecen a su titular. Las marcas,
+    nombres de personajes y logotipos que se mencionan (por ejemplo, Sanrio, Hello Kitty o Pop Mart)
+    pertenecen a sus respectivos propietarios y se citan solo para identificar los productos; su mención
+    no implica relación ni patrocinio. Las imágenes de los productos proceden de las tiendas o de sus
+    fabricantes.
+  </p>
+
+  <h2>6. Responsabilidad</h2>
+  <p>
+    Revisamos los contenidos con cuidado, pero no garantizamos que estén libres de errores ni que las
+    webs enlazadas estén siempre disponibles. No somos responsables del contenido, las condiciones ni las
+    políticas de las tiendas externas: te recomendamos leerlas antes de comprar.
+  </p>
+
+  <h2>7. Datos personales y cookies</h2>
+  <p>
+    Consulta la <a href="/privacidad">política de privacidad</a> y la
+    <a href="/cookies">política de cookies</a>.
+  </p>
+
+  <h2>8. Legislación aplicable</h2>
+  <p>
+    Estas condiciones se rigen por la legislación española. Para cualquier controversia, las partes se
+    someten a los juzgados y tribunales que correspondan conforme a la normativa de consumidores.
+  </p>
+</LegalPage>

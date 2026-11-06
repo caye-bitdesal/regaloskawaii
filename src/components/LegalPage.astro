@@ -1,0 +1,61 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { LEGAL, LEGAL_PENDIENTE } from '../lib/legal';
+
+interface Props {
+  title: string;
+  description: string;
+  pathname: string;
+}
+const { title, description, pathname } = Astro.props;
+---
+
+<SiteLayout {pathname} {title} {description}>
+  <section class="catalog shell">
+    <h1>{title}</h1>
+    {LEGAL_PENDIENTE && (
+      <p class="legal-warning">Faltan datos del titular por completar en <code>src/lib/legal.ts</code>.</p>
+    )}
+    <div class="legal-copy">
+      <slot />
+      <p class="legal-updated">Última actualización: {LEGAL.actualizado}.</p>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .legal-copy {
+    max-width: 760px;
+    margin-top: 2rem;
+    color: #5f5359;
+    line-height: 1.75;
+  }
+  .legal-copy :global(h2) {
+    margin: 2.25rem 0 0.75rem;
+    font-size: 1.25rem;
+    color: #3d3238;
+  }
+  .legal-copy :global(p),
+  .legal-copy :global(ul) {
+    margin-top: 0.75rem;
+  }
+  .legal-copy :global(ul) {
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+  .legal-copy :global(a) {
+    text-decoration: underline;
+  }
+  .legal-updated {
+    margin-top: 2.5rem;
+    font-size: 14px;
+    color: #8a7e86;
+  }
+  .legal-warning {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: #fff3c4;
+    color: #6b4e00;
+  }
+</style>
