@@ -1,16 +1,13 @@
 /**
  * Datos del titular de la web para las páginas legales (LSSI art. 10 y RGPD art. 13).
- * Revísalos antes de publicar: los marcados «PENDIENTE» hay que rellenarlos.
  */
 export const LEGAL = {
   /** Nombre y apellidos o razón social del titular. */
-  titular: 'PENDIENTE: nombre o razón social',
+  titular: 'Bitdesal S.L.',
   /** NIF / CIF. */
-  nif: 'PENDIENTE: NIF',
+  nif: 'B23953029',
   /** Domicilio completo. */
-  domicilio: 'PENDIENTE: domicilio (calle, número, CP, ciudad)',
-  /** Solo si el titular es una sociedad; si es una persona física, deja ''. */
-  registroMercantil: 'PENDIENTE: Registro Mercantil de …, tomo …, folio …, hoja …',
+  domicilio: 'Partida Daimes 2146. Elx',
   email: 'hola@regaloskawaii.es',
   web: 'https://regaloskawaii.es',
   /** Fecha de la última revisión de los textos. */
