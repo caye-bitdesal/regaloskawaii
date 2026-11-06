@@ -1,41 +1,44 @@
-# Regalos Kawaii
+<h1 align="center">
+  <img src="./public/favicon.svg" width="72" height="72" alt="" aria-hidden="true">
+  <br>
+  Regalos Kawaii
+</h1>
 
-Catálogo estático (Astro) con datos de EmDash e imágenes locales.
+**Regalos Kawaii** es la base de código del sitio **[regaloskawaii.es](https://regaloskawaii.es)**: un catálogo curado de ideas de regalo con estética kawaii. La web **no es una tienda**: enlaza a tiendas externas; aquí se elaboran fichas, taxonomías y enlaces de afiliado para ayudar a descubrir productos.
 
-## Uso local
+Este repositorio contiene el front estático (**Astro**), la integración con el CMS **EmDash** (contenido e imágenes) y el flujo que empaqueta todo para publicación.
 
-```bash
-cp .env.example .env   # EMDASH_URL + EMDASH_TOKEN del admin
-npm install
-npm run dev            # http://localhost:4322
+## Arquitectura
+
+**[regaloskawaii-admin](https://github.com/caye-bitdesal/regaloskawaii-admin)** es el proyecto del panel **EmDash** donde se editan productos, taxonomías, páginas y medios. Expone una API HTTP y sirve los ficheros de imagen; no forma parte de este repositorio, pero es la fuente de verdad del contenido.
+
+En **tiempo de build** (local o CI), los scripts `dev` / `build` llaman a esa API con `EMDASH_URL` y un `EMDASH_TOKEN` de solo lectura, vuelcan un snapshot en `.cache/content/` y copian imágenes a `public/media/`. **Astro** genera entonces HTML estático en `dist/`; el token **no** viaja al navegador ni debe aparecer en `dist/` (el workflow lo comprueba).
+
+```mermaid
+flowchart TB
+  subgraph Admin["regaloskawaii-admin (EmDash)"]
+    API["API JSON + medios"]
+  end
+
+  subgraph Site["regaloskawaii (este repo)"]
+    Sync["Sync en build<br/>.cache/content · public/media"]
+    Astro["Astro · sitio estático"]
+    Dist["dist/"]
+    Sync --> Astro --> Dist
+  end
+
+  subgraph Pipe["Publicación"]
+    GHA["GitHub Actions"]
+    CF["Cloudflare Pages"]
+    GHA -->|"npm run build"| Sync
+    GHA --> CF
+    Dist --> CF
+  end
+
+  API -->|"EMDASH_URL + token (solo build)"| Sync
+  Admin -.->|"plugin · repository_dispatch"| GHA
+
+  Visitantes["Visitantes"] --> CF
 ```
 
-**Qué hace `npm run dev`:**
-
-1. Si hay `EMDASH_TOKEN` y aún no hay caché → descarga contenido + imágenes (una vez).
-2. Si ya existe `.cache/content/` → usa eso (sin llamadas JSON a la API).
-3. Las fotos se sirven desde `/media/...` en `public/media/`.
-4. Sin token → datos de ejemplo en `fixtures/emdash/`.
-
-Admin EmDash en **4321**, web en **4322** (cambiable con `PORT` en `.env`).
-
-Refrescar datos desde EmDash (el **admin tiene que estar en marcha**, p. ej. en el 4321):
-
-```bash
-REFRESH_CONTENT=1 npm run dev
-# o
-npm run sync-content
-```
-
-Si pides refresh con el admin parado pero ya tienes `.cache/content/`, `npm run dev` arranca igual usando la caché.
-
-## Producción
-
-```bash
-npm run build    # usa la caché; sync automático si hay token y no hay caché
-npm run preview
-```
-
-Sube la carpeta `dist/` a cualquier hosting estático. No hace falta systemd ni cron en el servidor: sincroniza en tu PC o CI antes de desplegar.
-
-Spec: `specs/regaloskawaii-web/spec.html`.
+Para **instalar, desarrollar en local, construir y desplegar**, consulta [DEVELOPMENT.md](./DEVELOPMENT.md).
