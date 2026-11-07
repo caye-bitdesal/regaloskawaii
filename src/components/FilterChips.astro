@@ -9,9 +9,16 @@ interface Props {
   gridId?: string;
   /** Refleja el filtro en `?coleccion=` (páginas de categoría). */
   urlSync?: boolean;
+  /** Filtra `.collection-block` por `data-collection` en lugar de `.product-card`. */
+  collectionBlocks?: boolean;
 }
 
-const { chips, gridId = 'product-grid', urlSync = false } = Astro.props;
+const {
+  chips,
+  gridId = 'product-grid',
+  urlSync = false,
+  collectionBlocks = false,
+} = Astro.props;
 ---
 
 <div
@@ -19,6 +26,7 @@ const { chips, gridId = 'product-grid', urlSync = false } = Astro.props;
   id="filter-chips"
   data-grid-id={gridId}
   data-url-sync={urlSync ? 'true' : undefined}
+  data-collection-blocks={collectionBlocks ? 'true' : undefined}
 >
   {
     chips.map((chip, i) => (

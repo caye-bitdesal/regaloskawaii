@@ -254,6 +254,9 @@ body > footer {
 .product-card.hidden {
   display: none;
 }
+.collection-block.hidden {
+  display: none;
+}
 .heart.is-favorite {
   color: #ef5d8a;
 }

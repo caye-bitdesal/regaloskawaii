@@ -1,5 +1,7 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import FilterChips from '../components/FilterChips.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import ProductCard from '../components/ProductCard.astro';
 import RkIcon from '../components/RkIcon.astro';
@@ -7,6 +9,10 @@ import { getCatalog } from '../lib/catalog';
 
 const catalog = await getCatalog();
 const collectionsWithProducts = catalog.collections.filter((c) => c.productIds.length > 0);
+const chips = [
+  { id: 'all', label: 'Todas' },
+  ...collectionsWithProducts.map((c) => ({ id: c.slug, label: c.title })),
+];
 ---
 
 <SiteLayout
@@ -25,12 +31,33 @@ const collectionsWithProducts = catalog.collections.filter((c) => c.productIds.l
     </div>
   </section>
 
-  <section class="catalog shell collection-blocks">
+  <section class="catalog shell">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Explora a tu manera</span>
+        <h2>Un universo para cada gusto</h2>
+      </div>
+      <p>Ideas ordenadas para encontrar justo lo que buscas</p>
+    </div>
+    {chips.length > 1 && (
+      <FilterChips chips={chips} gridId="collection-blocks-list" collectionBlocks />
+    )}
+    <div class="category-showcase" style="margin-bottom: 2rem;">
+      {collectionsWithProducts.map((col, i) => (
+        <CategoryCard
+          href={`#coleccion-${col.slug}`}
+          title={col.title}
+          productCount={col.productIds.length}
+          index={i}
+        />
+      ))}
+    </div>
+    <div id="collection-blocks-list" class="collection-blocks">
     {
       collectionsWithProducts.map((col) => {
         const products = catalog.products.filter((p) => p.coleccionSlugs.includes(col.slug));
         return (
-          <article class="collection-block" id={`coleccion-${col.slug}`}>
+          <article class="collection-block" id={`coleccion-${col.slug}`} data-collection={col.slug}>
             <div class="collection-block-header">
               <div>
                 <span class="eyebrow">Colección</span>
@@ -53,5 +80,23 @@ const collectionsWithProducts = catalog.collections.filter((c) => c.productIds.l
         );
       })
     }
+    </div>
   </section>
 </SiteLayout>
+
+<script>
+  document
+    .querySelectorAll<HTMLAnchorElement>('.category-showcase a.category-tile[href^="#coleccion-"]')
+    .forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const slug = link.getAttribute('href')?.replace(/^#coleccion-/, '');
+        if (!slug) return;
+        const btn = document.querySelector<HTMLButtonElement>(
+          `#filter-chips button[data-filter="${slug}"]`,
+        );
+        btn?.click();
+        document.getElementById(`coleccion-${slug}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+</script>

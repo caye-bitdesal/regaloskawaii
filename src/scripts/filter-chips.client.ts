@@ -11,6 +11,7 @@ export function initFilterChips(): void {
   const grid = document.getElementById(gridId);
   if (!grid) return;
 
+  const collectionBlocks = container.dataset.collectionBlocks === 'true';
   const buttons = container.querySelectorAll<HTMLButtonElement>('button[data-filter]');
 
   const setActive = (active: HTMLButtonElement) => {
@@ -19,18 +20,31 @@ export function initFilterChips(): void {
     });
   };
 
+  const applyFilter = (filter: string) => {
+    if (collectionBlocks) {
+      grid.querySelectorAll<HTMLElement>('.collection-block').forEach((block) => {
+        if (filter === 'all') {
+          block.classList.remove('hidden');
+          return;
+        }
+        block.classList.toggle('hidden', block.dataset.collection !== filter);
+      });
+      return;
+    }
+    grid.querySelectorAll<HTMLElement>('.product-card').forEach((card) => {
+      if (filter === 'all') {
+        card.classList.remove('hidden');
+        return;
+      }
+      const cols = (card.dataset.colecciones ?? '').split(',').filter(Boolean);
+      card.classList.toggle('hidden', !cols.includes(filter));
+    });
+  };
+
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
       setActive(btn);
-      const filter = btn.dataset.filter ?? 'all';
-      grid.querySelectorAll<HTMLElement>('.product-card').forEach((card) => {
-        if (filter === 'all') {
-          card.classList.remove('hidden');
-          return;
-        }
-        const cols = (card.dataset.colecciones ?? '').split(',').filter(Boolean);
-        card.classList.toggle('hidden', !cols.includes(filter));
-      });
+      applyFilter(btn.dataset.filter ?? 'all');
     });
   });
 }
