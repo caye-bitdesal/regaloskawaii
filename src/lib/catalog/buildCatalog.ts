@@ -13,8 +13,8 @@ import {
   getEmDashBaseUrl,
   useContentCache,
 } from '../emdash/client';
-import { buildTaxonomyGroups, labelAt } from './taxonomyGroups';
-import { useFixtures } from '../emdash/client';
+import { buildCategoryTree, buildTaxonomyGroups, labelAt } from './taxonomyGroups';
+import { flattenTerms, useFixtures } from '../emdash/client';
 import {
   affiliateUrl,
   booleanFrom01,
@@ -90,7 +90,7 @@ async function loadProductCategoriaTerms(
 async function loadCategoriaTerms(): Promise<TaxonomyTerm[]> {
   if (useContentCache()) {
     const snap = await readSnapshot();
-    if (snap?.categoriaTerms?.length) return snap.categoriaTerms;
+    if (snap?.categoriaTerms?.length) return flattenTerms(snap.categoriaTerms);
   }
   return fetchCategoriaTerms();
 }
@@ -272,7 +272,7 @@ export async function buildCatalog(): Promise<Catalog> {
     }))
     .sort((a, b) => a.orden - b.orden);
 
-  const categories = buildTaxonomyGroups(
+  const { categories, allCategories } = buildCategoryTree(
     categoriaTermsRaw,
     products,
     (p) => p.categoriaSlugs,
@@ -304,7 +304,8 @@ export async function buildCatalog(): Promise<Catalog> {
     products,
     productsBySlug: Object.fromEntries(products.map((p) => [p.slug, p])),
     categories,
-    categoriesBySlug: Object.fromEntries(categories.map((c) => [c.slug, c])),
+    allCategories,
+    categoriesBySlug: Object.fromEntries(allCategories.map((c) => [c.slug, c])),
     brands,
     brandsBySlug: Object.fromEntries(brands.map((b) => [b.slug, b])),
     characters,

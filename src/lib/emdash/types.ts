@@ -159,7 +159,12 @@ export interface CatalogTaxonomy {
   productIds: string[];
 }
 
-export type CatalogCategory = CatalogTaxonomy;
+export interface CatalogCategory extends CatalogTaxonomy {
+  /** Slug de la categoría padre (null en las de primer nivel). */
+  parentSlug: string | null;
+  /** Subcategorías con productos, ordenadas por nombre. */
+  children: CatalogCategory[];
+}
 export type CatalogBrand = CatalogTaxonomy;
 export type CatalogCharacter = CatalogTaxonomy;
 
@@ -183,7 +188,10 @@ export interface CatalogPage {
 export interface Catalog {
   products: CatalogProduct[];
   productsBySlug: Record<string, CatalogProduct>;
+  /** Solo las categorías de primer nivel (cada una con sus subcategorías en `children`). */
   categories: CatalogCategory[];
+  /** Todas, de primer nivel y subcategorías. */
+  allCategories: CatalogCategory[];
   categoriesBySlug: Record<string, CatalogCategory>;
   brands: CatalogBrand[];
   brandsBySlug: Record<string, CatalogBrand>;

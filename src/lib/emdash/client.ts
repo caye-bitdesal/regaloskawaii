@@ -322,18 +322,31 @@ export async function fetchTaxonomyTerms(name: ProductTaxonomy): Promise<Taxonom
   if (useContentCache()) {
     const snap = await getSnapshot();
     if (!snap) throw new EmDashError('No hay caché de contenido.', 'CONTENT_CACHE_MISSING');
-    return snapshotTaxonomyList(snap, name);
+    return flattenTerms(snapshotTaxonomyList(snap, name));
   }
 
   if (useFixtures()) {
     const data = await loadFixture<{ terms: TaxonomyTerm[] }>(TAXONOMY_LIST_FIXTURE[name]);
-    return data.terms ?? [];
+    return flattenTerms(data.terms ?? []);
   }
 
   const data = await fetchJson<{ terms: TaxonomyTerm[] }>(
     `/_emdash/api/taxonomies/${name}/terms`,
   );
-  return data.terms ?? [];
+  return flattenTerms(data.terms ?? []);
+}
+
+/** Las taxonomías jerárquicas llegan como árbol (`children`): las aplanamos conservando `parentId`. */
+export function flattenTerms(terms: TaxonomyTerm[]): TaxonomyTerm[] {
+  const out: TaxonomyTerm[] = [];
+  const walk = (list: TaxonomyTerm[]) => {
+    for (const { children, ...term } of list) {
+      out.push(term);
+      if (children?.length) walk(children);
+    }
+  };
+  walk(terms);
+  return out;
 }
 
 export async function fetchProductTaxonomyTerms(

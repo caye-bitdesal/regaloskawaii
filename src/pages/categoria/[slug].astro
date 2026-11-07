@@ -7,7 +7,7 @@ import { getCatalog } from '../../lib/catalog';
 
 export async function getStaticPaths() {
   const catalog = await getCatalog();
-  return catalog.categories.map((cat) => ({
+  return catalog.allCategories.map((cat) => ({
     params: { slug: cat.slug },
     props: { categorySlug: cat.slug },
   }));
@@ -18,7 +18,14 @@ const catalog = await getCatalog();
 const category = catalog.categoriesBySlug[categorySlug as string];
 if (!category) throw new Error(`Categoría no encontrada: ${categorySlug}`);
 
-const products = catalog.products.filter((p) => p.categoriaSlugs.includes(category.slug));
+// Incluye los productos de sus subcategorías.
+const ids = new Set(category.productIds);
+const products = catalog.products.filter((p) => ids.has(p.id));
+
+const parent = category.parentSlug ? catalog.categoriesBySlug[category.parentSlug] : undefined;
+// En una subcategoría se muestran sus hermanas, para poder saltar de una a otra.
+const subcategories = parent ? parent.children : category.children;
+const subcategoryBase = parent ?? category;
 
 const collectionSlugsInView = new Set<string>();
 for (const p of products) {
@@ -36,11 +43,17 @@ const chips = [
 <SiteLayout
   pathname={`/categoria/${category.slug}`}
   title={category.label}
-  description={`Regalos kawaii de ${category.label.toLowerCase()}.`}
+  description={parent ? `${category.label} kawaii: ideas de regalo de ${parent.label.toLowerCase()}.` : `Regalos kawaii de ${category.label.toLowerCase()}.`}
 >
   <section class="page-intro categories-intro">
     <div class="shell">
-      <span class="eyebrow">{category.label}</span>
+      {
+        parent ? (
+          <a class="eyebrow" href={`/categoria/${parent.slug}`}>← {parent.label}</a>
+        ) : (
+          <span class="eyebrow">{category.label}</span>
+        )
+      }
       <h1 set:html={category.label.includes(' ') ? category.label : `<em>${category.label}</em>`} />
       <p>
         {products.length}{' '}
@@ -51,9 +64,34 @@ const chips = [
 
   <section class="catalog shell">
     {
-      chips.length > 1 && (
+      subcategories.length > 0 && (
         <>
           <div class="section-heading">
+            <div>
+              <h2>Tipos de {subcategoryBase.label.toLowerCase()}</h2>
+            </div>
+          </div>
+          <nav class="category-row subcategory-row" aria-label={`Tipos de ${subcategoryBase.label}`}>
+            <a href={`/categoria/${subcategoryBase.slug}`} class:list={['category', !parent && 'active']}>
+              Todo
+            </a>
+            {subcategories.map((sub) => (
+              <a
+                href={`/categoria/${sub.slug}`}
+                class:list={['category', sub.slug === category.slug && 'active']}
+                aria-current={sub.slug === category.slug ? 'page' : undefined}
+              >
+                {sub.label} <small>({sub.count})</small>
+              </a>
+            ))}
+          </nav>
+        </>
+      )
+    }
+    {
+      chips.length > 1 && (
+        <>
+          <div class="section-heading" style={subcategories.length > 0 ? 'margin-top: 1.5rem;' : undefined}>
             <div>
               <h2>Filtrar por colección</h2>
             </div>
@@ -82,3 +120,10 @@ const chips = [
     }
   </section>
 </SiteLayout>
+
+<script>
+  // En móvil, que se vea la subcategoría activa aunque esté al final de la fila.
+  document
+    .querySelector('.subcategory-row [aria-current="page"]')
+    ?.scrollIntoView({ block: 'nearest', inline: 'center' });
+</script>
