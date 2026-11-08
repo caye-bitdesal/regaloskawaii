@@ -43,6 +43,15 @@ const bullets = [
       <li>{b}</li>
     ))}
   </ul>
+  {
+    product.autenticidadNoGarantizada && (
+      <p class="unverified-note" role="note">
+        <strong>Producto no oficial.</strong> No podemos garantizar su autenticidad: puede no ser un
+        artículo con licencia de la marca o del personaje. Revisa la ficha y las opiniones del vendedor
+        antes de comprar.
+      </p>
+    )
+  }
   <a class="primary wide" href={product.affiliateUrl} target="_blank" rel="sponsored nofollow noopener">
     Visitar producto en {shopLabel}
     <RkIcon name="external" />

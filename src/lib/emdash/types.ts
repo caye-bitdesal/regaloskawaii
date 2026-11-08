@@ -134,6 +134,8 @@ export interface CatalogProduct {
   resumen: string;
   descripcion?: PortableTextBlock[];
   precioRef?: number;
+  /** Tipo «no-oficial» en EmDash: no podemos garantizar que sea un producto original. */
+  autenticidadNoGarantizada: boolean;
   imagenUrl?: string;
   imagenAlt?: string;
   destacado: boolean;

@@ -237,6 +237,7 @@ export async function buildCatalog(): Promise<Catalog> {
       resumen: data.resumen ?? '',
       descripcion: data.descripcion,
       precioRef: data.precio_ref,
+      autenticidadNoGarantizada: data.tipo === 'no-oficial',
       imagenUrl: resolveProductImageUrl(data, emdashUrl),
       imagenAlt: data.imagen?.alt ?? data.title,
       destacado: booleanFrom01(data.destacado),
