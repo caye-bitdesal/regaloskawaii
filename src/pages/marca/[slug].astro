@@ -17,7 +17,13 @@ const catalog = await getCatalog();
 const brand = catalog.brandsBySlug[brandSlug as string];
 if (!brand) throw new Error(`Marca no encontrada: ${brandSlug}`);
 
-const products = catalog.products.filter((p) => p.marcaSlugs.includes(brand.slug));
+const products = catalog.products
+  .filter((p) => p.marcaSlugs.includes(brand.slug))
+  .sort(
+    (a, b) =>
+      Number(a.autenticidadNoGarantizada) - Number(b.autenticidadNoGarantizada) ||
+      a.title.localeCompare(b.title, 'es'),
+  );
 ---
 
 <SiteLayout

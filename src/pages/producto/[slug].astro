@@ -1,5 +1,6 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import OfficialProductBadge from '../../components/OfficialProductBadge.astro';
 import ProductDetailPanel from '../../components/ProductDetailPanel.astro';
 import RelatedProducts from '../../components/RelatedProducts.astro';
 import RkIcon from '../../components/RkIcon.astro';
@@ -40,6 +41,7 @@ const seoDesc = product.seo?.description ?? product.resumen;
           <span class="meta" style="display:grid;place-items:center;height:100%;">Sin imagen</span>
         )
       }
+      {product.productoOficial && <OfficialProductBadge variant="detail" />}
       <span class="detail-sticker">Selección kawaii</span>
     </div>
     <ProductDetailPanel product={product} />

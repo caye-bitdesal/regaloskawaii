@@ -17,7 +17,13 @@ const catalog = await getCatalog();
 const character = catalog.charactersBySlug[characterSlug as string];
 if (!character) throw new Error(`Personaje no encontrado: ${characterSlug}`);
 
-const products = catalog.products.filter((p) => p.personajeSlugs.includes(character.slug));
+const products = catalog.products
+  .filter((p) => p.personajeSlugs.includes(character.slug))
+  .sort(
+    (a, b) =>
+      Number(a.autenticidadNoGarantizada) - Number(b.autenticidadNoGarantizada) ||
+      a.title.localeCompare(b.title, 'es'),
+  );
 ---
 
 <SiteLayout

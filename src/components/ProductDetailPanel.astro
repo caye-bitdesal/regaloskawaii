@@ -44,6 +44,15 @@ const bullets = [
     ))}
   </ul>
   {
+    product.productoOficial && (
+      <p class="verified-note" role="note">
+        <strong>Producto oficial.</strong> Lo hemos marcado como artículo original o con licencia según la
+        información del vendedor y del catálogo. Si tienes dudas, revisa la ficha en la tienda antes de
+        comprar.
+      </p>
+    )
+  }
+  {
     product.autenticidadNoGarantizada && (
       <p class="unverified-note" role="note">
         <strong>Producto no oficial.</strong> No podemos garantizar su autenticidad: puede no ser un

@@ -1,0 +1,20 @@
+---
+interface Props {
+  variant?: 'card' | 'detail';
+}
+
+const { variant = 'card' } = Astro.props;
+const title = 'Producto que hemos verificado como original o con licencia de marca';
+const sizes = variant === 'detail' ? { w: 72, h: 72 } : { w: 52, h: 52 };
+---
+
+<span class:list={['official-badge', variant === 'detail' && 'official-badge--detail']} title={title}>
+  <img
+    src="/icons/badge-oficial.png"
+    alt="Producto oficial"
+    width={sizes.w}
+    height={sizes.h}
+    loading="lazy"
+    decoding="async"
+  />
+</span>

@@ -136,6 +136,8 @@ export interface CatalogProduct {
   precioRef?: number;
   /** Tipo «no-oficial» en EmDash: no podemos garantizar que sea un producto original. */
   autenticidadNoGarantizada: boolean;
+  /** Tipo «oficial» en EmDash: lo hemos marcado como producto original o con licencia. */
+  productoOficial: boolean;
   imagenUrl?: string;
   imagenAlt?: string;
   destacado: boolean;

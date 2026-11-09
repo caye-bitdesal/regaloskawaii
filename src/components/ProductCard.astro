@@ -1,6 +1,7 @@
 ---
 import type { CatalogProduct } from '../lib/emdash/types';
 import { formatPriceEur } from '../lib/emdash/helpers';
+import OfficialProductBadge from './OfficialProductBadge.astro';
 import RkIcon from './RkIcon.astro';
 
 interface Props {
@@ -47,6 +48,7 @@ const shopLabel = product.tiendaTitle.replace(' España', '');
         badge && <span class="badge">{badge}</span>
       )
     }
+    {product.productoOficial && <OfficialProductBadge />}
     {
       product.autenticidadNoGarantizada && (
         <span class="badge unverified" title="No podemos garantizar que sea un producto original">
