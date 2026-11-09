@@ -1,6 +1,7 @@
 ---
 import type { CatalogProduct } from '../lib/emdash/types';
 import { formatPriceEur } from '../lib/emdash/helpers';
+import OfficialProductBadge from './OfficialProductBadge.astro';
 import RkIcon from './RkIcon.astro';
 import PortableText from './PortableText.astro';
 
@@ -21,7 +22,10 @@ const bullets = [
 
 <div class="detail-copy">
   <span class="eyebrow">{label}</span>
-  <h1>{product.title}</h1>
+  <h1 class="product-heading">
+    {product.productoOficial && <OfficialProductBadge variant="detail" />}
+    <span>{product.title}</span>
+  </h1>
   {
     price && (
       <div class="detail-price">

@@ -5,15 +5,20 @@ interface Props {
 
 const { variant = 'card' } = Astro.props;
 const title = 'Producto que hemos verificado como original o con licencia de marca';
-const sizes = variant === 'detail' ? { w: 72, h: 72 } : { w: 52, h: 52 };
+const size = variant === 'detail' ? 36 : 22;
 ---
 
-<span class:list={['official-badge', variant === 'detail' && 'official-badge--detail']} title={title}>
+<span
+  class:list={['official-badge', variant === 'detail' && 'official-badge--detail']}
+  title={title}
+  role="img"
+  aria-label="Producto oficial"
+>
   <img
     src="/icons/badge-oficial.png"
-    alt="Producto oficial"
-    width={sizes.w}
-    height={sizes.h}
+    alt=""
+    width={size}
+    height={size}
     loading="lazy"
     decoding="async"
   />

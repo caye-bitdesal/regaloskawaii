@@ -48,7 +48,6 @@ const shopLabel = product.tiendaTitle.replace(' España', '');
         badge && <span class="badge">{badge}</span>
       )
     }
-    {product.productoOficial && <OfficialProductBadge />}
     <span class="heart">
       <button
         type="button"
@@ -62,7 +61,10 @@ const shopLabel = product.tiendaTitle.replace(' España', '');
   </a>
   <div class="card-copy">
     <span class="meta">{label}</span>
-    <a class="product-title" href={`/producto/${product.slug}`}>{product.title}</a>
+    <a class="product-title" href={`/producto/${product.slug}`}>
+      {product.productoOficial && <OfficialProductBadge />}
+      <span>{product.title}</span>
+    </a>
     <div class="card-bottom">
       <div class="price-stack">
         {
