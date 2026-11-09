@@ -49,13 +49,6 @@ const shopLabel = product.tiendaTitle.replace(' España', '');
       )
     }
     {product.productoOficial && <OfficialProductBadge />}
-    {
-      product.autenticidadNoGarantizada && (
-        <span class="badge unverified" title="No podemos garantizar que sea un producto original">
-          No oficial
-        </span>
-      )
-    }
     <span class="heart">
       <button
         type="button"
