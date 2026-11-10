@@ -1,0 +1,109 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import RkIcon from '../components/RkIcon.astro';
+---
+
+<SiteLayout
+  pathname="/404"
+  title="Página no encontrada"
+  description="Esta página no existe. Vuelve al inicio para seguir descubriendo regalos kawaii."
+  noindex
+>
+  <section class="not-found shell">
+    <div class="not-found-visual">
+      <picture>
+        <source srcset="/capibara-404.webp" type="image/webp" />
+        <img
+          src="/capibara-404.gif"
+          alt="Capibara de peluche con traje señalando el camino"
+          width="280"
+          height="238"
+        />
+      </picture>
+    </div>
+    <div class="not-found-copy">
+      <span class="eyebrow"><RkIcon name="sparkle" /> Error 404</span>
+      <h1>¿<em>Perdida</em>?</h1>
+      <p>No te preocupes, te acompaño al punto de partida.</p>
+      <div class="not-found-actions">
+        <a class="primary" href="/">
+          Volver al inicio
+          <RkIcon name="arrow" />
+        </a>
+        <a class="not-found-secondary" href="/categorias">Ver categorías</a>
+      </div>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .not-found {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 48px;
+    max-width: 860px;
+    padding-block: 72px 96px;
+  }
+  .not-found-visual {
+    display: grid;
+    place-items: center;
+    width: 320px;
+    aspect-ratio: 1;
+    border-radius: 46% 54% 65% 35% / 45% 39% 61% 55%;
+    background: #fee8ee;
+    overflow: hidden;
+  }
+  .not-found-visual img {
+    display: block;
+    width: 280px;
+    height: auto;
+  }
+  .not-found-copy h1 {
+    margin: 12px 0 0;
+    font-size: clamp(44px, 7vw, 68px);
+  }
+  .not-found-copy > p {
+    max-width: 420px;
+    margin: 16px 0 0;
+    color: #776b73;
+    font-size: 19px;
+    line-height: 1.6;
+  }
+  .not-found-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+  }
+  .not-found-secondary {
+    margin-top: 30px;
+    color: #e74f7d;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .not-found-secondary:hover {
+    text-decoration: underline;
+  }
+  @media (max-width: 720px) {
+    .not-found {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      gap: 28px;
+      padding-block: 40px 64px;
+      text-align: center;
+    }
+    .not-found-visual {
+      width: min(280px, 80vw);
+    }
+    .not-found-visual img {
+      width: 88%;
+    }
+    .not-found-copy > p {
+      margin-inline: auto;
+    }
+    .not-found-actions {
+      justify-content: center;
+    }
+  }
+</style>

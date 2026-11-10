@@ -63,6 +63,8 @@ export interface ProductoEntry {
   slug: string;
   status: string;
   data: ProductoData;
+  /** Fecha de la última modificación en EmDash (ISO 8601). */
+  updatedAt?: string;
   seo?: {
     title: string | null;
     description: string | null;
@@ -155,6 +157,8 @@ export interface CatalogProduct {
   tiendaId: string;
   tiendaTitle: string;
   affiliateUrl: string;
+  /** Fecha de la última modificación en EmDash (ISO 8601), para el lastmod del sitemap. */
+  updatedAt?: string;
   seo: ProductoEntry['seo'];
 }
 

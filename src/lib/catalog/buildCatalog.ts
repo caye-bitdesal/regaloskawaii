@@ -256,6 +256,7 @@ export async function buildCatalog(): Promise<Catalog> {
       tiendaId: tienda.id,
       tiendaTitle: tienda.data.title,
       affiliateUrl: affiliateUrl(data, tienda.data),
+      updatedAt: raw.updatedAt,
       seo: raw.seo,
     });
   }
@@ -321,7 +322,39 @@ export async function buildCatalog(): Promise<Catalog> {
   };
 
   writeCatalogIndex(catalog);
+  writeSitemapLastmod(catalog);
   return catalog;
+}
+
+const SITEMAP_LASTMOD_FILE = path.join(__dirname, '../../../.cache/sitemap-lastmod.json');
+
+/**
+ * Guarda la fecha de última modificación de cada URL para el `lastmod` del sitemap
+ * (lo lee `astro.config.mjs`). Una página de listado toma la fecha del producto más
+ * reciente que muestra.
+ */
+function writeSitemapLastmod(catalog: Catalog): void {
+  if (isAstroDev()) return;
+
+  const byId = new Map(catalog.products.map((p) => [p.id, p.updatedAt]));
+  const latest = (dates: (string | undefined)[]): string | undefined =>
+    dates.filter((d): d is string => Boolean(d)).sort().at(-1);
+  const latestOf = (ids: string[]) => latest(ids.map((id) => byId.get(id)));
+
+  const lastmod: Record<string, string | undefined> = {};
+  const all = latest(catalog.products.map((p) => p.updatedAt));
+  for (const p of ['/', '/categorias', '/colecciones', '/marcas', '/personajes', '/chollos']) {
+    lastmod[p] = all;
+  }
+  for (const p of catalog.products) lastmod[`/producto/${p.slug}`] = p.updatedAt;
+  for (const c of catalog.allCategories) lastmod[`/categoria/${c.slug}`] = latestOf(c.productIds);
+  for (const b of catalog.brands) lastmod[`/marca/${b.slug}`] = latestOf(b.productIds);
+  for (const c of catalog.characters) lastmod[`/personaje/${c.slug}`] = latestOf(c.productIds);
+  for (const c of catalog.collections) lastmod[`/coleccion/${c.slug}`] = latestOf(c.productIds);
+
+  const clean = Object.fromEntries(Object.entries(lastmod).filter(([, d]) => d));
+  mkdirSync(path.dirname(SITEMAP_LASTMOD_FILE), { recursive: true });
+  writeFileSync(SITEMAP_LASTMOD_FILE, JSON.stringify(clean), 'utf-8');
 }
 
 function writeCatalogIndex(catalog: Catalog): void {

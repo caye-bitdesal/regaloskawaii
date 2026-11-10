@@ -9,6 +9,8 @@ interface Props {
   description?: string;
   headerVariant?: 'full' | 'minimal';
   pathname?: string;
+  /** Pide a los buscadores que no indexen la página (p. ej. la 404). */
+  noindex?: boolean;
 }
 
 const {
@@ -16,6 +18,7 @@ const {
   description = 'Una selección de cosas bonitas encontradas por internet.',
   headerVariant = 'full',
   pathname = Astro.url.pathname,
+  noindex = false,
 } = Astro.props;
 
 const fullTitle = title.includes('Regalos Kawaii') ? title : `${title} | Regalos Kawaii`;
@@ -28,6 +31,7 @@ const fullTitle = title.includes('Regalos Kawaii') ? title : `${title} | Regalos
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
   </head>
