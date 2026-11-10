@@ -19,8 +19,10 @@ import {
   affiliateUrl,
   booleanFrom01,
   mediaUrl,
+  prioridadProducto,
   stripInternalProductFields,
 } from '../emdash/helpers';
+import { compareProducts } from './sortProducts';
 import {
   collectStorageKeysFromProductos,
   localMediaPath,
@@ -239,6 +241,7 @@ export async function buildCatalog(): Promise<Catalog> {
       precioRef: data.precio_ref,
       autenticidadNoGarantizada: data.tipo === 'no-oficial',
       productoOficial: data.tipo === 'oficial',
+      priority: prioridadProducto(data, tienda.data),
       imagenUrl: resolveProductImageUrl(data, emdashUrl),
       imagenAlt: data.imagen?.alt ?? data.title,
       destacado: booleanFrom01(data.destacado),
@@ -257,10 +260,7 @@ export async function buildCatalog(): Promise<Catalog> {
     });
   }
 
-  products.sort((a, b) => {
-    if (a.destacado !== b.destacado) return a.destacado ? -1 : 1;
-    return a.title.localeCompare(b.title, 'es');
-  });
+  products.sort(compareProducts);
 
   const collections: CatalogCollection[] = colecciones
     .map((col) => ({

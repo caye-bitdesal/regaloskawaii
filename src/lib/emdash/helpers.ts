@@ -18,6 +18,30 @@ export function productImageUrl(data: ProductoData, emdashUrl = getEmdashUrl()):
   return key ? mediaUrl(key, emdashUrl) : undefined;
 }
 
+export function prioridadProducto(
+  data: Pick<ProductoData, 'tipo' | 'enlace_afiliado' | 'priority'>,
+  tienda: Pick<TiendaData, 'plantilla_url' | 'title' | 'tag_web'>,
+): number {
+  const almacenada = data.priority ?? (data as ProductoData & { prioridad?: number }).prioridad;
+  if (almacenada != null && Number.isFinite(almacenada)) return almacenada;
+  if (data.tipo === 'oficial') return 2;
+  const enlace = data.enlace_afiliado?.trim() ?? '';
+  const amazon = /amazon\./i.test(tienda.plantilla_url) || /amazon/i.test(tienda.title);
+  if (amazon) {
+    if (enlace) {
+      try {
+        if (!new URL(enlace).searchParams.get('tag')) return 0;
+      } catch {
+        return 0;
+      }
+    }
+    return 1;
+  }
+  if (/(^|\.)s\.click\.aliexpress\./i.test(enlace)) return 1;
+  if (enlace.includes('aff_fcid') || enlace.includes('aff_fsk')) return 1;
+  return 0;
+}
+
 export function affiliateUrl(
   producto: Pick<ProductoData, 'id_externo' | 'enlace_afiliado'>,
   tienda: TiendaData,

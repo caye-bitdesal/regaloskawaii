@@ -2,6 +2,7 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
+import { compareProducts } from '../../lib/catalog/sortProducts';
 import { getCatalog } from '../../lib/catalog';
 
 export async function getStaticPaths() {
@@ -19,11 +20,7 @@ if (!character) throw new Error(`Personaje no encontrado: ${characterSlug}`);
 
 const products = catalog.products
   .filter((p) => p.personajeSlugs.includes(character.slug))
-  .sort(
-    (a, b) =>
-      Number(a.autenticidadNoGarantizada) - Number(b.autenticidadNoGarantizada) ||
-      a.title.localeCompare(b.title, 'es'),
-  );
+  .sort(compareProducts);
 ---
 
 <SiteLayout

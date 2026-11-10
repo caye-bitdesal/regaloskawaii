@@ -49,6 +49,8 @@ export interface ProductoData {
   galeria?: { imagen: EmDashImage }[];
   fuente_imagen?: string;
   tipo?: string;
+  /** 2 oficial, 1 afiliado válido, 0 sin afiliación (listados: mayor = más arriba). */
+  priority?: number;
   edad_min?: number;
   destacado: EmDashBool;
   para_grabar?: EmDashBool;
@@ -138,6 +140,7 @@ export interface CatalogProduct {
   autenticidadNoGarantizada: boolean;
   /** Tipo «oficial» en EmDash: lo hemos marcado como producto original o con licencia. */
   productoOficial: boolean;
+  priority: number;
   imagenUrl?: string;
   imagenAlt?: string;
   destacado: boolean;
