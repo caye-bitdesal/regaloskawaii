@@ -192,23 +192,84 @@ async function loadFixture<T>(filename: string): Promise<T> {
   return parsed.data;
 }
 
+/*
+ * EmDash va en un Worker de Cloudflare (plan gratuito) con muy poca CPU por petición:
+ * si recibe muchas peticiones seguidas o en paralelo responde 503. Por eso la build
+ * hace las peticiones de una en una, con una pausa mínima que se alarga sola con los
+ * 503/429, reintenta con espera creciente y pide páginas de PAGE_LIMIT elementos.
+ *   EMDASH_PAUSE_MS   pausa mínima entre peticiones (por defecto 250 ms)
+ */
+const PAGE_LIMIT = '50';
+const PAUSE_MIN = Number(process.env.EMDASH_PAUSE_MS ?? 250);
+const PAUSE_MAX = 8000;
+const RETRIES = 6;
+const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+let pause = PAUSE_MIN;
+let okStreak = 0;
+let lastCall = 0;
+let queue: Promise<unknown> = Promise.resolve();
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Peticiones hechas en esta build (se muestran al terminar la sincronización). */
+export const requestStats = { requests: 0, retries: 0 };
+
+async function fetchJsonNow<T>(urlPath: string, token: string): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    const wait = lastCall + pause - Date.now();
+    if (wait > 0) await sleep(wait);
+    lastCall = Date.now();
+    requestStats.requests++;
+
+    let res: Response | undefined;
+    let networkError: unknown;
+    try {
+      res = await fetch(`${baseUrl()}${urlPath}`, { headers: { Authorization: `Bearer ${token}` } });
+    } catch (e) {
+      networkError = e;
+    }
+
+    if (!res || RETRYABLE.has(res.status)) {
+      pause = Math.min(Math.max(pause, 250) * 2, PAUSE_MAX);
+      okStreak = 0;
+      if (attempt >= RETRIES) {
+        throw new EmDashError(
+          `${urlPath}: ${res ? `HTTP ${res.status}` : String((networkError as Error)?.message ?? networkError)}`,
+        );
+      }
+      requestStats.retries++;
+      const retryAfter = Number(res?.headers.get('retry-after'));
+      const ms = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : Math.min(2000 * 2 ** attempt, 60_000);
+      console.warn(`[emdash] ${urlPath}: ${res?.status ?? 'error de red'}; reintento ${attempt + 1}/${RETRIES} en ${Math.round(ms / 1000)} s`);
+      await sleep(ms);
+      continue;
+    }
+
+    if (++okStreak >= 10 && pause > PAUSE_MIN) {
+      pause = Math.max(PAUSE_MIN, Math.round(pause * 0.8));
+      okStreak = 0;
+    }
+
+    const body = (await res.json().catch(() => ({ success: false }))) as {
+      success: boolean;
+      data: T;
+      error?: { code: string; message: string };
+    };
+    if (!body.success) {
+      throw new EmDashError(body.error?.message ?? `${urlPath}: HTTP ${res.status}`, body.error?.code);
+    }
+    return body.data;
+  }
+}
+
 async function fetchJson<T>(urlPath: string): Promise<T> {
   const token = authToken();
   if (!token) {
     throw new EmDashError('EMDASH_TOKEN missing');
   }
-  const res = await fetch(`${baseUrl()}${urlPath}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const body = (await res.json()) as {
-    success: boolean;
-    data: T;
-    error?: { code: string; message: string };
-  };
-  if (!body.success) {
-    throw new EmDashError(body.error?.message ?? res.statusText, body.error?.code);
-  }
-  return body.data;
+  // De una en una aunque se llamen en paralelo (Promise.all).
+  const result = queue.then(() => fetchJsonNow<T>(urlPath, token));
+  queue = result.catch(() => undefined);
+  return result;
 }
 
 export interface PaginatedItems<T> {
@@ -244,7 +305,7 @@ export async function fetchAllItems<T>(
   const items: T[] = [];
   let cursor: string | undefined;
   do {
-    const qs = new URLSearchParams({ status: 'published', limit: '100' });
+    const qs = new URLSearchParams({ status: 'published', limit: PAGE_LIMIT });
     if (cursor) qs.set('cursor', cursor);
     const data = await fetchJson<PaginatedItems<T>>(`${listPath}?${qs.toString()}`);
     items.push(...(data.items ?? []));
@@ -289,10 +350,29 @@ export async function fetchCollectionProductRefs(
   const parents: ReferenceSummary[] = [];
   let cursor: string | undefined;
   do {
-    const qs = new URLSearchParams({ limit: '100' });
+    const qs = new URLSearchParams({ limit: PAGE_LIMIT });
     if (cursor) qs.set('cursor', cursor);
     const data = await fetchJson<{ parents: ReferenceSummary[]; nextCursor?: string }>(
       `/_emdash/api/content/colecciones/${collectionId}/references/productos_colecciones/parents?${qs.toString()}`,
+    );
+    parents.push(...(data.parents ?? []));
+    cursor = data.nextCursor;
+  } while (cursor);
+  return parents;
+}
+
+/**
+ * Productos que apuntan a una tienda (referencia productos_tienda), por páginas.
+ * Una petición por tienda en lugar de una por producto.
+ */
+export async function fetchStoreProductRefs(storeId: string): Promise<ReferenceSummary[]> {
+  const parents: ReferenceSummary[] = [];
+  let cursor: string | undefined;
+  do {
+    const qs = new URLSearchParams({ limit: PAGE_LIMIT });
+    if (cursor) qs.set('cursor', cursor);
+    const data = await fetchJson<{ parents: ReferenceSummary[]; nextCursor?: string }>(
+      `/_emdash/api/content/tiendas/${storeId}/references/productos_tienda/parents?${qs.toString()}`,
     );
     parents.push(...(data.parents ?? []));
     cursor = data.nextCursor;

@@ -10,7 +10,10 @@ const SITE = 'https://regaloskawaii.es';
 /** Páginas que no aportan nada en los buscadores: fuera del sitemap. */
 const SIN_SITEMAP = new Set(['/aviso-legal', '/aviso-afiliados', '/cookies', '/privacidad']);
 
-/** Ruta de una URL del sitemap, sin barra final: «https://…/categoria/papeleria» → «/categoria/papeleria». */
+/**
+ * Ruta de una URL del sitemap, sin barra final: «https://…/categoria/papeleria» → «/categoria/papeleria».
+ * @param {string} url
+ */
 function rutaDe(url) {
   const ruta = new URL(url).pathname;
   return ruta.length > 1 ? ruta.replace(/\/$/, '') : ruta;
@@ -21,16 +24,19 @@ function rutaDe(url) {
  * (`writeSitemapLastmod` en src/lib/catalog/buildCatalog.ts). Se leen al generar el
  * sitemap, que es al final de la build.
  */
+/** @type {Record<string, string> | undefined} */
 let lastmod;
+/** @param {string} ruta */
 function lastmodDe(ruta) {
   if (!lastmod) {
     try {
       lastmod = JSON.parse(readFileSync(new URL('./.cache/sitemap-lastmod.json', import.meta.url), 'utf-8'));
     } catch {
-      lastmod = {};
+      /* sin fichero: sin lastmod */
     }
+    lastmod ??= {};
   }
-  return lastmod[ruta];
+  return lastmod?.[ruta];
 }
 
 // https://astro.build/config

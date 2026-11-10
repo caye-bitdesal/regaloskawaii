@@ -27,11 +27,23 @@ const bullets = [
     <span>{product.title}</span>
   </h1>
   {
-    price && (
+    price && product.descuento ? (
       <div class="detail-price">
+        <del>{formatPriceEur(product.descuento.precioAnterior)}</del>
         {price}
-        <small>Precio orientativo</small>
+        <span class="detail-discount">-{product.descuento.porcentaje}%</span>
+        <small>
+          Precio anterior: el más bajo de los 30 días anteriores. Precio en {shopLabel} el
+          {product.descuento.fecha}; puede cambiar.
+        </small>
       </div>
+    ) : (
+      price && (
+        <div class="detail-price">
+          {price}
+          <small>Precio orientativo</small>
+        </div>
+      )
     )
   }
   <p>{product.resumen}</p>

@@ -3,6 +3,13 @@
 # Triggers: push to main, the EmDash "notify GitHub" plugin (repository_dispatch),
 # a daily safety-net build and manual runs (Actions → "Build and deploy" → Run workflow).
 #
+# EmDash runs on the Cloudflare Workers free plan (very little CPU per request), so:
+#   - builds started by the panel wait 3 minutes before touching EmDash. Every publish
+#     sends a notification and each new run cancels the previous one (concurrency below),
+#     so a script that publishes 50 products ends up as ONE build, not 50;
+#   - downloaded images (public/media) are cached between runs: only new ones are
+#     downloaded from EmDash.
+#
 # Setup (GitHub → Settings → Secrets and variables → Actions):
 #   - Variable  EMDASH_URL            = https://admin.regaloskawaii.es
 #   - Secret    EMDASH_TOKEN          = EmDash "web-build" token (content:read + media:read only)
@@ -28,6 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # Debounce: wait for the burst of panel notifications to end before building.
+      - name: Wait for more content changes
+        if: github.event_name == 'repository_dispatch'
+        run: sleep 180
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -47,6 +59,14 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # EmDash media keys never change content: reuse the images of the previous build.
+      - name: Restore downloaded images
+        uses: actions/cache@v4
+        with:
+          path: public/media
+          key: media-${{ github.run_id }}
+          restore-keys: media-
 
       - name: Build (fetch content and images from EmDash)
         run: npm run build

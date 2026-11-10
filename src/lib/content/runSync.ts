@@ -34,7 +34,8 @@ export async function runSyncContent(): Promise<SyncResult> {
     await writeSnapshot(snapshot);
 
     const keys = collectStorageKeysFromProductos(snapshot.productos);
-    const { ok, failed } = await syncMediaFiles(keys, snapshot.emdashUrl);
+    const { ok, failed, reused = 0 } = await syncMediaFiles(keys, snapshot.emdashUrl);
+    console.log(`[sync-media] ${ok} descargadas, ${reused} ya estaban, ${failed.length} fallidas`);
 
     process.env.EMDASH_FORCE_API = '0';
     process.env.EMDASH_CONTENT_CACHE = '1';

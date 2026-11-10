@@ -18,6 +18,7 @@ import { flattenTerms, useFixtures } from '../emdash/client';
 import {
   affiliateUrl,
   booleanFrom01,
+  descuentoVigente,
   mediaUrl,
   prioridadProducto,
   stripInternalProductFields,
@@ -239,6 +240,7 @@ export async function buildCatalog(): Promise<Catalog> {
       resumen: data.resumen ?? '',
       descripcion: data.descripcion,
       precioRef: data.precio_ref,
+      descuento: descuentoVigente(data),
       autenticidadNoGarantizada: data.tipo === 'no-oficial',
       productoOficial: data.tipo === 'oficial',
       priority: prioridadProducto(data, tienda.data),
@@ -343,7 +345,7 @@ function writeSitemapLastmod(catalog: Catalog): void {
 
   const lastmod: Record<string, string | undefined> = {};
   const all = latest(catalog.products.map((p) => p.updatedAt));
-  for (const p of ['/', '/categorias', '/colecciones', '/marcas', '/personajes', '/chollos']) {
+  for (const p of ['/', '/categorias', '/colecciones', '/marcas', '/personajes']) {
     lastmod[p] = all;
   }
   for (const p of catalog.products) lastmod[`/producto/${p.slug}`] = p.updatedAt;

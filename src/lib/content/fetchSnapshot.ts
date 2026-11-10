@@ -1,5 +1,5 @@
 import type { ContentSnapshot } from './snapshot';
-import type { ColeccionEntry, PageEntry, ProductoEntry, TiendaEntry } from '../emdash/types';
+import type { ColeccionEntry, PageEntry, ProductoEntry, ReferenceSummary, TiendaEntry } from '../emdash/types';
 import {
   fetchAllItems,
   fetchAllProductCategoriaTerms,
@@ -8,8 +8,9 @@ import {
   fetchCollectionProductRefs,
   fetchMarcaTerms,
   fetchPersonajeTerms,
-  fetchProductStoreRefs,
+  fetchStoreProductRefs,
   getEmDashBaseUrl,
+  requestStats,
 } from '../emdash/client';
 
 /**
@@ -41,9 +42,21 @@ export async function fetchContentSnapshot(): Promise<ContentSnapshot> {
     collectionProductRefs[col.id] = await fetchCollectionProductRefs(col.id);
   }
 
+  // Tienda de cada producto: una petición por tienda (no una por producto).
   const productStoreRefs: ContentSnapshot['productStoreRefs'] = {};
-  for (const product of productos) {
-    productStoreRefs[product.id] = await fetchProductStoreRefs(product.id);
+  for (const product of productos) productStoreRefs[product.id] = [];
+  for (const tienda of tiendas) {
+    const ref = {
+      id: tienda.id,
+      slug: tienda.slug,
+      collection: 'tiendas',
+      title: tienda.data.title,
+      locale: tienda.locale ?? 'es',
+      sortOrder: 0,
+    } satisfies ReferenceSummary;
+    for (const parent of await fetchStoreProductRefs(tienda.id)) {
+      productStoreRefs[parent.id]?.push(ref);
+    }
   }
 
   const [productCategoriaTerms, productMarcaTerms, productPersonajeTerms] = await Promise.all([
@@ -51,6 +64,8 @@ export async function fetchContentSnapshot(): Promise<ContentSnapshot> {
     fetchAllProductTaxonomyTerms(productIds, 'marca'),
     fetchAllProductTaxonomyTerms(productIds, 'personaje'),
   ]);
+
+  console.log(`[emdash] Peticiones: ${requestStats.requests} (reintentos: ${requestStats.retries})`);
 
   return {
     syncedAt: new Date().toISOString(),

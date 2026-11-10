@@ -6,12 +6,9 @@ import RkIcon from './RkIcon.astro';
 
 interface Props {
   product: CatalogProduct;
-  variant?: 'default' | 'deal';
-  showDealBadge?: boolean;
-  dealIndex?: number;
 }
 
-const { product, variant = 'default', showDealBadge = true, dealIndex = 0 } = Astro.props;
+const { product } = Astro.props;
 
 const label = product.coleccionTitles[0] ?? 'Kawaii';
 const price = formatPriceEur(product.precioRef);
@@ -22,8 +19,6 @@ const badge =
       ? 'Favorito'
       : undefined;
 
-const isDeal = variant === 'deal';
-const discountPct = 15 + ((dealIndex + product.slug.length) % 20);
 const shopLabel = product.tiendaTitle.replace(' España', '');
 ---
 
@@ -42,8 +37,8 @@ const shopLabel = product.tiendaTitle.replace(' España', '');
       )
     }
     {
-      isDeal && showDealBadge ? (
-        <span class="badge discount">-{discountPct}%</span>
+      product.descuento ? (
+        <span class="badge discount">-{product.descuento.porcentaje}%</span>
       ) : (
         badge && <span class="badge">{badge}</span>
       )
@@ -68,9 +63,11 @@ const shopLabel = product.tiendaTitle.replace(' España', '');
     <div class="card-bottom">
       <div class="price-stack">
         {
-          isDeal && price && product.precioRef ? (
+          price && product.descuento ? (
             <>
-              <del>{formatPriceEur(product.precioRef * 1.28)}</del>
+              <del title="Precio más bajo de los 30 días anteriores">
+                {formatPriceEur(product.descuento.precioAnterior)}
+              </del>
               <strong>{price}</strong>
             </>
           ) : (

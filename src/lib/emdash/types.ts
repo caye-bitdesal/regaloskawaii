@@ -44,6 +44,8 @@ export interface ProductoData {
   id_externo: string;
   enlace_afiliado?: string;
   precio_ref?: number;
+  /** Cambios de precio de los últimos 60 días, en JSON (scripts/update-prices.mjs del admin). */
+  historial_precios?: string;
   precio_actualizado?: string;
   imagen?: EmDashImage;
   galeria?: { imagen: EmDashImage }[];
@@ -105,6 +107,7 @@ export interface TiendaEntry {
   type: 'tiendas';
   slug: string | null;
   status: string;
+  locale?: string;
   data: TiendaData;
 }
 
@@ -138,6 +141,11 @@ export interface CatalogProduct {
   resumen: string;
   descripcion?: PortableTextBlock[];
   precioRef?: number;
+  /**
+   * Descuento legal: precio actual menor que el más bajo de los 30 días anteriores, con el
+   * precio consultado hace 7 días o menos. Sin descuento vigente, no se define.
+   */
+  descuento?: { precioAnterior: number; porcentaje: number; fecha: string };
   /** Tipo «no-oficial» en EmDash: no podemos garantizar que sea un producto original. */
   autenticidadNoGarantizada: boolean;
   /** Tipo «oficial» en EmDash: lo hemos marcado como producto original o con licencia. */
