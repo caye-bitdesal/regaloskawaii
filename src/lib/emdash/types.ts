@@ -153,6 +153,10 @@ export interface CatalogProduct {
   priority: number;
   imagenUrl?: string;
   imagenAlt?: string;
+  /** Variantes WebP generadas en build (`/media/*-Nw.webp`). */
+  imagenVariants?: { width: number; url: string }[];
+  imagenWidth?: number;
+  imagenHeight?: number;
   destacado: boolean;
   categoriaSlugs: string[];
   categoriaLabels: string[];

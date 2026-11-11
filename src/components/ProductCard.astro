@@ -2,6 +2,7 @@
 import type { CatalogProduct } from '../lib/emdash/types';
 import { formatPriceEur } from '../lib/emdash/helpers';
 import OfficialProductBadge from './OfficialProductBadge.astro';
+import ResponsiveProductImage from './ResponsiveProductImage.astro';
 import RkIcon from './RkIcon.astro';
 
 interface Props {
@@ -20,6 +21,7 @@ const badge =
       : undefined;
 
 const shopLabel = product.tiendaTitle.replace(' España', '');
+const productHref = `/producto/${product.slug}`;
 ---
 
 <article
@@ -29,62 +31,64 @@ const shopLabel = product.tiendaTitle.replace(' España', '');
   data-colecciones={product.coleccionSlugs.join(',')}
   data-title={product.title}
 >
-  <a class="image-button" href={`/producto/${product.slug}`}>
-    {
-      product.imagenUrl ? (
-        <img src={product.imagenUrl} alt={product.imagenAlt ?? product.title} loading="lazy" width="400" height="250" />
-      ) : (
-        <span class="meta" style="position:absolute;inset:0;display:grid;place-items:center;">Sin imagen</span>
-      )
-    }
-    {
-      product.descuento ? (
-        <span class="badge discount">-{product.descuento.porcentaje}%</span>
-      ) : (
-        badge && <span class="badge">{badge}</span>
-      )
-    }
-    <span class="heart">
-      <button
-        type="button"
-        class="favorite-btn"
-        data-favorite-slug={product.slug}
-        aria-label="Añadir a favoritos"
-      >
-        <RkIcon name="heart" />
-      </button>
-    </span>
-  </a>
-  <div class="card-copy">
-    <span class="meta">{label}</span>
-    <a class="product-title" href={`/producto/${product.slug}`}>
-      {product.productoOficial && <OfficialProductBadge />}
-      <span>{product.title}</span>
-    </a>
-    <div class="card-bottom">
-      <div class="price-stack">
-        {
-          price && product.descuento ? (
-            <>
-              <del title="Precio más bajo de los 30 días anteriores">
-                {formatPriceEur(product.descuento.precioAnterior)}
-              </del>
-              <strong>{price}</strong>
-            </>
-          ) : (
-            price && <strong>{price}</strong>
-          )
-        }
-      </div>
-      <a class="round" href={`/producto/${product.slug}`} aria-label={`Ver ${product.title}`}>
-        <RkIcon name="arrow" />
-      </a>
+  <a class="card-product-link" href={productHref} aria-label={`Ver ${product.title}`}>
+    <div class="image-button">
+      {
+        product.imagenUrl ? (
+          <ResponsiveProductImage product={product} layout="card" />
+        ) : (
+          <span class="meta image-placeholder">Sin imagen</span>
+        )
+      }
+      {
+        product.descuento ? (
+          <span class="badge discount">-{product.descuento.porcentaje}%</span>
+        ) : (
+          badge && <span class="badge">{badge}</span>
+        )
+      }
     </div>
-    <a class="shop-link" href={product.affiliateUrl} target="_blank" rel="sponsored nofollow noopener">
-      Ver en {shopLabel}
-      <RkIcon name="external" />
-    </a>
-  </div>
+    <div class="card-copy">
+      <span class="meta">{label}</span>
+      <span class="product-title">
+        {product.productoOficial && <OfficialProductBadge />}
+        <span>{product.title}</span>
+      </span>
+      <div class="card-bottom">
+        <div class="price-stack">
+          {
+            price && product.descuento ? (
+              <>
+                <del title="Precio más bajo de los 30 días anteriores">
+                  {formatPriceEur(product.descuento.precioAnterior)}
+                </del>
+                <strong>{price}</strong>
+              </>
+            ) : (
+              price && <strong>{price}</strong>
+            )
+          }
+        </div>
+        <span class="round" aria-hidden="true">
+          <RkIcon name="arrow" />
+        </span>
+      </div>
+    </div>
+  </a>
+  <span class="heart">
+    <button
+      type="button"
+      class="favorite-btn"
+      data-favorite-slug={product.slug}
+      aria-label="Añadir a favoritos"
+    >
+      <RkIcon name="heart" />
+    </button>
+  </span>
+  <a class="shop-link" href={product.affiliateUrl} target="_blank" rel="sponsored nofollow noopener">
+    Ver en {shopLabel}
+    <RkIcon name="external" />
+  </a>
 </article>
 
 <script>

@@ -2,6 +2,7 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProductDetailPanel from '../../components/ProductDetailPanel.astro';
 import RelatedProducts from '../../components/RelatedProducts.astro';
+import ResponsiveProductImage from '../../components/ResponsiveProductImage.astro';
 import RkIcon from '../../components/RkIcon.astro';
 import { getCatalog, sortProducts } from '../../lib/catalog';
 import { HOME_CRUMB, crumb } from '../../lib/seo/breadcrumbs';
@@ -55,7 +56,7 @@ productBreadcrumbs.push(crumb(product.title, `/producto/${product.slug}`));
     <div class="detail-image">
       {
         product.imagenUrl ? (
-          <img src={product.imagenUrl} alt={product.imagenAlt ?? product.title} width="800" height="570" />
+          <ResponsiveProductImage product={product} layout="detail" loading="eager" fetchPriority="high" />
         ) : (
           <span class="meta" style="display:grid;place-items:center;height:100%;">Sin imagen</span>
         )

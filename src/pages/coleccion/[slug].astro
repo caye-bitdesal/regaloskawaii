@@ -4,6 +4,7 @@ import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import { getCatalog, sortProducts } from '../../lib/catalog';
 import { hubTrail } from '../../lib/seo/breadcrumbs';
+import { itemListJsonLd } from '../../lib/seo/jsonLd';
 
 export async function getStaticPaths() {
   const catalog = await getCatalog();
@@ -21,6 +22,7 @@ if (!collection) throw new Error(`Colección no encontrada: ${collectionSlug}`);
 const products = sortProducts(
   catalog.products.filter((p) => p.coleccionSlugs.includes(collection.slug)),
 );
+const siteOrigin = Astro.site ?? new URL('https://regaloskawaii.es');
 ---
 
 <SiteLayout
@@ -33,6 +35,7 @@ const products = sortProducts(
     collection.title,
     `/coleccion/${collection.slug}`,
   )}
+  jsonLd={products.length > 0 ? [itemListJsonLd(products, siteOrigin)] : []}
 >
   <section class="page-intro categories-intro">
     <div class="shell">

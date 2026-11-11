@@ -7,12 +7,8 @@ import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 const catalog = await getCatalog();
 const imgs = sortProducts(catalog.products.filter((p) => p.imagenUrl)).slice(0, 2);
-const aboutMain =
-  imgs[0]?.imagenUrl ??
-  'https://images.unsplash.com/photo-1741241857658-7ce76d565ed7?auto=format&fit=crop&w=900&q=85';
-const aboutSmall =
-  imgs[1]?.imagenUrl ??
-  'https://images.unsplash.com/photo-1747999613041-48827741ddda?auto=format&fit=crop&w=900&q=85';
+const aboutMain = imgs[0]?.imagenUrl ?? '/capibara-404.webp';
+const aboutSmall = imgs[1]?.imagenUrl ?? '/capibara-404.webp';
 ---
 
 <SiteLayout

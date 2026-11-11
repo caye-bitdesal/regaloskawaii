@@ -1,5 +1,6 @@
 import { fetchContentSnapshot } from './fetchSnapshot';
 import { writeSnapshot } from './snapshot';
+import { ensureImageVariants } from '../media/imageVariants';
 import {
   collectStorageKeysFromProductos,
   syncMediaFiles,
@@ -36,6 +37,11 @@ export async function runSyncContent(): Promise<SyncResult> {
     const keys = collectStorageKeysFromProductos(snapshot.productos);
     const { ok, failed, reused = 0 } = await syncMediaFiles(keys, snapshot.emdashUrl);
     console.log(`[sync-media] ${ok} descargadas, ${reused} ya estaban, ${failed.length} fallidas`);
+
+    const variants = await ensureImageVariants(keys);
+    if (variants.created > 0) {
+      console.log(`[image-variants] ${variants.created} generadas, ${variants.skipped} omitidas`);
+    }
 
     process.env.EMDASH_FORCE_API = '0';
     process.env.EMDASH_CONTENT_CACHE = '1';

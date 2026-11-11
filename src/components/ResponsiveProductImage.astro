@@ -1,0 +1,55 @@
+---
+import type { CatalogProduct } from '../lib/emdash/types';
+import {
+  buildSrcSet,
+  pickDefaultSrc,
+  PRODUCT_GRID_SIZES,
+  PRODUCT_DETAIL_SIZES,
+} from '../lib/media/imageVariants';
+
+interface Props {
+  product: CatalogProduct;
+  layout?: 'card' | 'detail';
+  loading?: 'lazy' | 'eager';
+  fetchPriority?: 'high' | 'low' | 'auto';
+  class?: string;
+}
+
+const {
+  product,
+  layout = 'card',
+  loading = 'lazy',
+  fetchPriority,
+  class: className,
+} = Astro.props;
+
+const hasImage = Boolean(product.imagenUrl);
+const variants = product.imagenVariants ?? [];
+const src = pickDefaultSrc(variants, product.imagenUrl!);
+const srcset = buildSrcSet(variants);
+const sizes = layout === 'detail' ? PRODUCT_DETAIL_SIZES : PRODUCT_GRID_SIZES;
+const width = layout === 'detail' ? 800 : 400;
+const height =
+  product.imagenHeight && product.imagenWidth
+    ? Math.round((width * product.imagenHeight) / product.imagenWidth)
+    : layout === 'detail'
+      ? 570
+      : 250;
+---
+
+{
+  hasImage && (
+    <img
+      class={className}
+      src={src}
+      srcset={srcset}
+      sizes={srcset ? sizes : undefined}
+      alt={product.imagenAlt ?? product.title}
+      width={width}
+      height={height}
+      loading={loading}
+      decoding="async"
+      fetchpriority={fetchPriority}
+    />
+  )
+}

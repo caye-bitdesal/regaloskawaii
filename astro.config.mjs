@@ -46,7 +46,7 @@ export default defineConfig({
   // URL sin barra final («/categoria/papeleria»), igual que los enlaces internos.
   // Cloudflare Pages sirve «categoria/papeleria.html» en «/categoria/papeleria».
   trailingSlash: 'never',
-  build: { format: 'file' },
+  build: { format: 'file', inlineStylesheets: 'always' },
   integrations: [
     sitemap({
       filter: (url) => !SIN_SITEMAP.has(rutaDe(url)),

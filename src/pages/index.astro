@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard.astro';
 import CategoryCard from '../components/CategoryCard.astro';
 import RkIcon from '../components/RkIcon.astro';
 import { getCatalog, sortProducts } from '../lib/catalog';
+import { buildSrcSet, HERO_IMAGE_SIZES, pickDefaultSrc } from '../lib/media/imageVariants';
 import { HOME_CRUMB } from '../lib/seo/breadcrumbs';
 import { organizationJsonLd, websiteJsonLd } from '../lib/seo/jsonLd';
 
@@ -18,9 +19,16 @@ const chips = [
   { id: 'all', label: 'Todos' },
   ...catalog.collections.map((c) => ({ id: c.slug, label: c.title })),
 ];
-const heroImage =
-  products.find((p) => p.imagenUrl)?.imagenUrl ??
-  'https://images.unsplash.com/photo-1643014941083-d369d5cd3516?auto=format&fit=crop&w=900&q=85';
+const heroProduct = products.find((p) => p.imagenUrl);
+const heroFallback = '/capibara-404.webp';
+const heroVariants = heroProduct?.imagenVariants ?? [];
+const heroSrc = heroProduct ? pickDefaultSrc(heroVariants, heroProduct.imagenUrl!) : heroFallback;
+const heroSrcset = heroProduct ? buildSrcSet(heroVariants) : undefined;
+const heroWidth = 900;
+const heroHeight =
+  heroProduct?.imagenWidth && heroProduct.imagenHeight
+    ? Math.round((heroWidth * heroProduct.imagenHeight) / heroProduct.imagenWidth)
+    : 620;
 const count = products.length;
 ---
 
@@ -31,6 +39,18 @@ const count = products.length;
   breadcrumbs={[HOME_CRUMB]}
   jsonLd={[websiteJsonLd(siteOrigin, homeDescription), organizationJsonLd(siteOrigin)]}
 >
+  {
+    heroSrcset && (
+      <link
+        slot="head"
+        rel="preload"
+        as="image"
+        imagesrcset={heroSrcset}
+        imagesizes={HERO_IMAGE_SIZES}
+        fetchpriority="high"
+      />
+    )
+  }
   <section class="hero shell">
     <div class="hero-copy">
       <span class="eyebrow"><RkIcon name="sparkle" /> Pequeñas cosas, grandes sonrisas</span>
@@ -47,10 +67,12 @@ const count = products.length;
     <div class="hero-visual">
       <div class="blob"></div>
       <img
-        src={heroImage}
-        alt="Colección de peluches kawaii en tonos pastel"
-        width="900"
-        height="390"
+        src={heroSrc}
+        srcset={heroSrcset}
+        sizes={heroSrcset ? HERO_IMAGE_SIZES : undefined}
+        alt={heroProduct?.imagenAlt ?? 'Colección de peluches kawaii en tonos pastel'}
+        width={heroWidth}
+        height={heroHeight}
         fetchpriority="high"
         loading="eager"
         decoding="async"

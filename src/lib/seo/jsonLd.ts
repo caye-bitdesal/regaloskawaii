@@ -54,7 +54,8 @@ export function organizationJsonLd(siteOrigin: URL) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: LEGAL.titular,
+    name: 'Regalos Kawaii',
+    legalName: LEGAL.titular,
     url: LEGAL.web,
     email: LEGAL.email,
     logo: absoluteUrl(siteOrigin, '/favicon.svg'),

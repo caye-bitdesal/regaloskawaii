@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { getEmDashBaseUrl } from '../emdash/client';
 import { mediaUrl } from '../emdash/helpers';
 import type { ProductoEntry } from '../emdash/types';
+import { shouldKeepMediaFile } from './imageVariants';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const PUBLIC_MEDIA_DIR = path.join(__dirname, '../../../public/media');
@@ -100,7 +101,9 @@ export async function syncMediaFiles(
 
   // Fuera lo que sobra (imágenes de productos borrados, descargas a medias).
   for (const name of await readdir(PUBLIC_MEDIA_DIR)) {
-    if (!wanted.has(name)) await rm(path.join(PUBLIC_MEDIA_DIR, name), { force: true });
+    if (!shouldKeepMediaFile(name, wanted)) {
+      await rm(path.join(PUBLIC_MEDIA_DIR, name), { force: true });
+    }
   }
 
   const missing: string[] = [];

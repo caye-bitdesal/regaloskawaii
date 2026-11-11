@@ -14,11 +14,15 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/fredoka": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.4.8",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "tsx": "^4.23.0"
+    "tsx": "^4.23.0",
+    "typescript": "^7.0.2"
   }
 }

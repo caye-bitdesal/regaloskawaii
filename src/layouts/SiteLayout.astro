@@ -6,6 +6,8 @@ import SiteFooter from '../components/SiteFooter.astro';
 import JsonLd from '../components/JsonLd.astro';
 import type { BreadcrumbItem } from '../lib/seo/breadcrumbs';
 import { breadcrumbsJsonLd } from '../lib/seo/jsonLd';
+import dmSans400 from '@fontsource/dm-sans/files/dm-sans-latin-400-normal.woff2?url';
+import fredoka600 from '@fontsource/fredoka/files/fredoka-latin-600-normal.woff2?url';
 
 interface Props {
   title?: string;
@@ -76,6 +78,9 @@ const structuredData = [breadcrumbsJsonLd(breadcrumbItems, siteOrigin), ...jsonL
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
+    <link rel="preload" href={dmSans400} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fredoka600} as="font" type="font/woff2" crossorigin />
+    <slot name="head" />
     <JsonLd data={structuredData} />
   </head>
   <body>

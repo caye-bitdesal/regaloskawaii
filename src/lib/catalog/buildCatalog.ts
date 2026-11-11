@@ -30,6 +30,8 @@ import {
   PUBLIC_MEDIA_DIR,
   syncMediaFiles,
 } from '../media/syncMedia';
+import { ensureImageVariants, listVariantsForBasename } from '../media/imageVariants';
+import sharp from 'sharp';
 import { readSnapshot } from '../content/snapshot';
 import type { ProductoData } from '../emdash/types';
 import type {
@@ -61,6 +63,25 @@ function localMediaFileExists(storageKey: string): boolean {
   return existsSync(file);
 }
 
+const imageDimensionsCache = new Map<string, { width: number; height: number }>();
+
+async function readImageDimensionsAsync(
+  basename: string,
+): Promise<{ width: number; height: number } | undefined> {
+  if (imageDimensionsCache.has(basename)) return imageDimensionsCache.get(basename);
+  const file = path.join(PUBLIC_MEDIA_DIR, basename);
+  if (!existsSync(file)) return undefined;
+  try {
+    const meta = await sharp(file).metadata();
+    if (!meta.width || !meta.height) return undefined;
+    const dims = { width: meta.width, height: meta.height };
+    imageDimensionsCache.set(basename, dims);
+    return dims;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Preferir /media/ si el fichero existe (p. ej. tras sync-content) o en build con caché. */
 function resolveProductImageUrl(data: ProductoData, emdashUrl: string): string | undefined {
   const key = data.imagen?.meta.storageKey;
@@ -79,6 +100,25 @@ function resolveProductImageUrl(data: ProductoData, emdashUrl: string): string |
   if (isAstroDev()) return mediaUrl(key, emdashUrl);
 
   return localMediaPath(key);
+}
+
+function resolveProductImageMeta(
+  data: ProductoData,
+  emdashUrl: string,
+): Pick<CatalogProduct, 'imagenUrl' | 'imagenVariants' | 'imagenWidth' | 'imagenHeight'> {
+  const url = resolveProductImageUrl(data, emdashUrl);
+  if (!url) return {};
+  const key = data.imagen?.meta.storageKey;
+  if (!key || !localMediaFileExists(key)) return { imagenUrl: url };
+  const basename = path.basename(key);
+  const variants = listVariantsForBasename(basename);
+  const dims = imageDimensionsCache.get(basename);
+  return {
+    imagenUrl: url,
+    imagenVariants: variants.length > 0 ? variants : undefined,
+    imagenWidth: dims?.width,
+    imagenHeight: dims?.height,
+  };
 }
 
 async function loadProductCategoriaTerms(
@@ -189,13 +229,22 @@ export async function buildCatalog(): Promise<Catalog> {
     loadProductPersonajeTerms(productos),
   ]);
 
+  const mediaKeys = collectStorageKeysFromProductos(productos);
+
   if (shouldSyncMedia()) {
-    const { ok, failed } = await syncMediaFiles(
-      collectStorageKeysFromProductos(productos),
-      emdashUrl,
-    );
+    const { ok, failed } = await syncMediaFiles(mediaKeys, emdashUrl);
     if (failed.length > 0) {
       console.warn(`[sync-media] ${failed.length} imágenes no descargadas (${ok} ok)`);
+    }
+  }
+
+  if (!isAstroDev()) {
+    const { created, skipped } = await ensureImageVariants(mediaKeys);
+    if (created > 0) {
+      console.log(`[image-variants] ${created} generadas, ${skipped} omitidas`);
+    }
+    for (const key of mediaKeys) {
+      await readImageDimensionsAsync(path.basename(key));
     }
   }
 
@@ -261,7 +310,7 @@ export async function buildCatalog(): Promise<Catalog> {
       autenticidadNoGarantizada: data.tipo === 'no-oficial',
       productoOficial: data.tipo === 'oficial',
       priority: prioridadProducto(data, tienda.data),
-      imagenUrl: resolveProductImageUrl(data, emdashUrl),
+      ...resolveProductImageMeta(data, emdashUrl),
       imagenAlt: data.imagen?.alt ?? data.title,
       destacado: booleanFrom01(data.destacado),
       categoriaSlugs,
