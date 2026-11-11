@@ -19,15 +19,26 @@ export function productImageUrl(data: ProductoData, emdashUrl = getEmdashUrl()):
   return key ? mediaUrl(key, emdashUrl) : undefined;
 }
 
+/**
+ * Orden en la web (mayor primero). Siempre 0, aunque haya otra guardada: sin foto, o de
+ * AliExpress sin enlace de afiliado (fuera del programa: no da comisión). Así salen al final.
+ * Misma regla que calcularPrioridad en scripts/lib/product-priority.mjs del admin.
+ */
 export function prioridadProducto(
-  data: Pick<ProductoData, 'tipo' | 'enlace_afiliado' | 'priority'>,
+  data: Pick<ProductoData, 'tipo' | 'enlace_afiliado' | 'priority' | 'imagen'>,
   tienda: Pick<TiendaData, 'plantilla_url' | 'title' | 'tag_web'>,
 ): number {
+  const enlace = data.enlace_afiliado?.trim() ?? '';
+  const amazon = /amazon\./i.test(tienda.plantilla_url) || /amazon/i.test(tienda.title);
+  const aliexpress = /aliexpress/i.test(tienda.plantilla_url) || /aliexpress/i.test(tienda.title);
+  const afiliadoAliExpress =
+    /(^|\.)s\.click\.aliexpress\./i.test(enlace) || enlace.includes('aff_fcid') || enlace.includes('aff_fsk');
+  if (!data.imagen?.meta?.storageKey) return 0;
+  if (aliexpress && !afiliadoAliExpress) return 0;
+
   const almacenada = data.priority ?? (data as ProductoData & { prioridad?: number }).prioridad;
   if (almacenada != null && Number.isFinite(almacenada)) return almacenada;
   if (data.tipo === 'oficial') return 2;
-  const enlace = data.enlace_afiliado?.trim() ?? '';
-  const amazon = /amazon\./i.test(tienda.plantilla_url) || /amazon/i.test(tienda.title);
   if (amazon) {
     if (enlace) {
       try {
@@ -38,9 +49,7 @@ export function prioridadProducto(
     }
     return 1;
   }
-  if (/(^|\.)s\.click\.aliexpress\./i.test(enlace)) return 1;
-  if (enlace.includes('aff_fcid') || enlace.includes('aff_fsk')) return 1;
-  return 0;
+  return afiliadoAliExpress ? 1 : 0;
 }
 
 export function affiliateUrl(
