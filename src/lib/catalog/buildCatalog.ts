@@ -38,6 +38,7 @@ import type {
   CatalogPage,
   CatalogProduct,
   CatalogSearchEntry,
+  CatalogStore,
   ColeccionEntry,
   PageEntry,
   ProductoEntry,
@@ -146,6 +147,22 @@ async function loadProductStoreRefs(
 ): Promise<import('../emdash/types').ReferenceSummary[]> {
   if (cached?.[productId]) return cached[productId];
   return fetchProductStoreRefs(productId);
+}
+
+function buildStores(tiendas: TiendaEntry[], products: CatalogProduct[]): CatalogStore[] {
+  const groups = new Map<string, CatalogStore>();
+  for (const t of tiendas) {
+    const slug = t.slug ?? t.id;
+    groups.set(t.id, { id: t.id, slug, label: t.data.title, productIds: [], count: 0 });
+  }
+  for (const p of products) {
+    const group = groups.get(p.tiendaId);
+    if (group && !group.productIds.includes(p.id)) group.productIds.push(p.id);
+  }
+  return [...groups.values()]
+    .map((item) => ({ ...item, count: item.productIds.length }))
+    .filter((item) => item.count > 0)
+    .sort((a, b) => a.label.localeCompare(b.label, 'es'));
 }
 
 export async function buildCatalog(): Promise<Catalog> {
@@ -298,6 +315,8 @@ export async function buildCatalog(): Promise<Catalog> {
     (p, slug) => labelAt(p.personajeSlugs, p.personajeLabels, slug),
   );
 
+  const stores = buildStores(tiendasActivas, products);
+
   const catalogPages: CatalogPage[] = pages.map((p) => ({
     slug: p.slug,
     title: p.data.title,
@@ -315,6 +334,8 @@ export async function buildCatalog(): Promise<Catalog> {
     brandsBySlug: Object.fromEntries(brands.map((b) => [b.slug, b])),
     characters,
     charactersBySlug: Object.fromEntries(characters.map((c) => [c.slug, c])),
+    stores,
+    storesBySlug: Object.fromEntries(stores.map((s) => [s.slug, s])),
     collections,
     collectionsBySlug: Object.fromEntries(collections.map((c) => [c.slug, c])),
     pages: catalogPages,
@@ -345,13 +366,14 @@ function writeSitemapLastmod(catalog: Catalog): void {
 
   const lastmod: Record<string, string | undefined> = {};
   const all = latest(catalog.products.map((p) => p.updatedAt));
-  for (const p of ['/', '/categorias', '/colecciones', '/marcas', '/personajes']) {
+  for (const p of ['/', '/categorias', '/colecciones', '/marcas', '/personajes', '/tiendas']) {
     lastmod[p] = all;
   }
   for (const p of catalog.products) lastmod[`/producto/${p.slug}`] = p.updatedAt;
   for (const c of catalog.allCategories) lastmod[`/categoria/${c.slug}`] = latestOf(c.productIds);
   for (const b of catalog.brands) lastmod[`/marca/${b.slug}`] = latestOf(b.productIds);
   for (const c of catalog.characters) lastmod[`/personaje/${c.slug}`] = latestOf(c.productIds);
+  for (const s of catalog.stores) lastmod[`/tienda/${s.slug}`] = latestOf(s.productIds);
   for (const c of catalog.collections) lastmod[`/coleccion/${c.slug}`] = latestOf(c.productIds);
 
   const clean = Object.fromEntries(Object.entries(lastmod).filter(([, d]) => d));

@@ -25,7 +25,7 @@ export function initHomeHubTabs(): void {
     window.history.replaceState({}, '', url);
   };
 
-  const HUB_TABS = new Set(['categorias', 'colecciones', 'marcas', 'personajes']);
+  const HUB_TABS = new Set(['categorias', 'colecciones', 'marcas', 'personajes', 'tiendas']);
   const ver = new URLSearchParams(window.location.search).get('ver') ?? 'categorias';
   const initial = HUB_TABS.has(ver) ? ver : 'categorias';
   show(initial);

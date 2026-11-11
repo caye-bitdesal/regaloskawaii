@@ -11,6 +11,8 @@ interface Props {
   urlSync?: boolean;
   /** Filtra `.collection-block` por `data-collection` en lugar de `.product-card`. */
   collectionBlocks?: boolean;
+  /** Filtra `.product-card` por `data-tienda` (id de tienda). */
+  shopFilter?: boolean;
 }
 
 const {
@@ -18,6 +20,7 @@ const {
   gridId = 'product-grid',
   urlSync = false,
   collectionBlocks = false,
+  shopFilter = false,
 } = Astro.props;
 ---
 
@@ -27,6 +30,7 @@ const {
   data-grid-id={gridId}
   data-url-sync={urlSync ? 'true' : undefined}
   data-collection-blocks={collectionBlocks ? 'true' : undefined}
+  data-shop-filter={shopFilter ? 'true' : undefined}
 >
   {
     chips.map((chip, i) => (

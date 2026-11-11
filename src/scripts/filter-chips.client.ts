@@ -12,6 +12,7 @@ export function initFilterChips(): void {
   if (!grid) return;
 
   const collectionBlocks = container.dataset.collectionBlocks === 'true';
+  const shopFilter = container.dataset.shopFilter === 'true';
   const buttons = container.querySelectorAll<HTMLButtonElement>('button[data-filter]');
 
   const setActive = (active: HTMLButtonElement) => {
@@ -34,6 +35,10 @@ export function initFilterChips(): void {
     grid.querySelectorAll<HTMLElement>('.product-card').forEach((card) => {
       if (filter === 'all') {
         card.classList.remove('hidden');
+        return;
+      }
+      if (shopFilter) {
+        card.classList.toggle('hidden', card.dataset.tienda !== filter);
         return;
       }
       const cols = (card.dataset.colecciones ?? '').split(',').filter(Boolean);

@@ -11,12 +11,14 @@ export async function getStaticPaths() {
     'colecciones',
     'marcas',
     'personajes',
+    'tiendas',
     'sobre-nosotros',
     'producto',
     'coleccion',
     'categoria',
     'marca',
     'personaje',
+    'tienda',
   ]);
   const catalog = await getCatalog();
   return catalog.pages

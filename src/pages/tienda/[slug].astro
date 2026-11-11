@@ -1,0 +1,57 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { compareProducts } from '../../lib/catalog/sortProducts';
+import { getCatalog } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const catalog = await getCatalog();
+  return catalog.stores.map((store) => ({
+    params: { slug: store.slug },
+    props: { storeSlug: store.slug },
+  }));
+}
+
+const { storeSlug } = Astro.props;
+const catalog = await getCatalog();
+const store = catalog.storesBySlug[storeSlug as string];
+if (!store) throw new Error(`Tienda no encontrada: ${storeSlug}`);
+
+const products = catalog.products
+  .filter((p) => p.tiendaId === store.id)
+  .sort(compareProducts);
+---
+
+<SiteLayout
+  pathname={`/tienda/${store.slug}`}
+  title={store.label}
+  description={`Regalos kawaii en ${store.label.replace(/ España$/, '')}.`}
+>
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow">Tienda</span>
+      <h1 set:html={store.label.includes(' ') ? store.label : `<em>${store.label}</em>`} />
+      <p>
+        {products.length}{' '}
+        {products.length === 1 ? 'producto en esta tienda' : 'productos en esta tienda'}
+      </p>
+    </div>
+  </section>
+
+  <section class="catalog shell">
+    {
+      products.length > 0 ? (
+        <ProductGrid>
+          {products.map((p) => (
+            <ProductCard product={p} />
+          ))}
+        </ProductGrid>
+      ) : (
+        <div class="empty">
+          <p>Aún no hay productos en esta tienda.</p>
+        </div>
+      )
+    }
+  </section>
+</SiteLayout>

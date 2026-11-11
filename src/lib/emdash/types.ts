@@ -186,6 +186,7 @@ export interface CatalogCategory extends CatalogTaxonomy {
 }
 export type CatalogBrand = CatalogTaxonomy;
 export type CatalogCharacter = CatalogTaxonomy;
+export type CatalogStore = CatalogTaxonomy;
 
 export interface CatalogCollection {
   id: string;
@@ -216,6 +217,8 @@ export interface Catalog {
   brandsBySlug: Record<string, CatalogBrand>;
   characters: CatalogCharacter[];
   charactersBySlug: Record<string, CatalogCharacter>;
+  stores: CatalogStore[];
+  storesBySlug: Record<string, CatalogStore>;
   collections: CatalogCollection[];
   collectionsBySlug: Record<string, CatalogCollection>;
   pages: CatalogPage[];

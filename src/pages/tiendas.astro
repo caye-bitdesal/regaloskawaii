@@ -1,0 +1,80 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import CategoryCard from '../components/CategoryCard.astro';
+import FilterChips from '../components/FilterChips.astro';
+import ProductGrid from '../components/ProductGrid.astro';
+import ProductCard from '../components/ProductCard.astro';
+import RkIcon from '../components/RkIcon.astro';
+import { compareProducts } from '../lib/catalog/sortProducts';
+import { getCatalog } from '../lib/catalog';
+
+const catalog = await getCatalog();
+const products = [...catalog.products].sort(compareProducts);
+const chips = [
+  { id: 'all', label: 'Todas' },
+  ...catalog.stores.map((s) => ({ id: s.id, label: s.label.replace(/ España$/, '') })),
+];
+---
+
+<SiteLayout
+  pathname="/tiendas"
+  title="Tiendas"
+  description="Explora regalos kawaii agrupados por tienda externa."
+>
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow"><RkIcon name="sparkle" /> Compra en tu tienda favorita</span>
+      <h1>Explora por <em>tienda</em></h1>
+      <p>
+        Cada producto enlaza a una tienda externa. Filtra el catálogo para ver solo lo que
+        encontramos en Amazon, AliExpress y el resto.
+      </p>
+    </div>
+  </section>
+
+  <section class="categories-section">
+    <div class="shell">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Explora a tu manera</span>
+          <h2>Un universo para cada gusto</h2>
+        </div>
+        <p>Ideas ordenadas para encontrar justo lo que buscas</p>
+      </div>
+      <div class="category-showcase">
+        {catalog.stores.map((store, i) => (
+          <CategoryCard
+            href={`/tienda/${store.slug}`}
+            title={store.label}
+            productCount={store.productIds.length}
+            index={i}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="catalog shell">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Catálogo completo</span>
+        <h2>Filtrar por tienda</h2>
+      </div>
+      <p>{products.length} productos indexados</p>
+    </div>
+    {chips.length > 1 && <FilterChips chips={chips} shopFilter />}
+    {
+      products.length > 0 ? (
+        <ProductGrid>
+          {products.map((p) => (
+            <ProductCard product={p} />
+          ))}
+        </ProductGrid>
+      ) : (
+        <div class="empty">
+          <p>Aún no hay productos en el catálogo.</p>
+        </div>
+      )
+    }
+  </section>
+</SiteLayout>
