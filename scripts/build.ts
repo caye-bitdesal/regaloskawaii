@@ -5,8 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { SNAPSHOT_PATH } from '../src/lib/content/snapshot.ts';
 import { runSyncContent } from '../src/lib/content/runSync.ts';
 import { loadDotEnv } from './load-dotenv.ts';
+import { prepareMediaBeforeBuild } from './prepare-media.ts';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const publicDir = path.join(root, 'public');
 await loadDotEnv(root);
 
 const hasToken = Boolean(process.env.EMDASH_TOKEN);
@@ -29,6 +31,9 @@ if (hasToken && (!hasCache || process.env.REFRESH_CONTENT === '1')) {
 }
 
 process.env.SYNC_MEDIA = '0';
+
+console.log('Preparando variantes de imagen…');
+await prepareMediaBeforeBuild(publicDir);
 
 const r = spawnSync('npx', ['astro', 'build'], { cwd: root, stdio: 'inherit', env: process.env });
 process.exit(r.status ?? 1);

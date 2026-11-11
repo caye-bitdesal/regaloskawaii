@@ -14,4 +14,5 @@
   Cross-Origin-Opener-Policy: same-origin
   X-Frame-Options: DENY
   Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+  # script-src: 'unsafe-inline' solo para JSON-LD; el JS de cliente va en /_astro/*.js (assetsInlineLimit: 0).
   Content-Security-Policy: default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'

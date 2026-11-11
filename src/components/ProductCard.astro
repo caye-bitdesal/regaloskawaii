@@ -31,7 +31,7 @@ const productHref = `/producto/${product.slug}`;
   data-colecciones={product.coleccionSlugs.join(',')}
   data-title={product.title}
 >
-  <a class="card-product-link" href={productHref} aria-label={`Ver ${product.title}`}>
+  <a class="card-product-link" href={productHref}>
     <div class="image-button">
       {
         product.imagenUrl ? (

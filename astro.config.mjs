@@ -26,6 +26,23 @@ function rutaDe(url) {
  */
 /** @type {Record<string, string> | undefined} */
 let lastmod;
+
+/** @type {Set<string> | undefined} */
+let sitemapExclude;
+
+/** @returns {Set<string>} */
+function rutasExcluidas() {
+  if (!sitemapExclude) {
+    try {
+      sitemapExclude = new Set(
+        JSON.parse(readFileSync(new URL('./.cache/sitemap-exclude.json', import.meta.url), 'utf-8')),
+      );
+    } catch {
+      sitemapExclude = new Set();
+    }
+  }
+  return sitemapExclude;
+}
 /** @param {string} ruta */
 function lastmodDe(ruta) {
   if (!lastmod) {
@@ -49,7 +66,12 @@ export default defineConfig({
   build: { format: 'file', inlineStylesheets: 'always' },
   integrations: [
     sitemap({
-      filter: (url) => !SIN_SITEMAP.has(rutaDe(url)),
+      filter: (url) => {
+        const ruta = rutaDe(url);
+        if (SIN_SITEMAP.has(ruta)) return false;
+        if (rutasExcluidas().has(ruta)) return false;
+        return true;
+      },
       serialize(item) {
         const fecha = lastmodDe(rutaDe(item.url));
         if (fecha) item.lastmod = fecha;
@@ -59,5 +81,6 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss(), syncedMediaDevPlugin()],
+    build: { assetsInlineLimit: 0 },
   },
 });

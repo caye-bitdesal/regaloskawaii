@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { rename, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp, { type Metadata } from 'sharp';
-import { PUBLIC_MEDIA_DIR } from './syncMedia';
+import { PUBLIC_MEDIA_DIR } from './paths';
 
 /** Anchos generados en la build (WebP), sin ampliar por encima del original. */
 export const IMAGE_VARIANT_WIDTHS = [320, 480, 800, 1200] as const;
@@ -13,21 +13,6 @@ const SKIP = new Set(['.gif']);
 export function variantBasename(originalBasename: string, width: number): string {
   const stem = originalBasename.replace(/\.[^.]+$/i, '');
   return `${stem}-${width}w.webp`;
-}
-
-export function isGeneratedVariantFilename(name: string): boolean {
-  return /-\d+w\.webp$/i.test(name);
-}
-
-/** ¿Mantener este fichero de media dado el conjunto de basenames originales del catálogo? */
-export function shouldKeepMediaFile(name: string, wantedOriginals: Set<string>): boolean {
-  if (wantedOriginals.has(name)) return true;
-  if (!isGeneratedVariantFilename(name)) return false;
-  const stem = name.replace(/-\d+w\.webp$/i, '');
-  for (const original of wantedOriginals) {
-    if (original.replace(/\.[^.]+$/i, '') === stem) return true;
-  }
-  return false;
 }
 
 function extOf(filename: string): string {
@@ -94,10 +79,11 @@ export async function ensureImageVariants(storageKeys: string[]): Promise<{ crea
       continue;
     }
 
-    const widths = IMAGE_VARIANT_WIDTHS.filter((w) => w <= sourceWidth);
-    const largest = widths.length > 0 ? widths[widths.length - 1]! : sourceWidth;
-    const targets =
-      widths.length > 0 ? widths : ([Math.min(sourceWidth, 800)] as const);
+    const targets = IMAGE_VARIANT_WIDTHS.filter((w) => w <= sourceWidth);
+    if (targets.length === 0) {
+      skipped++;
+      continue;
+    }
 
     for (const width of targets) {
       const variantName = variantBasename(basename, width);
@@ -110,9 +96,6 @@ export async function ensureImageVariants(storageKeys: string[]): Promise<{ crea
       await writeVariant(inputPath, destPath, width);
       created++;
     }
-
-    // Si el original es JPG/PNG grande, las tarjetas usan variantes; el original sigue para OG.
-    void largest;
   }
 
   return { created, skipped };

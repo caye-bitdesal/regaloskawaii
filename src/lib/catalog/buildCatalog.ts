@@ -30,7 +30,8 @@ import {
   PUBLIC_MEDIA_DIR,
   syncMediaFiles,
 } from '../media/syncMedia';
-import { ensureImageVariants, listVariantsForBasename } from '../media/imageVariants';
+import { listVariantsForBasename } from '../media/imageVariants';
+import { MIN_CATEGORY_PRODUCTS_FOR_INDEX } from '../seo/jsonLd';
 import sharp from 'sharp';
 import { readSnapshot } from '../content/snapshot';
 import type { ProductoData } from '../emdash/types';
@@ -239,10 +240,6 @@ export async function buildCatalog(): Promise<Catalog> {
   }
 
   if (!isAstroDev()) {
-    const { created, skipped } = await ensureImageVariants(mediaKeys);
-    if (created > 0) {
-      console.log(`[image-variants] ${created} generadas, ${skipped} omitidas`);
-    }
     for (const key of mediaKeys) {
       await readImageDimensionsAsync(path.basename(key));
     }
@@ -397,10 +394,12 @@ export async function buildCatalog(): Promise<Catalog> {
 
   writeCatalogIndex(catalog);
   writeSitemapLastmod(catalog);
+  writeSitemapExclude(catalog.allCategories);
   return catalog;
 }
 
 const SITEMAP_LASTMOD_FILE = path.join(__dirname, '../../../.cache/sitemap-lastmod.json');
+const SITEMAP_EXCLUDE_FILE = path.join(__dirname, '../../../.cache/sitemap-exclude.json');
 
 /**
  * Guarda la fecha de última modificación de cada URL para el `lastmod` del sitemap
@@ -430,6 +429,18 @@ function writeSitemapLastmod(catalog: Catalog): void {
   const clean = Object.fromEntries(Object.entries(lastmod).filter(([, d]) => d));
   mkdirSync(path.dirname(SITEMAP_LASTMOD_FILE), { recursive: true });
   writeFileSync(SITEMAP_LASTMOD_FILE, JSON.stringify(clean), 'utf-8');
+}
+
+/** Categorías con noindex (pocas fichas): fuera del sitemap. */
+function writeSitemapExclude(allCategories: Catalog['allCategories']): void {
+  if (isAstroDev()) return;
+
+  const paths = allCategories
+    .filter((c) => c.count < MIN_CATEGORY_PRODUCTS_FOR_INDEX)
+    .map((c) => `/categoria/${c.slug}`);
+
+  mkdirSync(path.dirname(SITEMAP_EXCLUDE_FILE), { recursive: true });
+  writeFileSync(SITEMAP_EXCLUDE_FILE, JSON.stringify(paths), 'utf-8');
 }
 
 function writeCatalogIndex(catalog: Catalog): void {

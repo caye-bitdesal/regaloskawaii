@@ -1,13 +1,12 @@
 import { mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { getEmDashBaseUrl } from '../emdash/client';
 import { mediaUrl } from '../emdash/helpers';
 import type { ProductoEntry } from '../emdash/types';
-import { shouldKeepMediaFile } from './imageVariants';
+import { shouldKeepMediaFile } from './cleanup';
+import { PUBLIC_MEDIA_DIR } from './paths';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const PUBLIC_MEDIA_DIR = path.join(__dirname, '../../../public/media');
+export { PUBLIC_MEDIA_DIR } from './paths';
 
 /**
  * Descargas a la vez. Las imágenes las sirve el Worker de EmDash (poca CPU por petición en

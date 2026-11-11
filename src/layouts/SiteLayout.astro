@@ -49,7 +49,8 @@ function toAbsoluteUrl(pathOrUrl: string): string {
   }
 }
 
-const ogImageUrl = ogImage ? toAbsoluteUrl(ogImage) : new URL('/favicon.ico', siteOrigin).href;
+const defaultOgImage = new URL('/og-default.webp', siteOrigin).href;
+const ogImageUrl = ogImage ? toAbsoluteUrl(ogImage) : defaultOgImage;
 
 const breadcrumbItems: BreadcrumbItem[] =
   breadcrumbs ??
@@ -73,6 +74,10 @@ const structuredData = [breadcrumbsJsonLd(breadcrumbItems, siteOrigin), ...jsonL
     <link rel="canonical" href={canonicalUrl} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Regalos Kawaii" />
+    <meta property="og:locale" content="es_ES" />
     <meta property="og:image" content={ogImageUrl} />
     <meta name="twitter:card" content="summary_large_image" />
     {noindex && <meta name="robots" content="noindex" />}
