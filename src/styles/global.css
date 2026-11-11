@@ -73,7 +73,7 @@ h1 em::after { content: ''; height: 9px; width: 100%; position: absolute; bottom
 .card-product-link:focus-visible { outline: 2px solid #c73662; outline-offset: 2px; border-radius: 24px; }
 .product-card > .shop-link { margin-top: 0; }
 .image-button { display: block; position: relative; width: 100%; height: 250px; border: 0; background: #f9edf2; padding: 0; overflow: hidden; }
-.image-placeholder { display: grid; place-items: center; height: 100%; color: #a82d58; }
+.image-placeholder { display: grid; place-items: center; height: 100%; color: #b8325b; }
 .image-button img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
 .product-card:hover img { transform: scale(1.045); }
 .badge { position: absolute; left: 12px; top: 12px; padding: 7px 10px; border-radius: 99px; background: #fff1a8; color: #6f5920; font-size: 11px; font-weight: 700; text-transform: uppercase; }

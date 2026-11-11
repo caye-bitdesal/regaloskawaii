@@ -20,7 +20,7 @@ const chips = [
   ...catalog.collections.map((c) => ({ id: c.slug, label: c.title })),
 ];
 const heroProduct = products.find((p) => p.imagenUrl);
-const heroFallback = '/hero-fallback.webp';
+const heroFallback = '/hero-fallback.jpg';
 const heroVariants = heroProduct?.imagenVariants ?? [];
 const heroSrc = heroProduct ? pickDefaultSrc(heroVariants, heroProduct.imagenUrl!) : heroFallback;
 const heroSrcset = heroProduct ? buildSrcSet(heroVariants) : undefined;
@@ -28,7 +28,7 @@ const heroWidth = 900;
 const heroHeight =
   heroProduct?.imagenWidth && heroProduct.imagenHeight
     ? Math.round((heroWidth * heroProduct.imagenHeight) / heroProduct.imagenWidth)
-    : 620;
+    : 450;
 const count = products.length;
 ---
 

@@ -49,7 +49,7 @@ function toAbsoluteUrl(pathOrUrl: string): string {
   }
 }
 
-const defaultOgImage = new URL('/og-default.webp', siteOrigin).href;
+const defaultOgImage = new URL('/og-default.png', siteOrigin).href;
 const ogImageUrl = ogImage ? toAbsoluteUrl(ogImage) : defaultOgImage;
 
 const breadcrumbItems: BreadcrumbItem[] =

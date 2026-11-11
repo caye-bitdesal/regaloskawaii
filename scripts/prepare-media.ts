@@ -15,27 +15,21 @@ async function loadProductos(): Promise<ProductoEntry[]> {
   return fetchAllItems<ProductoEntry>('/_emdash/api/content/productos', '01-productos-lista.json');
 }
 
-/** OG y hero de reserva: generados una vez en public/, sin depender de EmDash. */
-export async function ensureStaticShareImages(publicDir: string): Promise<void> {
-  const ogPath = path.join(publicDir, 'og-default.webp');
-  const heroPath = path.join(publicDir, 'hero-fallback.webp');
+/**
+ * Hero de reserva a partir de `og-default.png` (asset versionado en public/).
+ * No genera la OG: debe ser el PNG de marca en el repositorio.
+ */
+export async function ensureHeroFallback(publicDir: string): Promise<void> {
+  const ogPath = path.join(publicDir, 'og-default.png');
+  const heroPath = path.join(publicDir, 'hero-fallback.jpg');
+  if (!existsSync(ogPath) || existsSync(heroPath)) return;
 
-  if (!existsSync(ogPath)) {
-    await sharp({
-      create: { width: 1200, height: 630, channels: 3, background: { r: 255, g: 245, b: 248 } },
-    })
-      .webp({ quality: 82 })
-      .toFile(ogPath);
-  }
-
-  if (!existsSync(heroPath)) {
-    await sharp(ogPath).resize(800, 400, { fit: 'cover' }).webp({ quality: 82 }).toFile(heroPath);
-  }
+  await sharp(ogPath).resize(800, 400, { fit: 'cover' }).jpeg({ quality: 85 }).toFile(heroPath);
 }
 
 /** Variantes WebP en public/media antes de `astro build`, para que dist/ las copie con el HTML. */
 export async function prepareMediaBeforeBuild(publicDir: string): Promise<void> {
-  await ensureStaticShareImages(publicDir);
+  await ensureHeroFallback(publicDir);
 
   const productos = await loadProductos();
   const keys = collectStorageKeysFromProductos(productos);
