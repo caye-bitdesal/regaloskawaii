@@ -2,7 +2,8 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { getCatalog } from '../../lib/catalog';
+import { getCatalog, sortProducts } from '../../lib/catalog';
+import { hubTrail } from '../../lib/seo/breadcrumbs';
 
 export async function getStaticPaths() {
   const catalog = await getCatalog();
@@ -17,13 +18,21 @@ const catalog = await getCatalog();
 const collection = catalog.collectionsBySlug[collectionSlug as string];
 if (!collection) throw new Error(`Colección no encontrada: ${collectionSlug}`);
 
-const products = catalog.products.filter((p) => p.coleccionSlugs.includes(collection.slug));
+const products = sortProducts(
+  catalog.products.filter((p) => p.coleccionSlugs.includes(collection.slug)),
+);
 ---
 
 <SiteLayout
   pathname={`/coleccion/${collection.slug}`}
   title={collection.title}
   description={collection.descripcion}
+  breadcrumbs={hubTrail(
+    'Colecciones',
+    '/colecciones',
+    collection.title,
+    `/coleccion/${collection.slug}`,
+  )}
 >
   <section class="page-intro categories-intro">
     <div class="shell">

@@ -6,3 +6,8 @@ export function compareProducts(a: CatalogProduct, b: CatalogProduct): number {
   if (a.destacado !== b.destacado) return a.destacado ? -1 : 1;
   return a.title.localeCompare(b.title, 'es');
 }
+
+/** Copia ordenada para listados (grids, relacionados, etc.). */
+export function sortProducts(products: readonly CatalogProduct[]): CatalogProduct[] {
+  return [...products].sort(compareProducts);
+}

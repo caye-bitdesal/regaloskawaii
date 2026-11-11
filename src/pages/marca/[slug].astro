@@ -2,8 +2,8 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { compareProducts } from '../../lib/catalog/sortProducts';
-import { getCatalog } from '../../lib/catalog';
+import { getCatalog, sortProducts } from '../../lib/catalog';
+import { hubTrail } from '../../lib/seo/breadcrumbs';
 
 export async function getStaticPaths() {
   const catalog = await getCatalog();
@@ -18,15 +18,14 @@ const catalog = await getCatalog();
 const brand = catalog.brandsBySlug[brandSlug as string];
 if (!brand) throw new Error(`Marca no encontrada: ${brandSlug}`);
 
-const products = catalog.products
-  .filter((p) => p.marcaSlugs.includes(brand.slug))
-  .sort(compareProducts);
+const products = sortProducts(catalog.products.filter((p) => p.marcaSlugs.includes(brand.slug)));
 ---
 
 <SiteLayout
   pathname={`/marca/${brand.slug}`}
   title={brand.label}
   description={`Regalos kawaii de ${brand.label}.`}
+  breadcrumbs={hubTrail('Marcas', '/marcas', brand.label, `/marca/${brand.slug}`)}
 >
   <section class="page-intro categories-intro">
     <div class="shell">

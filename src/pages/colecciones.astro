@@ -5,9 +5,11 @@ import FilterChips from '../components/FilterChips.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import ProductCard from '../components/ProductCard.astro';
 import RkIcon from '../components/RkIcon.astro';
-import { getCatalog } from '../lib/catalog';
+import { getCatalog, sortProducts } from '../lib/catalog';
+import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 const catalog = await getCatalog();
+const coleccionesBreadcrumbs = [HOME_CRUMB, crumb('Colecciones', '/colecciones')];
 const collectionsWithProducts = catalog.collections.filter((c) => c.productIds.length > 0);
 const chips = [
   { id: 'all', label: 'Todas' },
@@ -19,6 +21,7 @@ const chips = [
   pathname="/colecciones"
   title="Colecciones"
   description="Selecciones kawaii por precio, estilo y tendencias."
+  breadcrumbs={coleccionesBreadcrumbs}
 >
   <section class="page-intro categories-intro">
     <div class="shell">
@@ -55,7 +58,9 @@ const chips = [
     <div id="collection-blocks-list" class="collection-blocks">
     {
       collectionsWithProducts.map((col) => {
-        const products = catalog.products.filter((p) => p.coleccionSlugs.includes(col.slug));
+        const products = sortProducts(
+          catalog.products.filter((p) => p.coleccionSlugs.includes(col.slug)),
+        );
         return (
           <article class="collection-block" id={`coleccion-${col.slug}`} data-collection={col.slug}>
             <div class="collection-block-header">

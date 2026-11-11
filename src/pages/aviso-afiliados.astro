@@ -1,12 +1,18 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
+import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 const title = '💖 ¿Cómo nos ayudas?';
 const description =
   'Regalos Kawaii no vende productos: te explicamos cómo funcionan los enlaces de afiliado y cómo nos ayudas sin coste extra.';
 ---
 
-<SiteLayout pathname="/aviso-afiliados" {title} {description}>
+<SiteLayout
+  pathname="/aviso-afiliados"
+  {title}
+  {description}
+  breadcrumbs={[HOME_CRUMB, crumb('Aviso de afiliados', '/aviso-afiliados')]}
+>
   <section class="catalog shell">
     <h1>{title}</h1>
     <div class="about-copy affiliate-page">

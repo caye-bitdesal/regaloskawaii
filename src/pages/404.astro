@@ -1,12 +1,14 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import RkIcon from '../components/RkIcon.astro';
+import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 ---
 
 <SiteLayout
   pathname="/404"
   title="Página no encontrada"
   description="Esta página no existe. Vuelve al inicio para seguir descubriendo regalos kawaii."
+  breadcrumbs={[HOME_CRUMB, crumb('Página no encontrada', '/404')]}
   noindex
 >
   <section class="not-found shell">

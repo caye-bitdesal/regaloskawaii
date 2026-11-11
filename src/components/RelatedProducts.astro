@@ -1,5 +1,6 @@
 ---
 import type { CatalogProduct } from '../lib/emdash/types';
+import { sortProducts } from '../lib/catalog';
 import ProductCard from './ProductCard.astro';
 import ProductGrid from './ProductGrid.astro';
 
@@ -7,7 +8,8 @@ interface Props {
   products: CatalogProduct[];
 }
 
-const { products } = Astro.props;
+const { products: productsProp } = Astro.props;
+const products = sortProducts(productsProp);
 ---
 
 {

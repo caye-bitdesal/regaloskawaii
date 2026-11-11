@@ -2,6 +2,7 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 import PortableText from '../components/PortableText.astro';
 import { getCatalog } from '../lib/catalog';
+import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 export async function getStaticPaths() {
   const reserved = new Set([
@@ -35,7 +36,12 @@ const page = catalog.pagesBySlug[pageSlug as string];
 if (!page) throw new Error(`Página no encontrada: ${pageSlug}`);
 ---
 
-<SiteLayout pathname={`/${page.slug}`} title={page.title} description={page.title}>
+<SiteLayout
+  pathname={`/${page.slug}`}
+  title={page.title}
+  description={page.title}
+  breadcrumbs={[HOME_CRUMB, crumb(page.title, `/${page.slug}`)]}
+>
   <section class="catalog shell">
     <h1>{page.title}</h1>
     <div class="about-copy" style="max-width:720px;margin-top:2rem;">

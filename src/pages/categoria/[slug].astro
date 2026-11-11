@@ -3,7 +3,9 @@ import SiteLayout from '../../layouts/SiteLayout.astro';
 import FilterChips from '../../components/FilterChips.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { getCatalog } from '../../lib/catalog';
+import { getCatalog, sortProducts } from '../../lib/catalog';
+import { HOME_CRUMB, crumb } from '../../lib/seo/breadcrumbs';
+import { itemListJsonLd, MIN_CATEGORY_PRODUCTS_FOR_INDEX } from '../../lib/seo/jsonLd';
 
 export async function getStaticPaths() {
   const catalog = await getCatalog();
@@ -20,7 +22,7 @@ if (!category) throw new Error(`Categoría no encontrada: ${categorySlug}`);
 
 // Incluye los productos de sus subcategorías.
 const ids = new Set(category.productIds);
-const products = catalog.products.filter((p) => ids.has(p.id));
+const products = sortProducts(catalog.products.filter((p) => ids.has(p.id)));
 
 const parent = category.parentSlug ? catalog.categoriesBySlug[category.parentSlug] : undefined;
 // En una subcategoría se muestran sus hermanas, para poder saltar de una a otra.
@@ -38,12 +40,24 @@ const chips = [
     .filter((c) => collectionSlugsInView.has(c.slug))
     .map((c) => ({ id: c.slug, label: c.title })),
 ];
+
+const siteOrigin = Astro.site ?? new URL('https://regaloskawaii.es');
+const categoryBreadcrumbs = [HOME_CRUMB, crumb('Categorías', '/categorias')];
+if (parent) categoryBreadcrumbs.push(crumb(parent.label, `/categoria/${parent.slug}`));
+categoryBreadcrumbs.push(crumb(category.label, `/categoria/${category.slug}`));
+
+const categoryDescription = parent
+  ? `${category.label} kawaii: ideas de regalo de ${parent.label.toLowerCase()}.`
+  : `Regalos kawaii de ${category.label.toLowerCase()}.`;
 ---
 
 <SiteLayout
   pathname={`/categoria/${category.slug}`}
   title={category.label}
-  description={parent ? `${category.label} kawaii: ideas de regalo de ${parent.label.toLowerCase()}.` : `Regalos kawaii de ${category.label.toLowerCase()}.`}
+  description={categoryDescription}
+  breadcrumbs={categoryBreadcrumbs}
+  noindex={products.length < MIN_CATEGORY_PRODUCTS_FOR_INDEX}
+  jsonLd={products.length > 0 ? [itemListJsonLd(products, siteOrigin)] : []}
 >
   <section class="page-intro categories-intro">
     <div class="shell">

@@ -3,14 +3,17 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import CategoryCard from '../components/CategoryCard.astro';
 import RkIcon from '../components/RkIcon.astro';
 import { getCatalog } from '../lib/catalog';
+import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 const catalog = await getCatalog();
+const personajesBreadcrumbs = [HOME_CRUMB, crumb('Personajes', '/personajes')];
 ---
 
 <SiteLayout
   pathname="/personajes"
   title="Personajes"
   description="Regalos kawaii de tus personajes favoritos."
+  breadcrumbs={personajesBreadcrumbs}
 >
   <section class="page-intro categories-intro">
     <div class="shell">

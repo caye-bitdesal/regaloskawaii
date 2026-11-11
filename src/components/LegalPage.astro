@@ -1,6 +1,7 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { LEGAL, LEGAL_PENDIENTE } from '../lib/legal';
+import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 interface Props {
   title: string;
@@ -10,7 +11,7 @@ interface Props {
 const { title, description, pathname } = Astro.props;
 ---
 
-<SiteLayout {pathname} {title} {description}>
+<SiteLayout {pathname} {title} {description} breadcrumbs={[HOME_CRUMB, crumb(title, pathname)]}>
   <section class="catalog shell">
     <h1>{title}</h1>
     {LEGAL_PENDIENTE && (

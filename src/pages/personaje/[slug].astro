@@ -2,8 +2,8 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { compareProducts } from '../../lib/catalog/sortProducts';
-import { getCatalog } from '../../lib/catalog';
+import { getCatalog, sortProducts } from '../../lib/catalog';
+import { hubTrail } from '../../lib/seo/breadcrumbs';
 
 export async function getStaticPaths() {
   const catalog = await getCatalog();
@@ -18,15 +18,21 @@ const catalog = await getCatalog();
 const character = catalog.charactersBySlug[characterSlug as string];
 if (!character) throw new Error(`Personaje no encontrado: ${characterSlug}`);
 
-const products = catalog.products
-  .filter((p) => p.personajeSlugs.includes(character.slug))
-  .sort(compareProducts);
+const products = sortProducts(
+  catalog.products.filter((p) => p.personajeSlugs.includes(character.slug)),
+);
 ---
 
 <SiteLayout
   pathname={`/personaje/${character.slug}`}
   title={character.label}
   description={`Regalos kawaii de ${character.label}.`}
+  breadcrumbs={hubTrail(
+    'Personajes',
+    '/personajes',
+    character.label,
+    `/personaje/${character.slug}`,
+  )}
 >
   <section class="page-intro categories-intro">
     <div class="shell">

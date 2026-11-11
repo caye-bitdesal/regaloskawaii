@@ -3,7 +3,8 @@ import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProductDetailPanel from '../../components/ProductDetailPanel.astro';
 import RelatedProducts from '../../components/RelatedProducts.astro';
 import RkIcon from '../../components/RkIcon.astro';
-import { getCatalog } from '../../lib/catalog';
+import { getCatalog, sortProducts } from '../../lib/catalog';
+import { HOME_CRUMB, crumb } from '../../lib/seo/breadcrumbs';
 
 export async function getStaticPaths() {
   const catalog = await getCatalog();
@@ -19,15 +20,34 @@ const product = catalog.productsBySlug[productSlug as string];
 if (!product) throw new Error(`Producto no encontrado: ${productSlug}`);
 
 const primaryCol = product.coleccionSlugs[0];
-const related = catalog.products
-  .filter((p) => p.slug !== product.slug && primaryCol && p.coleccionSlugs.includes(primaryCol))
-  .slice(0, 3);
+const related = sortProducts(
+  catalog.products.filter(
+    (p) => p.slug !== product.slug && primaryCol && p.coleccionSlugs.includes(primaryCol),
+  ),
+).slice(0, 3);
 
 const seoTitle = product.seo?.title ?? product.title;
 const seoDesc = product.seo?.description ?? product.resumen;
+
+const productBreadcrumbs = [HOME_CRUMB, crumb('Categorías', '/categorias')];
+const primaryCategorySlug = product.categoriaSlugs[0];
+if (primaryCategorySlug) {
+  const primaryCategory = catalog.categoriesBySlug[primaryCategorySlug];
+  if (primaryCategory) {
+    productBreadcrumbs.push(crumb(primaryCategory.label, `/categoria/${primaryCategory.slug}`));
+  }
+}
+productBreadcrumbs.push(crumb(product.title, `/producto/${product.slug}`));
 ---
 
-<SiteLayout headerVariant="minimal" title={seoTitle} description={seoDesc ?? product.resumen}>
+<SiteLayout
+  headerVariant="minimal"
+  pathname={`/producto/${product.slug}`}
+  title={seoTitle}
+  description={seoDesc ?? product.resumen}
+  ogImage={product.imagenUrl}
+  breadcrumbs={productBreadcrumbs}
+>
   <section class="detail shell">
     <a class="back mobile-back" href="/">
       <RkIcon name="back" /> Volver

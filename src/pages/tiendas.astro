@@ -5,11 +5,12 @@ import FilterChips from '../components/FilterChips.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import ProductCard from '../components/ProductCard.astro';
 import RkIcon from '../components/RkIcon.astro';
-import { compareProducts } from '../lib/catalog/sortProducts';
-import { getCatalog } from '../lib/catalog';
+import { getCatalog, sortProducts } from '../lib/catalog';
+import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 const catalog = await getCatalog();
-const products = [...catalog.products].sort(compareProducts);
+const tiendasBreadcrumbs = [HOME_CRUMB, crumb('Tiendas', '/tiendas')];
+const products = sortProducts(catalog.products);
 const chips = [
   { id: 'all', label: 'Todas' },
   ...catalog.stores.map((s) => ({ id: s.id, label: s.label.replace(/ España$/, '') })),
@@ -17,6 +18,7 @@ const chips = [
 ---
 
 <SiteLayout
+  breadcrumbs={tiendasBreadcrumbs}
   pathname="/tiendas"
   title="Tiendas"
   description="Explora regalos kawaii agrupados por tienda externa."

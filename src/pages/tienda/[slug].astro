@@ -2,8 +2,8 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { compareProducts } from '../../lib/catalog/sortProducts';
-import { getCatalog } from '../../lib/catalog';
+import { getCatalog, sortProducts } from '../../lib/catalog';
+import { hubTrail } from '../../lib/seo/breadcrumbs';
 
 export async function getStaticPaths() {
   const catalog = await getCatalog();
@@ -18,15 +18,14 @@ const catalog = await getCatalog();
 const store = catalog.storesBySlug[storeSlug as string];
 if (!store) throw new Error(`Tienda no encontrada: ${storeSlug}`);
 
-const products = catalog.products
-  .filter((p) => p.tiendaId === store.id)
-  .sort(compareProducts);
+const products = sortProducts(catalog.products.filter((p) => p.tiendaId === store.id));
 ---
 
 <SiteLayout
   pathname={`/tienda/${store.slug}`}
   title={store.label}
   description={`Regalos kawaii en ${store.label.replace(/ España$/, '')}.`}
+  breadcrumbs={hubTrail('Tiendas', '/tiendas', store.label, `/tienda/${store.slug}`)}
 >
   <section class="page-intro categories-intro">
     <div class="shell">

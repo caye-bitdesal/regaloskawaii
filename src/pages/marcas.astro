@@ -3,11 +3,18 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import CategoryCard from '../components/CategoryCard.astro';
 import RkIcon from '../components/RkIcon.astro';
 import { getCatalog } from '../lib/catalog';
+import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 const catalog = await getCatalog();
+const marcasBreadcrumbs = [HOME_CRUMB, crumb('Marcas', '/marcas')];
 ---
 
-<SiteLayout pathname="/marcas" title="Marcas" description="Regalos kawaii por marca.">
+<SiteLayout
+  pathname="/marcas"
+  title="Marcas"
+  description="Regalos kawaii por marca."
+  breadcrumbs={marcasBreadcrumbs}
+>
   <section class="page-intro categories-intro">
     <div class="shell">
       <span class="eyebrow"><RkIcon name="sparkle" /> Oficiales y favoritas</span>

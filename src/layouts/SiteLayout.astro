@@ -3,12 +3,21 @@ import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import ProductDetailHeader from '../components/ProductDetailHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import JsonLd from '../components/JsonLd.astro';
+import type { BreadcrumbItem } from '../lib/seo/breadcrumbs';
+import { breadcrumbsJsonLd } from '../lib/seo/jsonLd';
 
 interface Props {
   title?: string;
   description?: string;
   headerVariant?: 'full' | 'minimal';
   pathname?: string;
+  /** URL absoluta o ruta pública (`/media/...`) para Open Graph / Twitter. */
+  ogImage?: string;
+  /** Migas para JSON-LD; si no se pasa, Inicio + título en rutas distintas de `/`. */
+  breadcrumbs?: BreadcrumbItem[];
+  /** Esquemas adicionales (`WebSite`, `ItemList`, …). */
+  jsonLd?: Record<string, unknown>[];
   /** Pide a los buscadores que no indexen la página (p. ej. la 404). */
   noindex?: boolean;
 }
@@ -18,10 +27,38 @@ const {
   description = 'Una selección de cosas bonitas encontradas por internet.',
   headerVariant = 'full',
   pathname = Astro.url.pathname,
+  ogImage,
+  breadcrumbs,
+  jsonLd = [],
   noindex = false,
 } = Astro.props;
 
 const fullTitle = title.includes('Regalos Kawaii') ? title : `${title} | Regalos Kawaii`;
+
+const siteOrigin = Astro.site ?? new URL('https://regaloskawaii.es');
+const canonicalUrl = new URL(pathname, siteOrigin).href;
+
+function toAbsoluteUrl(pathOrUrl: string): string {
+  try {
+    return new URL(pathOrUrl).href;
+  } catch {
+    const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+    return new URL(path, siteOrigin).href;
+  }
+}
+
+const ogImageUrl = ogImage ? toAbsoluteUrl(ogImage) : new URL('/favicon.ico', siteOrigin).href;
+
+const breadcrumbItems: BreadcrumbItem[] =
+  breadcrumbs ??
+  (pathname === '/'
+    ? [{ name: 'Inicio', path: '/' }]
+    : [
+        { name: 'Inicio', path: '/' },
+        { name: title, path: pathname },
+      ]);
+
+const structuredData = [breadcrumbsJsonLd(breadcrumbItems, siteOrigin), ...jsonLd];
 ---
 
 <!doctype html>
@@ -31,9 +68,15 @@ const fullTitle = title.includes('Regalos Kawaii') ? title : `${title} | Regalos
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
+    <JsonLd data={structuredData} />
   </head>
   <body>
     {

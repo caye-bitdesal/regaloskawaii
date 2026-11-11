@@ -23,7 +23,7 @@ import {
   prioridadProducto,
   stripInternalProductFields,
 } from '../emdash/helpers';
-import { compareProducts } from './sortProducts';
+import { sortProducts } from './sortProducts';
 import {
   collectStorageKeysFromProductos,
   localMediaPath,
@@ -280,7 +280,7 @@ export async function buildCatalog(): Promise<Catalog> {
     });
   }
 
-  products.sort(compareProducts);
+  const sortedProducts = sortProducts(products);
 
   const collections: CatalogCollection[] = colecciones
     .map((col) => ({
@@ -290,32 +290,34 @@ export async function buildCatalog(): Promise<Catalog> {
       descripcion: col.data.descripcion ?? '',
       orden: col.data.orden,
       destacada: booleanFrom01(col.data.destacada),
-      productIds: products.filter((p) => p.coleccionSlugs.includes(col.slug)).map((p) => p.id),
+      productIds: sortedProducts
+        .filter((p) => p.coleccionSlugs.includes(col.slug))
+        .map((p) => p.id),
     }))
     .sort((a, b) => a.orden - b.orden);
 
   const { categories, allCategories } = buildCategoryTree(
     categoriaTermsRaw,
-    products,
+    sortedProducts,
     (p) => p.categoriaSlugs,
     (p, slug) => labelAt(p.categoriaSlugs, p.categoriaLabels, slug),
   );
 
   const brands = buildTaxonomyGroups(
     marcaTermsRaw,
-    products,
+    sortedProducts,
     (p) => p.marcaSlugs,
     (p, slug) => labelAt(p.marcaSlugs, p.marcaLabels, slug),
   );
 
   const characters = buildTaxonomyGroups(
     personajeTermsRaw,
-    products,
+    sortedProducts,
     (p) => p.personajeSlugs,
     (p, slug) => labelAt(p.personajeSlugs, p.personajeLabels, slug),
   );
 
-  const stores = buildStores(tiendasActivas, products);
+  const stores = buildStores(tiendasActivas, sortedProducts);
 
   const catalogPages: CatalogPage[] = pages.map((p) => ({
     slug: p.slug,
@@ -325,8 +327,8 @@ export async function buildCatalog(): Promise<Catalog> {
   }));
 
   const catalog: Catalog = {
-    products,
-    productsBySlug: Object.fromEntries(products.map((p) => [p.slug, p])),
+    products: sortedProducts,
+    productsBySlug: Object.fromEntries(sortedProducts.map((p) => [p.slug, p])),
     categories,
     allCategories,
     categoriesBySlug: Object.fromEntries(allCategories.map((c) => [c.slug, c])),

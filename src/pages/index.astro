@@ -5,23 +5,31 @@ import ProductGrid from '../components/ProductGrid.astro';
 import ProductCard from '../components/ProductCard.astro';
 import CategoryCard from '../components/CategoryCard.astro';
 import RkIcon from '../components/RkIcon.astro';
-import { getCatalog } from '../lib/catalog';
+import { getCatalog, sortProducts } from '../lib/catalog';
+import { HOME_CRUMB } from '../lib/seo/breadcrumbs';
+import { organizationJsonLd, websiteJsonLd } from '../lib/seo/jsonLd';
 
 const catalog = await getCatalog();
+const siteOrigin = Astro.site ?? new URL('https://regaloskawaii.es');
+const homeDescription =
+  'Encuentra regalos y detalles kawaii con enlaces directos a tiendas externas.';
+const products = sortProducts(catalog.products);
 const chips = [
   { id: 'all', label: 'Todos' },
   ...catalog.collections.map((c) => ({ id: c.slug, label: c.title })),
 ];
 const heroImage =
-  catalog.products.find((p) => p.imagenUrl)?.imagenUrl ??
+  products.find((p) => p.imagenUrl)?.imagenUrl ??
   'https://images.unsplash.com/photo-1643014941083-d369d5cd3516?auto=format&fit=crop&w=900&q=85';
-const count = catalog.products.length;
+const count = products.length;
 ---
 
 <SiteLayout
   pathname="/"
   title="Regalos Kawaii — Tu rincón más kawaii"
-  description="Encuentra regalos y detalles kawaii con enlaces directos a tiendas externas."
+  description={homeDescription}
+  breadcrumbs={[HOME_CRUMB]}
+  jsonLd={[websiteJsonLd(siteOrigin, homeDescription), organizationJsonLd(siteOrigin)]}
 >
   <section class="hero shell">
     <div class="hero-copy">
@@ -38,7 +46,15 @@ const count = catalog.products.length;
     </div>
     <div class="hero-visual">
       <div class="blob"></div>
-      <img src={heroImage} alt="Colección de peluches kawaii en tonos pastel" width="900" height="390" />
+      <img
+        src={heroImage}
+        alt="Colección de peluches kawaii en tonos pastel"
+        width="900"
+        height="390"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+      />
       <span class="float-note">100% achuchable</span>
       <span class="doodle one">✦</span>
       <span class="doodle two">♡</span>
@@ -147,7 +163,7 @@ const count = catalog.products.length;
     </div>
     <FilterChips chips={chips} />
     <ProductGrid>
-      {catalog.products.map((p) => (
+      {products.map((p) => (
         <ProductCard product={p} />
       ))}
     </ProductGrid>

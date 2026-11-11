@@ -2,10 +2,11 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 import HowItWorksSection from '../components/HowItWorksSection.astro';
 import RkIcon from '../components/RkIcon.astro';
-import { getCatalog } from '../lib/catalog';
+import { getCatalog, sortProducts } from '../lib/catalog';
+import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 const catalog = await getCatalog();
-const imgs = catalog.products.filter((p) => p.imagenUrl).slice(0, 2);
+const imgs = sortProducts(catalog.products.filter((p) => p.imagenUrl)).slice(0, 2);
 const aboutMain =
   imgs[0]?.imagenUrl ??
   'https://images.unsplash.com/photo-1741241857658-7ce76d565ed7?auto=format&fit=crop&w=900&q=85';
@@ -14,7 +15,12 @@ const aboutSmall =
   'https://images.unsplash.com/photo-1747999613041-48827741ddda?auto=format&fit=crop&w=900&q=85';
 ---
 
-<SiteLayout pathname="/sobre-nosotros" title="Sobre nosotros" description="Conoce Regalos Kawaii.">
+<SiteLayout
+  pathname="/sobre-nosotros"
+  title="Sobre nosotros"
+  description="Conoce Regalos Kawaii."
+  breadcrumbs={[HOME_CRUMB, crumb('Sobre nosotros', '/sobre-nosotros')]}
+>
   <section class="page-intro about-intro">
     <div class="shell">
       <span class="eyebrow"><RkIcon name="heart" /> Nuestra pequeña historia</span>
