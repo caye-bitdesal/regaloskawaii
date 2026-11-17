@@ -5,6 +5,7 @@ import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import { getCatalog, sortProducts } from '../../lib/catalog';
 import { HOME_CRUMB, crumb } from '../../lib/seo/breadcrumbs';
+import { getCategorySeo } from '../../lib/seo/categorySeo';
 import { itemListJsonLd, MIN_CATEGORY_PRODUCTS_FOR_INDEX } from '../../lib/seo/jsonLd';
 
 export async function getStaticPaths() {
@@ -49,12 +50,16 @@ categoryBreadcrumbs.push(crumb(category.label, `/categoria/${category.slug}`));
 const categoryDescription = parent
   ? `${category.label} kawaii: ideas de regalo de ${parent.label.toLowerCase()}.`
   : `Regalos kawaii de ${category.label.toLowerCase()}.`;
+
+const seo = getCategorySeo(category.slug);
+const pageTitle = seo?.title ?? category.label;
+const pageDescription = seo?.description ?? categoryDescription;
 ---
 
 <SiteLayout
   pathname={`/categoria/${category.slug}`}
-  title={category.label}
-  description={categoryDescription}
+  title={pageTitle}
+  description={pageDescription}
   breadcrumbs={categoryBreadcrumbs}
   noindex={products.length < MIN_CATEGORY_PRODUCTS_FOR_INDEX}
   jsonLd={products.length > 0 ? [itemListJsonLd(products, siteOrigin)] : []}
