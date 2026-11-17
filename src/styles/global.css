@@ -31,6 +31,8 @@ header { position: sticky; top: 0; z-index: 30; background: rgb(255 253 252 / .9
 .nav nav button:hover { color: #ec5b87; }
 .search { display: flex; align-items: center; gap: 8px; width: 210px; padding: 10px 14px; border: 1px solid #ede3e9; border-radius: 999px; color: #9c8f99; background: white; }
 .search input { border: 0; outline: 0; background: transparent; width: 100%; font-size: 13px; }
+.home-intro { padding-block: 0 56px; max-width: 720px; }
+.home-intro p { margin: 0; color: #776b73; font-size: 17px; line-height: 1.75; }
 .hero { min-height: 570px; display: grid; grid-template-columns: .9fr 1.1fr; align-items: center; gap: 60px; padding-block: 70px; }
 .hero-copy { max-width: 520px; position: relative; z-index: 2; }
 .eyebrow { display: inline-flex; align-items: center; gap: 7px; color: #c73662; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }

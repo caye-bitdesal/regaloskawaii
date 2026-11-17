@@ -45,7 +45,8 @@ export interface ProductoData {
   enlace_afiliado?: string;
   precio_ref?: number;
   /** Cambios de precio de los últimos 60 días, en JSON (scripts/update-prices.mjs del admin). */
-  historial_precios?: string;
+  /** Se guarda como texto JSON, pero la API de EmDash lo devuelve ya como lista. */
+  historial_precios?: string | [string, number][];
   precio_actualizado?: string;
   imagen?: EmDashImage;
   galeria?: { imagen: EmDashImage }[];

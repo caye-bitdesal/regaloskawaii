@@ -13,7 +13,7 @@ import { organizationJsonLd, websiteJsonLd } from '../lib/seo/jsonLd';
 const catalog = await getCatalog();
 const siteOrigin = Astro.site ?? new URL('https://regaloskawaii.es');
 const homeDescription =
-  'Encuentra regalos y detalles kawaii con enlaces directos a tiendas externas.';
+  'Cosas kawaii para regalar o darte un capricho: squishies, peluches, papelería y más, elegidos uno a uno. Regalos kawaii desde 5 € con enlace a la tienda.';
 const products = sortProducts(catalog.products);
 const chips = [
   { id: 'all', label: 'Todos' },
@@ -34,7 +34,7 @@ const count = products.length;
 
 <SiteLayout
   pathname="/"
-  title="Regalos Kawaii — Tu rincón más kawaii"
+  title="Regalos Kawaii: cosas kawaii y regalos monos"
   description={homeDescription}
   breadcrumbs={[HOME_CRUMB]}
   jsonLd={[websiteJsonLd(siteOrigin, homeDescription), organizationJsonLd(siteOrigin)]}
@@ -54,7 +54,7 @@ const count = products.length;
   <section class="hero shell">
     <div class="hero-copy">
       <span class="eyebrow"><RkIcon name="sparkle" /> Pequeñas cosas, grandes sonrisas</span>
-      <h1>Tu rincón más <em>kawaii</em></h1>
+      <h1>Regalos <em>kawaii</em> y cosas monas para alegrar el día</h1>
       <p>
         Descubre objetos bonitos que hacen tu día un poquito más feliz. Nosotros los encontramos, tú
         eliges tu favorito.
@@ -81,6 +81,20 @@ const count = products.length;
       <span class="doodle one">✦</span>
       <span class="doodle two">♡</span>
     </div>
+  </section>
+
+  <section class="home-intro shell" aria-label="Sobre Regalos Kawaii">
+    <p>
+      En Regalos Kawaii reunimos cosas kawaii que dan ganas de achuchar: squishies blanditos, peluches
+      de capibara, papelería con animalitos, tazas, lámparas y pequeños detalles en colores pastel. No
+      es un catálogo infinito, sino una selección: cada producto lo elegimos por lo mono que es, por sus
+      valoraciones y por su precio. Encontrarás regalos kawaii para todas las edades y bolsillos, desde
+      detalles por menos de 10 € para el amigo invisible hasta caprichos especiales para Navidad o un
+      cumpleaños. No vendemos directamente: cada producto te lleva a la tienda (AliExpress, Amazon y
+      otras), donde compras con sus garantías y plazos de envío. Si compras desde nuestros enlaces
+      ganamos una pequeña comisión, sin que te cueste nada más. Los precios de AliExpress se actualizan
+      cada día.
+    </p>
   </section>
 
   <section class="catalog shell" id="catalogo">

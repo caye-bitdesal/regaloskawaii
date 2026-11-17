@@ -13,10 +13,14 @@ const DIA_MS = 86_400_000;
 const sumarDias = (fecha: string, dias: number) =>
   new Date(Date.parse(`${fecha}T00:00:00Z`) + dias * DIA_MS).toISOString().slice(0, 10);
 
-export function leerHistorial(texto: string | undefined): HistorialPrecios {
-  if (!texto) return [];
+/**
+ * Se guarda como texto, pero la API de EmDash lo devuelve ya convertido en lista
+ * (detecta que es JSON): se aceptan las dos formas.
+ */
+export function leerHistorial(valor: unknown): HistorialPrecios {
+  if (!valor) return [];
   try {
-    const lista: unknown = JSON.parse(texto);
+    const lista: unknown = typeof valor === 'string' ? JSON.parse(valor) : valor;
     if (!Array.isArray(lista)) return [];
     return (lista as unknown[])
       .filter(
