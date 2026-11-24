@@ -25,7 +25,7 @@ const products = sortProducts(catalog.products.filter((p) => p.tiendaId === stor
   pathname={`/tienda/${store.slug}`}
   title={store.label}
   description={`Regalos kawaii en ${store.label.replace(/ España$/, '')}.`}
-  breadcrumbs={hubTrail('Tiendas', '/tiendas', store.label, `/tienda/${store.slug}`)}
+  breadcrumbs={hubTrail('Categorías', '/categorias', store.label, `/tienda/${store.slug}`)}
 >
   <section class="page-intro categories-intro">
     <div class="shell">

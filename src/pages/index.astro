@@ -77,7 +77,7 @@ const count = products.length;
         loading="eager"
         decoding="async"
       />
-      <span class="float-note">100% achuchable</span>
+      <span class="float-note">100% cute</span>
       <span class="doodle one">✦</span>
       <span class="doodle two">♡</span>
     </div>
@@ -113,15 +113,6 @@ const count = products.length;
         <button type="button" class="category hub-tab" data-hub-tab="colecciones" role="tab">
           Por colección
         </button>
-        <button type="button" class="category hub-tab" data-hub-tab="marcas" role="tab">
-          Por marcas
-        </button>
-        <button type="button" class="category hub-tab" data-hub-tab="personajes" role="tab">
-          Por personajes
-        </button>
-        <button type="button" class="category hub-tab" data-hub-tab="tiendas" role="tab">
-          Por tiendas
-        </button>
       </div>
 
       <div class="hub-panel" data-hub-panel="categorias" role="tabpanel">
@@ -149,46 +140,12 @@ const count = products.length;
           ))}
         </div>
       </div>
-
-      <div class="hub-panel" data-hub-panel="marcas" role="tabpanel" hidden>
-        <div class="category-showcase hub-showcase">
-          {catalog.brands.map((brand, i) => (
-            <CategoryCard
-              href={`/marca/${brand.slug}`}
-              title={brand.label}
-              productCount={brand.productIds.length}
-              index={i}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div class="hub-panel" data-hub-panel="personajes" role="tabpanel" hidden>
-        <div class="category-showcase hub-showcase">
-          {catalog.characters.map((character, i) => (
-            <CategoryCard
-              href={`/personaje/${character.slug}`}
-              title={character.label}
-              productCount={character.productIds.length}
-              index={i}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div class="hub-panel" data-hub-panel="tiendas" role="tabpanel" hidden>
-        <div class="category-showcase hub-showcase">
-          {catalog.stores.map((store, i) => (
-            <CategoryCard
-              href={`/tienda/${store.slug}`}
-              title={store.label}
-              productCount={store.productIds.length}
-              index={i}
-            />
-          ))}
-        </div>
-      </div>
     </div>
+
+    <p class="home-taxonomy-note">
+      <a href="/categorias">Marcas, personajes y tiendas</a>
+      están en Categorías.
+    </p>
 
     <div class="section-heading" style="margin-top: 3rem;">
       <div>

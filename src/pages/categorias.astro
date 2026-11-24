@@ -12,7 +12,7 @@ const categoriasBreadcrumbs = [HOME_CRUMB, crumb('Categorías', '/categorias')];
 <SiteLayout
   pathname="/categorias"
   title="Categorías"
-  description="Explora regalos kawaii por categorías."
+  description="Explora regalos kawaii por tipo, marca, personaje o tienda."
   breadcrumbs={categoriasBreadcrumbs}
 >
   <section class="page-intro categories-intro">
@@ -20,8 +20,8 @@ const categoriasBreadcrumbs = [HOME_CRUMB, crumb('Categorías', '/categorias')];
       <span class="eyebrow"><RkIcon name="sparkle" /> Hay algo bonito para cada persona</span>
       <h1>Explora por <em>categorías</em></h1>
       <p>
-        Desde pequeños detalles hasta regalos especiales: hemos ordenado todos nuestros hallazgos para
-        que encuentres la idea perfecta.
+        Tipo de producto, marcas, personajes o tienda: elige cómo quieres recorrer el catálogo y
+        salta a la lista que encaje contigo.
       </p>
     </div>
   </section>
@@ -35,15 +35,84 @@ const categoriasBreadcrumbs = [HOME_CRUMB, crumb('Categorías', '/categorias')];
         </div>
         <p>Ideas ordenadas para encontrar justo lo que buscas</p>
       </div>
-      <div class="category-showcase">
-        {catalog.categories.map((cat, i) => (
-          <CategoryCard
-            href={`/categoria/${cat.slug}`}
-            title={cat.label}
-            productCount={cat.productIds.length}
-            index={i}
-          />
-        ))}
+
+      <div class="home-hub" id="categorias-hub">
+        <div class="hub-tabs" role="tablist" aria-label="Explorar por categoría">
+          <button type="button" class="category hub-tab active" data-hub-tab="producto" role="tab">
+            Por tipo
+          </button>
+          <button type="button" class="category hub-tab" data-hub-tab="marcas" role="tab">
+            Marcas
+          </button>
+          <button type="button" class="category hub-tab" data-hub-tab="personajes" role="tab">
+            Personajes
+          </button>
+          <button type="button" class="category hub-tab" data-hub-tab="tiendas" role="tab">
+            Tiendas
+          </button>
+        </div>
+
+        <div class="hub-panel" data-hub-panel="producto" role="tabpanel">
+          <div class="category-showcase hub-showcase">
+            {catalog.categories.map((cat, i) => (
+              <CategoryCard
+                href={`/categoria/${cat.slug}`}
+                title={cat.label}
+                productCount={cat.productIds.length}
+                index={i}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div class="hub-panel" data-hub-panel="marcas" role="tabpanel" hidden>
+          <p class="taxonomy-lead">
+            Sanrio, Pop Mart y otras marcas con productos indexados en el catálogo.
+          </p>
+          <div class="category-showcase hub-showcase">
+            {catalog.brands.map((brand, i) => (
+              <CategoryCard
+                href={`/marca/${brand.slug}`}
+                title={brand.label}
+                productCount={brand.productIds.length}
+                index={i}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div class="hub-panel" data-hub-panel="personajes" role="tabpanel" hidden>
+          <p class="taxonomy-lead">
+            Kuromi, Hello Kitty, Labubu y más personajes con regalos kawaii en la web.
+          </p>
+          <div class="category-showcase hub-showcase">
+            {catalog.characters.map((character, i) => (
+              <CategoryCard
+                href={`/personaje/${character.slug}`}
+                title={character.label}
+                productCount={character.productIds.length}
+                index={i}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div class="hub-panel" data-hub-panel="tiendas" role="tabpanel" hidden>
+          <p class="taxonomy-lead">
+            Cada producto enlaza a una tienda externa: explora lo que tenemos en Amazon, AliExpress
+            y el resto.
+          </p>
+          <div class="category-showcase hub-showcase">
+            {catalog.stores.map((store, i) => (
+              <CategoryCard
+                href={`/tienda/${store.slug}`}
+                title={store.label}
+                productCount={store.productIds.length}
+                index={i}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -60,3 +129,18 @@ const categoriasBreadcrumbs = [HOME_CRUMB, crumb('Categorías', '/categorias')];
     </a>
   </section>
 </SiteLayout>
+
+<script>
+  import { initCategoriasHubTabs } from '../scripts/categorias-hub-tabs.client';
+  initCategoriasHubTabs();
+</script>
+
+<style>
+  .taxonomy-lead {
+    margin: 0 0 18px;
+    max-width: 640px;
+    color: #6e656b;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+</style>

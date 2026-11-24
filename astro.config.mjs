@@ -64,6 +64,11 @@ export default defineConfig({
   // Cloudflare Pages sirve «categoria/papeleria.html» en «/categoria/papeleria».
   trailingSlash: 'never',
   build: { format: 'file', inlineStylesheets: 'always' },
+  redirects: {
+    '/marcas': { status: 301, destination: '/categorias?ver=marcas' },
+    '/personajes': { status: 301, destination: '/categorias?ver=personajes' },
+    '/tiendas': { status: 301, destination: '/categorias?ver=tiendas' },
+  },
   integrations: [
     sitemap({
       filter: (url) => {

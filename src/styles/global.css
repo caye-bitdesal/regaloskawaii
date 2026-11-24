@@ -64,6 +64,8 @@ h1 em::after { content: ''; height: 9px; width: 100%; position: absolute; bottom
 .section-heading > p { color: #6e656b; font-size: 14px; }
 .category-row { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
 .home-hub { margin-bottom: 8px; }
+.home-taxonomy-note { margin: 0 0 2rem; color: #6e656b; font-size: 14px; }
+.home-taxonomy-note a { color: #c73662; font-weight: 600; }
 .hub-tabs { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 22px; }
 .hub-tab.active { background: #c73662; color: #fff; border-color: #c73662; }
 .hub-showcase { margin-bottom: 0; }

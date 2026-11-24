@@ -13,14 +13,20 @@ const nav = [
   { href: '/categorias', label: 'Categorías' },
   { href: '/colecciones', label: 'Colecciones' },
   { href: '/guias', label: 'Guías' },
-  { href: '/marcas', label: 'Marcas' },
-  { href: '/personajes', label: 'Personajes' },
-  { href: '/tiendas', label: 'Tiendas' },
   { href: '/sobre-nosotros', label: 'Sobre nosotros' },
 ];
 
 function isActive(href: string): boolean {
   if (href === '/') return pathname === '/';
+  if (href === '/categorias') {
+    return (
+      pathname.startsWith('/categorias') ||
+      pathname.startsWith('/categoria/') ||
+      pathname.startsWith('/marca/') ||
+      pathname.startsWith('/personaje/') ||
+      pathname.startsWith('/tienda/')
+    );
+  }
   return pathname.startsWith(href);
 }
 ---

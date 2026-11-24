@@ -416,7 +416,7 @@ function writeSitemapLastmod(catalog: Catalog): void {
 
   const lastmod: Record<string, string | undefined> = {};
   const all = latest(catalog.products.map((p) => p.updatedAt));
-  for (const p of ['/', '/categorias', '/colecciones', '/marcas', '/personajes', '/tiendas']) {
+  for (const p of ['/', '/categorias', '/colecciones']) {
     lastmod[p] = all;
   }
   for (const p of catalog.products) lastmod[`/producto/${p.slug}`] = p.updatedAt;

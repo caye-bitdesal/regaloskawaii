@@ -27,7 +27,7 @@ const siteOrigin = Astro.site ?? new URL('https://regaloskawaii.es');
   pathname={`/marca/${brand.slug}`}
   title={brand.label}
   description={`Regalos kawaii de ${brand.label}.`}
-  breadcrumbs={hubTrail('Marcas', '/marcas', brand.label, `/marca/${brand.slug}`)}
+  breadcrumbs={hubTrail('Categorías', '/categorias', brand.label, `/marca/${brand.slug}`)}
   jsonLd={products.length > 0 ? [itemListJsonLd(products, siteOrigin)] : []}
 >
   <section class="page-intro categories-intro">
