@@ -1,5 +1,6 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import GuiaCover from '../../components/GuiaCover.astro';
 import RkIcon from '../../components/RkIcon.astro';
 import { getCollection } from 'astro:content';
 import { HOME_CRUMB, crumb } from '../../lib/seo/breadcrumbs';
@@ -49,13 +50,18 @@ const formatFecha = (fecha: Date) =>
         {guias.map((guia) => (
           <li>
             <article class="guia-list-card">
-              <h2>
-                <a href={`/guias/${guia.id}`}>{guia.data.title}</a>
-              </h2>
-              <p>{guia.data.description}</p>
-              <p class="meta">
-                Actualizada el {formatFecha(guia.data.actualizado)}
-              </p>
+              <a class="guia-list-card-media" href={`/guias/${guia.id}`} tabindex="-1" aria-hidden="true">
+                <GuiaCover src={guia.data.imagen} alt={guia.data.imagenAlt} variant="card" />
+              </a>
+              <div class="guia-list-card-body">
+                <h2>
+                  <a href={`/guias/${guia.id}`}>{guia.data.title}</a>
+                </h2>
+                <p>{guia.data.description}</p>
+                <p class="meta">
+                  Actualizada el {formatFecha(guia.data.actualizado)}
+                </p>
+              </div>
             </article>
           </li>
         ))}
@@ -80,10 +86,29 @@ const formatFecha = (fecha: Date) =>
   }
 
   .guia-list-card {
-    padding: 22px 24px;
+    display: grid;
+    grid-template-columns: minmax(140px, 220px) 1fr;
+    gap: 22px;
+    align-items: center;
+    padding: 18px;
     border: 1px solid #f0e6ec;
     border-radius: 18px;
     background: #fff;
+  }
+
+  .guia-list-card-media {
+    display: block;
+    text-decoration: none;
+  }
+
+  .guia-list-card-body {
+    min-width: 0;
+  }
+
+  @media (max-width: 640px) {
+    .guia-list-card {
+      grid-template-columns: 1fr;
+    }
   }
 
   .guia-list-card h2 {

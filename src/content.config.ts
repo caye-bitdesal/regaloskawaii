@@ -23,6 +23,8 @@ const guias = defineCollection({
     publicado: z.coerce.date(),
     actualizado: z.coerce.date(),
     intro: z.string(),
+    imagen: z.string(),
+    imagenAlt: z.string().max(125),
     secciones: z.array(seccionGuia),
     colecciones: z.array(z.string()).optional(),
     relacionadas: z.array(z.string()).optional(),

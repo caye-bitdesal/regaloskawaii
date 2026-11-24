@@ -1,5 +1,6 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import GuiaCover from '../../components/GuiaCover.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import { getCollection, getEntry, render } from 'astro:content';
@@ -73,10 +74,12 @@ const seccionesVista = seccionesResueltas.map((seccion) => {
   title={guia.data.title}
   description={guia.data.description}
   breadcrumbs={hubTrail('Guías', '/guias', guia.data.title, pathname)}
+  ogImage={guia.data.imagen}
   jsonLd={jsonLd}
 >
   <section class="page-intro categories-intro">
     <div class="shell">
+      <GuiaCover src={guia.data.imagen} alt={guia.data.imagenAlt} variant="hero" />
       <span class="eyebrow">Guía</span>
       <h1 set:html={guia.data.h1.includes('<') ? guia.data.h1 : guia.data.h1} />
       <p class="guia-fecha-meta">Actualizada el {formatFecha(guia.data.actualizado)}</p>

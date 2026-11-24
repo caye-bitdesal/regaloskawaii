@@ -1,0 +1,51 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  variant?: 'card' | 'hero';
+  loading?: 'eager' | 'lazy';
+  width?: number;
+  height?: number;
+}
+
+const {
+  src,
+  alt,
+  variant = 'card',
+  loading = variant === 'hero' ? 'eager' : 'lazy',
+  width = 1024,
+  height = 819,
+} = Astro.props;
+---
+
+<div class:list={['guia-cover', `guia-cover--${variant}`]}>
+  <img src={src} {alt} {width} {height} {loading} decoding="async" />
+</div>
+
+<style>
+  .guia-cover {
+    overflow: hidden;
+    background: #fdf6f9;
+  }
+
+  .guia-cover img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .guia-cover--card {
+    border-radius: 14px;
+    aspect-ratio: 5 / 4;
+  }
+
+  .guia-cover--hero {
+    max-width: 560px;
+    margin: 0 auto 28px;
+    border-radius: 20px;
+    border: 8px solid white;
+    box-shadow: 0 16px 40px rgb(115 74 91 / 14%);
+    aspect-ratio: 5 / 4;
+  }
+</style>

@@ -4,6 +4,8 @@ description: "Ideas de regalos kawaii para Navidad 2026 por precio: detalles bar
 h1: "Regalos kawaii para Navidad 2026: ideas por precio"
 publicado: 2025-11-15
 actualizado: 2025-11-24
+imagen: /guias/regalos-kawaii-navidad.jpg
+imagenAlt: Ilustración kawaii de un perrito vestido de Papá Noel con regalos bajo la nieve
 intro: >-
   Si buscas regalos kawaii para Navidad y no quieres dar vueltas sin rumbo, aquí tienes
   una selección por tramos de precio. Hemos mirado el catálogo actual y hemos priorizado
