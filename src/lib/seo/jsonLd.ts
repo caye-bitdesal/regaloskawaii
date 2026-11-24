@@ -64,3 +64,34 @@ export function organizationJsonLd(siteOrigin: URL) {
 
 /** Categorías con menos productos no se indexan hasta tener más contenido. */
 export const MIN_CATEGORY_PRODUCTS_FOR_INDEX = 3;
+
+export function articleJsonLd(opts: {
+  headline: string;
+  description: string;
+  datePublished: string;
+  dateModified: string;
+  pageUrl: string;
+  siteOrigin: URL;
+}) {
+  const publisher = {
+    '@type': 'Organization' as const,
+    name: 'Regalos Kawaii',
+    legalName: LEGAL.titular,
+    url: LEGAL.web,
+    logo: absoluteUrl(opts.siteOrigin, '/favicon.svg'),
+  };
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: opts.headline,
+    description: opts.description,
+    datePublished: opts.datePublished,
+    dateModified: opts.dateModified,
+    url: opts.pageUrl,
+    mainEntityOfPage: opts.pageUrl,
+    inLanguage: 'es-ES',
+    author: publisher,
+    publisher,
+  };
+}

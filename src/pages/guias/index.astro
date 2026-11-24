@@ -1,0 +1,115 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import RkIcon from '../../components/RkIcon.astro';
+import { getCollection } from 'astro:content';
+import { HOME_CRUMB, crumb } from '../../lib/seo/breadcrumbs';
+
+const entries = await getCollection('guias');
+const guias = [...entries].sort(
+  (a, b) => b.data.actualizado.getTime() - a.data.actualizado.getTime(),
+);
+
+const formatFecha = (fecha: Date) =>
+  new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Europe/Madrid',
+  }).format(fecha);
+---
+
+<SiteLayout
+  pathname="/guias"
+  title="Guías de regalo"
+  description="Ideas y selecciones para regalar cosas kawaii: por precio, por persona y por ocasión."
+  breadcrumbs={[HOME_CRUMB, crumb('Guías', '/guias')]}
+>
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow"><RkIcon name="sparkle" /> Para elegir con calma</span>
+      <h1>Guías para regalar <em>kawaii</em></h1>
+      <p>
+        Listas curadas con productos del catálogo, agrupadas por precio y estilo. Los precios siempre
+        salen de la ficha actual: aquí solo te orientamos.
+      </p>
+    </div>
+  </section>
+
+  <section class="catalog shell">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Todas las guías</span>
+        <h2>Empieza por la ocasión</h2>
+      </div>
+      <p>{guias.length} {guias.length === 1 ? 'guía publicada' : 'guías publicadas'}</p>
+    </div>
+  {
+    guias.length > 0 ? (
+      <ul class="guia-list">
+        {guias.map((guia) => (
+          <li>
+            <article class="guia-list-card">
+              <h2>
+                <a href={`/guias/${guia.id}`}>{guia.data.title}</a>
+              </h2>
+              <p>{guia.data.description}</p>
+              <p class="meta">
+                Actualizada el {formatFecha(guia.data.actualizado)}
+              </p>
+            </article>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <div class="empty">
+        <p>Aún no hay guías publicadas.</p>
+      </div>
+    )
+  }
+  </section>
+</SiteLayout>
+
+<style>
+  .guia-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .guia-list-card {
+    padding: 22px 24px;
+    border: 1px solid #f0e6ec;
+    border-radius: 18px;
+    background: #fff;
+  }
+
+  .guia-list-card h2 {
+    margin: 0 0 10px;
+    font-size: clamp(22px, 3vw, 28px);
+  }
+
+  .guia-list-card h2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .guia-list-card h2 a:hover {
+    color: #c73662;
+  }
+
+  .guia-list-card > p {
+    margin: 0;
+    color: #6e656b;
+    line-height: 1.65;
+    font-size: 15px;
+  }
+
+  .guia-list-card .meta {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #9c8f99;
+  }
+</style>

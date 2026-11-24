@@ -1,0 +1,213 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import { getCollection, getEntry, render } from 'astro:content';
+import { getCatalog } from '../../lib/catalog';
+import { resolveGuiaProduct } from '../../lib/guias/products';
+import { hubTrail } from '../../lib/seo/breadcrumbs';
+import { articleJsonLd, itemListJsonLd } from '../../lib/seo/jsonLd';
+
+export async function getStaticPaths() {
+  const guias = await getCollection('guias');
+  return guias.map((guia) => ({
+    params: { slug: guia.id },
+  }));
+}
+
+const { slug } = Astro.params;
+if (!slug) throw new Error('Falta el slug de la guía');
+
+const guia = await getEntry('guias', slug);
+if (!guia) throw new Error(`Guía no encontrada: ${slug}`);
+
+const { Content } = await render(guia);
+const catalog = await getCatalog();
+const siteOrigin = Astro.site ?? new URL('https://regaloskawaii.es');
+const pathname = `/guias/${slug}`;
+const pageUrl = new URL(pathname, siteOrigin).href;
+
+const formatFecha = (fecha: Date) =>
+  new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Europe/Madrid',
+  }).format(fecha);
+
+type GuiaProducto = { product: import('../../lib/emdash/types').CatalogProduct; nota: string };
+
+const seccionesResueltas = guia.data.secciones.map((seccion) => {
+  const items: GuiaProducto[] = [];
+  for (const ref of seccion.productos) {
+    const product = resolveGuiaProduct(ref.slug, catalog, slug);
+    if (product) items.push({ product, nota: ref.nota });
+  }
+  return { ...seccion, items };
+});
+
+const productosMostrados = seccionesResueltas.flatMap((s) => s.items.map((i) => i.product));
+
+const jsonLd = [
+  articleJsonLd({
+    headline: guia.data.h1,
+    description: guia.data.description,
+    datePublished: guia.data.publicado.toISOString(),
+    dateModified: guia.data.actualizado.toISOString(),
+    pageUrl,
+    siteOrigin,
+  }),
+  ...(productosMostrados.length > 0 ? [itemListJsonLd(productosMostrados, siteOrigin)] : []),
+];
+
+let ultimoTituloSeccion = '';
+const seccionesVista = seccionesResueltas.map((seccion) => {
+  const mostrarH2 = seccion.titulo !== ultimoTituloSeccion;
+  ultimoTituloSeccion = seccion.titulo;
+  return { ...seccion, mostrarH2 };
+});
+---
+
+<SiteLayout
+  pathname={pathname}
+  title={guia.data.title}
+  description={guia.data.description}
+  breadcrumbs={hubTrail('Guías', '/guias', guia.data.title, pathname)}
+  jsonLd={jsonLd}
+>
+  <section class="page-intro categories-intro">
+    <div class="shell">
+      <span class="eyebrow">Guía</span>
+      <h1 set:html={guia.data.h1.includes('<') ? guia.data.h1 : guia.data.h1} />
+      <p class="guia-fecha-meta">Actualizada el {formatFecha(guia.data.actualizado)}</p>
+      <p>{guia.data.intro}</p>
+    </div>
+  </section>
+
+  <section class="catalog shell guia-body">
+    <p class="guia-affiliate-notice">
+      Algunos enlaces de esta página son de afiliado: si compras, la tienda puede darnos una
+      comisión sin coste extra para ti.
+      <a href="/aviso-afiliados">Más sobre el aviso de afiliados</a>.
+    </p>
+
+    {
+      seccionesVista.map((seccion) => (
+          <article class="guia-seccion">
+            {seccion.mostrarH2 && (
+              <div class="section-heading guia-seccion-heading">
+                <div>
+                  <h2>{seccion.titulo}</h2>
+                </div>
+              </div>
+            )}
+            {seccion.texto && seccion.mostrarH2 && <p class="guia-seccion-texto">{seccion.texto}</p>}
+            {seccion.subtitulo && <h3 class="guia-subtitulo">{seccion.subtitulo}</h3>}
+            {seccion.items.length > 0 && (
+              <div class="product-grid guia-product-grid">
+                {seccion.items.map(({ product, nota }) => (
+                  <div class="guia-product-slot">
+                    <ProductCard product={product} />
+                    <p class="guia-product-nota">{nota}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </article>
+      ))
+    }
+
+    <div class="about-copy guia-markdown">
+      <Content />
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .guia-fecha-meta {
+    font-size: 14px !important;
+    color: #9c8f99 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .guia-affiliate-notice {
+    max-width: 720px;
+    margin: 0 0 40px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: #fdf6f9;
+    border: 1px solid #f3e3ea;
+    color: #6e656b;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .guia-affiliate-notice a {
+    color: #c73662;
+    font-weight: 600;
+  }
+
+  .guia-seccion {
+    margin-bottom: 48px;
+  }
+
+  .guia-seccion-heading {
+    margin-bottom: 12px;
+  }
+
+  .guia-seccion-texto {
+    max-width: 720px;
+    color: #6e656b;
+    line-height: 1.7;
+    margin: 0 0 20px;
+  }
+
+  .guia-subtitulo {
+    margin: 28px 0 8px;
+    font-size: clamp(22px, 2.5vw, 28px);
+  }
+
+  .guia-product-grid {
+    margin-top: 12px;
+  }
+
+  .guia-product-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .guia-product-nota {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #6e656b;
+  }
+
+  .guia-markdown {
+    margin-top: 56px;
+    padding-top: 40px;
+    border-top: 1px solid #f0e6ec;
+    max-width: 720px;
+  }
+
+  .guia-markdown :global(h2) {
+    margin-top: 36px;
+    font-size: clamp(28px, 3vw, 38px);
+  }
+
+  .guia-markdown :global(h3) {
+    margin-top: 28px;
+    font-size: clamp(20px, 2.4vw, 26px);
+  }
+
+  .guia-markdown :global(p),
+  .guia-markdown :global(li) {
+    color: #6e656b;
+    line-height: 1.75;
+  }
+
+  .guia-markdown :global(ul) {
+    padding-left: 1.25rem;
+  }
+</style>
