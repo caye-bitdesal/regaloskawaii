@@ -1,0 +1,24 @@
+---
+import type { GuiaEntry } from '../lib/guias/entries';
+
+interface Props {
+  guias: GuiaEntry[];
+  class?: string;
+}
+
+const { guias, class: className } = Astro.props;
+---
+
+{
+  guias.length > 0 && (
+    <p class:list={['coleccion-guia-callout', className]}>
+      Ideas y consejos:{' '}
+      {guias.map((guia, i) => (
+        <>
+          {i > 0 && (i === guias.length - 1 ? ' y ' : ', ')}
+          <a href={`/guias/${guia.id}`}>{guia.data.title}</a>
+        </>
+      ))}
+    </p>
+  )
+}

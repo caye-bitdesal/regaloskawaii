@@ -16,6 +16,8 @@ colecciones:
   - menos-de-10
   - de-10-a-20
   - de-20-a-40
+relacionadas:
+  - amigo-invisible-kawaii
 secciones:
   - titulo: Por menos de 10 €
     texto: >-

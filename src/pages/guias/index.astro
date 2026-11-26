@@ -1,22 +1,12 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import GuiaCover from '../../components/GuiaCover.astro';
+import GuiaCard from '../../components/GuiaCard.astro';
 import RkIcon from '../../components/RkIcon.astro';
 import { getCollection } from 'astro:content';
+import { sortGuiasByActualizado } from '../../lib/guias/entries';
 import { HOME_CRUMB, crumb } from '../../lib/seo/breadcrumbs';
 
-const entries = await getCollection('guias');
-const guias = [...entries].sort(
-  (a, b) => b.data.actualizado.getTime() - a.data.actualizado.getTime(),
-);
-
-const formatFecha = (fecha: Date) =>
-  new Intl.DateTimeFormat('es-ES', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'Europe/Madrid',
-  }).format(fecha);
+const guias = sortGuiasByActualizado(await getCollection('guias'));
 ---
 
 <SiteLayout
@@ -49,20 +39,7 @@ const formatFecha = (fecha: Date) =>
       <ul class="guia-list">
         {guias.map((guia) => (
           <li>
-            <article class="guia-list-card">
-              <a class="guia-list-card-media" href={`/guias/${guia.id}`} tabindex="-1" aria-hidden="true">
-                <GuiaCover src={guia.data.imagen} alt={guia.data.imagenAlt} variant="card" />
-              </a>
-              <div class="guia-list-card-body">
-                <h2>
-                  <a href={`/guias/${guia.id}`}>{guia.data.title}</a>
-                </h2>
-                <p>{guia.data.description}</p>
-                <p class="meta">
-                  Actualizada el {formatFecha(guia.data.actualizado)}
-                </p>
-              </div>
-            </article>
+            <GuiaCard guia={guia} showDate />
           </li>
         ))}
       </ul>
@@ -74,67 +51,3 @@ const formatFecha = (fecha: Date) =>
   }
   </section>
 </SiteLayout>
-
-<style>
-  .guia-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .guia-list-card {
-    display: grid;
-    grid-template-columns: minmax(140px, 220px) 1fr;
-    gap: 22px;
-    align-items: center;
-    padding: 18px;
-    border: 1px solid #f0e6ec;
-    border-radius: 18px;
-    background: #fff;
-  }
-
-  .guia-list-card-media {
-    display: block;
-    text-decoration: none;
-  }
-
-  .guia-list-card-body {
-    min-width: 0;
-  }
-
-  @media (max-width: 640px) {
-    .guia-list-card {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .guia-list-card h2 {
-    margin: 0 0 10px;
-    font-size: clamp(22px, 3vw, 28px);
-  }
-
-  .guia-list-card h2 a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .guia-list-card h2 a:hover {
-    color: #c73662;
-  }
-
-  .guia-list-card > p {
-    margin: 0;
-    color: #6e656b;
-    line-height: 1.65;
-    font-size: 15px;
-  }
-
-  .guia-list-card .meta {
-    margin-top: 12px;
-    font-size: 13px;
-    color: #9c8f99;
-  }
-</style>

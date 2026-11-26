@@ -3,6 +3,8 @@ import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import { getCatalog, sortProducts } from '../../lib/catalog';
+import ColeccionGuiasCallout from '../../components/ColeccionGuiasCallout.astro';
+import { guiasForColeccionSlug } from '../../lib/guias/entries';
 import { hubTrail } from '../../lib/seo/breadcrumbs';
 import { itemListJsonLd } from '../../lib/seo/jsonLd';
 
@@ -23,6 +25,7 @@ const products = sortProducts(
   catalog.products.filter((p) => p.coleccionSlugs.includes(collection.slug)),
 );
 const siteOrigin = Astro.site ?? new URL('https://regaloskawaii.es');
+const guiasColeccion = await guiasForColeccionSlug(collection.slug);
 ---
 
 <SiteLayout
@@ -46,6 +49,7 @@ const siteOrigin = Astro.site ?? new URL('https://regaloskawaii.es');
   </section>
 
   <section class="catalog shell">
+    <ColeccionGuiasCallout guias={guiasColeccion} />
     <div class="section-heading">
       <div>
         <h2>Productos en esta colección</h2>

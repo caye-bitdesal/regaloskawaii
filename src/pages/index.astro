@@ -4,7 +4,11 @@ import FilterChips from '../components/FilterChips.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import ProductCard from '../components/ProductCard.astro';
 import CategoryCard from '../components/CategoryCard.astro';
+import GuiaCard from '../components/GuiaCard.astro';
 import RkIcon from '../components/RkIcon.astro';
+import { getCollection } from 'astro:content';
+import ColeccionGuiasCallout from '../components/ColeccionGuiasCallout.astro';
+import { guiasLinkedToPriceCollections } from '../lib/guias/entries';
 import { getCatalog, sortProducts } from '../lib/catalog';
 import { buildSrcSet, HERO_IMAGE_SIZES, pickDefaultSrc } from '../lib/media/imageVariants';
 import { HOME_CRUMB } from '../lib/seo/breadcrumbs';
@@ -30,6 +34,8 @@ const heroHeight =
     ? Math.round((heroWidth * heroProduct.imagenHeight) / heroProduct.imagenWidth)
     : 450;
 const count = products.length;
+
+const guiasHome = guiasLinkedToPriceCollections(await getCollection('guias'));
 ---
 
 <SiteLayout
@@ -96,6 +102,30 @@ const count = products.length;
     </p>
   </section>
 
+  {
+    guiasHome.length > 0 && (
+      <section class="home-guias shell" aria-labelledby="home-guias-heading">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Inspiración</span>
+            <h2 id="home-guias-heading">Guías de regalo</h2>
+          </div>
+          <a class="primary" href="/guias" style="margin-top: 0;">
+            Ver todas
+            <RkIcon name="arrow" />
+          </a>
+        </div>
+        <ul class="guia-list home-guias-list">
+          {guiasHome.map((guia) => (
+            <li>
+              <GuiaCard guia={guia} showDate />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
   <section class="catalog shell" id="catalogo">
     <div class="section-heading">
       <div>
@@ -139,6 +169,7 @@ const count = products.length;
             />
           ))}
         </div>
+        {guiasHome.length > 0 && <ColeccionGuiasCallout guias={guiasHome} class="home-hub-guias-callout" />}
       </div>
     </div>
 

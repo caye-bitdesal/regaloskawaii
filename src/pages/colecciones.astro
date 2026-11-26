@@ -5,10 +5,15 @@ import FilterChips from '../components/FilterChips.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import ProductCard from '../components/ProductCard.astro';
 import RkIcon from '../components/RkIcon.astro';
+import ColeccionGuiasCallout from '../components/ColeccionGuiasCallout.astro';
+import { getCollection } from 'astro:content';
 import { getCatalog, sortProducts } from '../lib/catalog';
+import { guiasForColeccionSlugFrom, PRICE_COLLECTION_SLUGS } from '../lib/guias/entries';
 import { HOME_CRUMB, crumb } from '../lib/seo/breadcrumbs';
 
 const catalog = await getCatalog();
+const allGuias = await getCollection('guias');
+const priceSlugs = new Set<string>(PRICE_COLLECTION_SLUGS);
 const coleccionesBreadcrumbs = [HOME_CRUMB, crumb('Colecciones', '/colecciones')];
 const collectionsWithProducts = catalog.collections.filter((c) => c.productIds.length > 0);
 const chips = [
@@ -61,6 +66,9 @@ const chips = [
         const products = sortProducts(
           catalog.products.filter((p) => p.coleccionSlugs.includes(col.slug)),
         );
+        const guiasEnColeccion = priceSlugs.has(col.slug)
+          ? guiasForColeccionSlugFrom(allGuias, col.slug)
+          : [];
         return (
           <article class="collection-block" id={`coleccion-${col.slug}`} data-collection={col.slug}>
             <div class="collection-block-header">
@@ -76,6 +84,7 @@ const chips = [
                 <RkIcon name="arrow" />
               </a>
             </div>
+            <ColeccionGuiasCallout guias={guiasEnColeccion} />
             <ProductGrid>
               {products.map((p) => (
                 <ProductCard product={p} />

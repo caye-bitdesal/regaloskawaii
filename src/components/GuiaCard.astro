@@ -1,0 +1,41 @@
+---
+import GuiaCover from './GuiaCover.astro';
+import type { GuiaEntry } from '../lib/guias/entries';
+
+interface Props {
+  guia: GuiaEntry;
+  showDate?: boolean;
+}
+
+const { guia, showDate = false } = Astro.props;
+
+const formatFecha = (fecha: Date) =>
+  new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Europe/Madrid',
+  }).format(fecha);
+---
+
+<article class="guia-list-card">
+  <a
+    class="guia-list-card-media"
+    href={`/guias/${guia.id}`}
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <GuiaCover src={guia.data.imagen} alt={guia.data.imagenAlt} variant="card" />
+  </a>
+  <div class="guia-list-card-body">
+    <h2>
+      <a href={`/guias/${guia.id}`}>{guia.data.title}</a>
+    </h2>
+    <p>{guia.data.description}</p>
+    {
+      showDate && (
+        <p class="meta">Actualizada el {formatFecha(guia.data.actualizado)}</p>
+      )
+    }
+  </div>
+</article>

@@ -5,6 +5,8 @@ import ProductCard from '../../components/ProductCard.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
 import { getCollection, getEntry, render } from 'astro:content';
 import { getCatalog } from '../../lib/catalog';
+import GuiaCard from '../../components/GuiaCard.astro';
+import { loadGuiasRelacionadas } from '../../lib/guias/entries';
 import { resolveGuiaProduct } from '../../lib/guias/products';
 import { hubTrail } from '../../lib/seo/breadcrumbs';
 import { articleJsonLd, itemListJsonLd } from '../../lib/seo/jsonLd';
@@ -67,6 +69,8 @@ const seccionesVista = seccionesResueltas.map((seccion) => {
   ultimoTituloSeccion = seccion.titulo;
   return { ...seccion, mostrarH2 };
 });
+
+const guiasRelacionadas = await loadGuiasRelacionadas(guia.data.relacionadas, slug);
 ---
 
 <SiteLayout
@@ -123,6 +127,21 @@ const seccionesVista = seccionesResueltas.map((seccion) => {
     <div class="about-copy guia-markdown">
       <Content />
     </div>
+
+    {
+      guiasRelacionadas.length > 0 && (
+        <aside class="guia-related" aria-labelledby="guia-related-heading">
+          <h2 id="guia-related-heading">Más guías de regalo</h2>
+          <ul class="guia-list">
+            {guiasRelacionadas.map((rel) => (
+              <li>
+                <GuiaCard guia={rel} />
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )
+    }
   </section>
 </SiteLayout>
 
